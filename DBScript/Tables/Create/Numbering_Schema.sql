@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS `Numbering_Schema` (
+  `Numbering_Schema_Id` INT AUTO_INCREMENT NOT NULL,
+  `Plant_Id` INT NULL DEFAULT NULL,
+  `Document_Id` INT NOT NULL,
+  `Prefix` VARCHAR(20) NULL DEFAULT NULL,
+  `Symbol_Id` INT NULL DEFAULT NULL,
+  `Suffix` VARCHAR(20) NULL DEFAULT NULL,
+  `Status` INT NOT NULL,
+  `Created_By` INT NOT NULL,
+  `Created_On` DATETIME(6) NOT NULL,
+  `Modified_By` INT NULL DEFAULT NULL,
+  `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  `Sequence_Name` VARCHAR(100) NULL DEFAULT NULL,
+  `W_Sequence_Name` VARCHAR(100) NULL DEFAULT NULL,
+  `Date_Format` INT NULL DEFAULT NULL,
+  `Table_Name` varchar(255) NULL DEFAULT NULL,
+  PRIMARY KEY (`Numbering_Schema_Id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

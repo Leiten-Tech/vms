@@ -1,0 +1,19 @@
+CREATE TABLE IF NOT EXISTS `Shift` (
+  `Shift_Id` BIGINT AUTO_INCREMENT NOT NULL,
+  `Shift_Code` VARCHAR(50) NOT NULL,
+  `Company_Id` BIGINT NOT NULL,
+  `Plant_Id` BIGINT NOT NULL,
+  `Shift_Name` VARCHAR(255) NOT NULL,
+  `Shift_Type` VARCHAR(50) NOT NULL,
+  `Shift_From_Time` DATETIME(6) NOT NULL,
+  `Shift_To_Time` DATETIME(6) NOT NULL,
+  `Shift_Hours` DECIMAL(5,2) NULL DEFAULT NULL,
+  `Status` INT NOT NULL,
+  `Created_By` INT NOT NULL,
+  `Created_On` DATETIME(6) NOT NULL,
+  `Modified_By` INT NULL DEFAULT NULL,
+  `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`Shift_Id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

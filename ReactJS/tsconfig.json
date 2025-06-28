@@ -1,0 +1,65 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@assets/*": ["assets/*"],
+      "components/*": ["components/*"],
+      "@ui/*": ["components/common/ui/*"],
+      "@pages/*": ["pages/*"],
+      "@api/*": ["api/*"],
+      "@utils/*": ["utils/*"],
+      "@redux/utils/*": ["redux/utils/*"],
+      "@redux/slices/*": ["redux/slices/*"]
+    },
+    "allowJs": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "noFallthroughCasesInSwitch": true,
+    "jsx": "react-jsx",
+    "types": ["vite/client", "vite-plugin-svgr/client", "node"],
+  },
+  "include": ["src"],
+}
+// {
+//   "compilerOptions": {
+//     "target": "es5",
+//     "lib": ["dom", "dom.iterable", "esnext"],
+//     "baseUrl": "src",
+//     "paths": {
+//       "@/assets/*": ["@/assets/*"],
+//       "components/*": ["components/*"],
+//       "@ui/*": ["components/common/ui/*"],
+//       "@pages/*": ["pages/*"],
+//       "@api/*": ["api/*"],
+//       "@utils/*": ["utils/*"],
+//       "redux/utils/*": ["redux/utils/*"],
+//       "redux/slices/*": ["redux/slices/*"]
+//     },
+//     "allowJs": true,
+//     "skipLibCheck": true,
+//     "esModuleInterop": true,
+//     "allowSyntheticDefaultImports": true,
+//     "strict": false,
+//     "forceConsistentCasingInFileNames": true,
+//     "noFallthroughCasesInSwitch": true,
+//     "module": "esnext",
+//     "moduleResolution": "node",
+//     "resolveJsonModule": true,
+//     "isolatedModules": true,
+//     "noEmit": true,
+//     "jsx": "react-jsx",
+//     "sourceMap": false
+//   },
+//   "include": ["src"]
+// }

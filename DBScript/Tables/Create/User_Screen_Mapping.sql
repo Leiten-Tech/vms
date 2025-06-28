@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `User_Screen_Mapping` (
+  `User_Screen_Mapping_Id` BIGINT NOT NULL AUTO_INCREMENT,
+  `User_Id` BIGINT NULL DEFAULT NULL,
+  `Role_Id` BIGINT NULL DEFAULT NULL,
+  `Company_Id` BIGINT NULL DEFAULT NULL,
+  `Module_Id` INT NOT NULL,
+  `Screen_Id` INT NOT NULL,
+  `Create` BOOL NULL DEFAULT NULL,
+  `Update` BOOL NULL DEFAULT NULL,
+  `Delete` BOOL NULL DEFAULT NULL,
+  `View` BOOL NULL DEFAULT NULL,
+  `Print` BOOL NULL DEFAULT NULL,
+  `Approval` BOOL NULL DEFAULT NULL,
+  `Status` INT NOT NULL,
+  `Created_By` INT NOT NULL,
+  `Created_On` DATETIME(6) NOT NULL,
+  `Modified_By` INT NULL DEFAULT NULL,
+  `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`User_Screen_Mapping_Id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

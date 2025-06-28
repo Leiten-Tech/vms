@@ -1,0 +1,8469 @@
+import React, { useState, useEffect, useRef, useMemo } from "react";
+import {
+    BackImg,
+    VisitorImg,
+    ContractorImg,
+    // PermitImg,
+    InvoiceImg,
+    VehicleTripImg,
+    DeliveryChallanImg,
+} from "../../../assets/css/img-library";
+import {
+    Button,
+    Calendar,
+    Dialog,
+    FilterMatchMode,
+    InputNumber,
+    InputSwitch,
+    InputText,
+    Sidebar,
+} from "@/assets/css/prime-library";
+import { ContDetail, SearchContainer } from "@/components/VisitorComp";
+import { useDispatch, useSelector } from "react-redux";
+import { pageLoadScript } from "@/assets/js/common-utilities";
+import CVisitorEntryCreator from "../VisitorEntry/cVisitorEntryCreator";
+import { PrintPassComponent } from "@/components/PrintPass";
+import { useFormik } from "formik";
+import { VisitorEntryValidationSchema } from "@/validations/VisitorManagement";
+import { IMAGES } from "@/assets/images/Images";
+import { useHistory } from "react-router-dom";
+import {
+    createVM,
+    createInitVM,
+    OnChangeCountryVM,
+    OnChangeStateVM,
+    updateVM,
+} from "@/redux/slices/master/visitorSlice";
+import {
+    OnChangePartyType,
+    OnChangeVisitor,
+    OnChangeVisitorType,
+    create,
+    createInit,
+    update,
+    fetch,
+    VehicleData,
+    OnChangeVisHost,
+    OnChangeEntryDetail,
+    ShowPass,
+    OnChangeWorkPermit,
+} from "@/redux/slices/visitorManagement/visitorentrySlice";
+import AppAlert from "@/alert/alert";
+import { AppProgressSpinner, confirmation } from "@/components/UtilityComp";
+import CVisitorCreator from "@/pages/master/Visitor/cVisitorCreator";
+import CVehicleCreator from "@/pages/master/Vehicle/cVehicleCreator";
+import CEmployeeCreator from "@/pages/master/Employee/cEmployeeCreator";
+import { CheckIn } from "@/redux/slices/visitorManagement/checkInCheckOutSlice";
+import { tLDS } from "@/utils/utilFunc";
+import { sendPass } from "@/redux/slices/master/ApprovalSlice";
+import {
+    VisitorDetailValidationSchema,
+    VisitorValidationSchema,
+} from "@/validations/Master";
+import { createOrEdit } from "@/redux/slices/master/visitorentrySlice";
+import {
+    CWorkPermitCreator,
+    WorkPermitForm,
+    WorkPermitPrint,
+} from "@/pages/VisitorManagement/WorkPermit/cWorkPermitCreator";
+import { ColumnEditorOptions, ColumnEvent } from "primereact/column";
+import { InputNumberValueChangeEvent } from "primereact/inputnumber";
+import {
+    FilterDrive,
+    FilterVehicleNo,
+    OnChangeExistVehicleNo,
+    OnChangeVehicleNo,
+    OnEnterMobileNo,
+} from "@/redux/slices/visitorManagement/externalBookEntrySlice";
+import { QRPop } from "@/pages/master/Vehicle/vVehicle";
+import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
+
+export const CVisitorInfo = (props) => {
+    const { tabConfig, itemTemplate, sHost, sVisit, passData, toast } = props;
+
+    return (
+        <div className="col-12">
+            <div className="white">
+                <div className="widget-hdr">
+                    <div className="sub-title">
+                        <div className="grid">
+                            <div className="col-12">
+                                <h2>Visitor Information</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {/* <div className="widget-body">
+          <div className="visitor-name">
+            {sVisit?.PersonName}
+            {sVisit?.FirstName + " " + sVisit?.LastName}
+            <span className="emp-id"> - {sVisit?.VisitorEntryCode}</span>
+            <span className="emp-id"> - {sVisit?.VisitorCode}</span>
+          </div>
+          <div className="visitor-company">
+            <strong>{sVisit?.VisitorCompany || "-"}</strong>
+          </div>
+          <div className="visitor-company">{sVisit?.MailId}</div>
+          <div className="visitor-company">{sVisit?.MobileNo}</div>
+        </div> */}
+                <div className="widget-body">
+                    <div className="visitor-name">
+                        {/* {sVisit?.PersonName} */}
+                        {passData?.PersonName || "-"}
+                        {/* <span className="emp-id"> - {sVisit?.VisitorEntryCode}</span> */}
+                        <span className="emp-id"> - {passData?.VisitorEntryCode}</span>
+                    </div>
+                    <div className="visitor-company">
+                        <strong>{passData?.VisitorCompany || "-"}</strong>
+                    </div>
+                    <div className="visitor-company">{passData?.MailId}</div>
+                    <div className="visitor-company">{passData?.MobileNo}</div>
+                </div>
+            </div>
+            <div className="white">
+                <div className="widget-hdr">
+                    <div className="sub-title">
+                        <div className="grid">
+                            <div className="col-12">
+                                <h2>Host Information</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div className="widget-body">
+                    <div className="visitor-name">
+                        {sHost?.UserName} -<span className="emp-id">{sHost?.UserCode}</span>
+                    </div>
+                    <div className="visitor-company">
+                        <strong>{sHost?.CompanyName}</strong>
+                    </div>
+                    <div className="visitor-company">{sHost?.UserEmail}</div>
+                    <div className="visitor-company">{sHost?.MobileNo}</div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export const CVistorDetail = (props) => {
+    const { tabConfig, itemTemplate, sHost, sVisit, passData, toast } = props;
+
+    const printRef = useRef(null);
+
+    const handlePrint = () => {
+        window.open();
+    };
+
+    return (
+        <div className="inner-page-container p-2 grid flex-column dp_pass">
+            <div className="col-12">
+                <PrintPassComponent printPassData={passData} toast={toast} />
+                {/* <PrintPass printRef={printRef} printPassData={passData} /> */}
+            </div>
+        </div>
+    );
+};
+
+const CVisitorManagement = () => {
+    const route = useHistory();
+
+    const [pageType, setPageType] = useState<any>("s1");
+    const phonenumber = [{ Id: 1, CountryCode: "+91", CountryName: "India" }];
+    const [vehPopVisible, setVehPopVisible] = useState<any>(false);
+    const componentRef = React.useRef(null);
+
+    const [selectedVehData, setSelectedVehData] = useState<any>({});
+    const [selectedEntryData, setSelectedEntryData] = useState<any>({});
+    const [checked, setChecked] = useState(false);
+    const [checkedVehicle, setCheckedVehicle] = useState(false);
+    const [updateCheckVeh, setUpdateCheckVeh] = useState(false);
+    const [vehicleDetails, setVehicleDetails] = useState([]);
+    const [visible, setVisible] = useState<boolean>(false);
+    const [activeTab, setActiveTab] = useState<any>({});
+    const [visitorShow, setVisitorShow] = useState<boolean>(false);
+    const [WorkPermitShow, setWorkPermitShow] = useState<boolean>(false);
+    const [vehicleShow, setVehicleShow] = useState<boolean>(false);
+    const [employeeShow, setEmployeeShow] = useState<boolean>(false);
+    const [dialogVisible, setDialogVisible] = useState<boolean>(false);
+    const [refTableDisable, setRefTableDisable] = useState<boolean>(false);
+    const [IsDisableClear, setIsDisableClear] = useState<boolean>(false);
+    const [switchDisable, setSwitchDisable] = useState<boolean>(false);
+    const [currMobNo, setCurrMobNo] = useState<string>();
+
+    const [VisitorNameList, setVisitorNameList] = useState([]);
+    const [updatedVisitorNameList, setupdatedVisitorNameList] = useState([]);
+    const [updatedBelongingList, setupdatedBelongingList] = useState([]);
+    const [visitorEntryDetailList, setvisitorEntryDetailList] = useState([]);
+    const [visitorEntryDetailListNew, setvisitorEntryDetailListNew] = useState(
+        []
+    );
+    const [VisitorEntryRefDetailList, setVisitorEntryRefDetailList] = useState([
+        {
+            VisitorEntryRefDetailId: 0,
+            VisitorEntryId: 0,
+            RefTypeId: null,
+            RefValue: "",
+            adisable: false,
+            cdisable: true,
+            ddisable: false,
+            idisable: false,
+            show: true,
+        },
+    ]);
+    const [bookedVisitor, setBookedVisitor] = useState({});
+    // const [TempVisitorNameList, setTempVisitorNameList] = useState([]);
+    // const [EmployeeList, setEmployeeList] = useState([]);
+    const [TempEmployeeList, setTempEmployeeList] = useState([]);
+    const [searchTerm, setSearchTerm] = useState("");
+    const [searchId, setSearchId] = useState("");
+    const [vhSelected, setVHselected] = useState(false);
+
+    const [selectedWP, setSelectedWP] = useState<any>();
+    const [selectedWPWorkerDetails, setSelectedWPWorkerDetails] = useState<any>();
+    const [selectedWPEntryDetails, setSelectedWPEntryDetails] = useState<any>();
+    const [selectedWPHeader, setSelectedWPHeader] = useState<any>();
+
+    const [selectedVisitor, setSelectedVisitor] = useState<any>();
+    const [selectedHost, setSelectedHost] = useState<any>({});
+    const [selectedVeh, setSelectedVeh] = useState<any>();
+    const [selectedInv, setSelectedInv] = useState<any>(false);
+    const [isCurrentCreate, setIsCurrentCreate] = useState<any>(true);
+
+    const [showEntryDetail, setShowEntryDetail] = useState(false);
+    const [passVisible, setpassVisible] = useState(false);
+
+    const [selectedData, setSelectedData] = useState<any>({});
+    const [isIndCon, setIsIndCon] = useState(false);
+    const [VisitorEntryBooked, setVisitorEntryBooked] = useState<any>([]);
+    const [TempVisitorEntryBooked, setVisitorTempEntryBooked] = useState<any>([]);
+    const toast = useRef<any>(null);
+
+    //  Visitor Entry Create
+    const [cameraOff, setCameraOff] = useState(false);
+    const [EmployeeList, setEmployeeList] = useState([]);
+    const [DepartmentList, setDepartmentList] = useState([]);
+    const [StatusList, setStatusList] = useState([]);
+    const [DeliveryChallanList, setDeliveryChallanList] = useState([]);
+    const [TitleList, setTitleList] = useState([]);
+    const [IsPreBookingList, setIsPreBookingList] = useState([]);
+    const [VisitorTypeList, setVisitorTypeList] = useState([]);
+    const [ProofList, setProofList] = useState([]);
+    const [TempVisitorNameList, setTempVisitorNameList] = useState([]);
+    const [imageUrl, setImageUrl] = useState(IMAGES.NO_IMG);
+    const [photo, setPhoto] = useState<File | null>(null);
+    const [documentUp, setDocument] = useState<File | null>(null);
+    const autoCompleteRef = useRef<any>(null);
+    const [filteritemType, setFilteritemType] = useState([]);
+    const [PartyTypeList, setPartyTypeList] = useState([]);
+    const [AreaList, setAreaList] = useState([]);
+    const [RouteList, setRouteList] = useState([]);
+    const [PartyNameList, setPartyNameList] = useState([]);
+    const [DriverList, setDriverList] = useState([]);
+    const [WorkPermitList, setWorkPermitList] = useState<any>([]);
+    const [TempWorkPermitList, setTempWorkPermitList] = useState<any>([]);
+    const [VehicleList, setVehicleList] = useState([]);
+    const [TempVehicleList, setTempVehicleList] = useState<any>();
+    const [VECodeDisable, setVECodeDisable] = useState(true);
+    const [ValidFromDisable, setValidFromDisable] = useState(true);
+    const [ValidToDisable, setValidToDisable] = useState(true);
+    const [TominDate, setTominDate] = useState(null);
+    const [CheckboxDisable, setCheckboxDisable] = useState(false);
+    const [HideVehicleDD, setHideVehicleDD] = useState(false);
+    const [HideDriverDD, setHideDriverDD] = useState(false);
+    const [IsDeliveryChallan, setIsDeliveryChallan] = useState(false);
+    const [IsInvoiceBased, setIsInvoiceBased] = useState(false);
+    const [IsVehicleTripBased, setIsVehicleTripBased] = useState(false);
+    const [IsPartyDisable, setIsPartyDisable] = useState(false);
+    const [IsVehicleDetailsDisable, setIsVehicleDetailsDisable] = useState(true);
+    const [IsMaterialDetailsShow, setIsMaterialDetailsShow] = useState(false);
+    const [IsBelongingDetailsShow, setIsBelongingDetailsShow] = useState(false);
+    const [IsWorkerDetailsShow, setIsWorkerDetailsShow] = useState(false);
+    const [ShowVisitorContranctor, setShowVisitorContranctor] = useState(true);
+    const [IsdisableSave, setIsdisableSave] = useState(false);
+
+    const [VisitorEntryBelongingDetailList, setVisitorEntryBelongingDetailList] =
+        useState<any>([]);
+    const [VisitorEntryMaterialDetailList, setVisitorEntryMaterialDetailList] =
+        useState([]);
+    const [MaterialList, setMaterialList] = useState([]);
+    const [documentUrl, setDocumentUrl] = useState("");
+    const [InvoiceNumberDisable, setInvoiceNumberDisable] = useState(true);
+    const [DcNumberDisable, setDcNumberDisable] = useState(true);
+    const [PoNumberDisable, setPoNumberDisable] = useState(true);
+    const [ContainerNumberDisable, setContainerNumberDisable] = useState(true);
+    const [initFldDisable, setInitFldDisable] = useState(true);
+    const [contWorker, setContWorker] = useState(true);
+    const [contHead, setContHead] = useState<any>({});
+    const [PurposeList, setPurposeList] = useState([]);
+    const [VisitorEntryPovDetail, setVisitorEntryPovDetail] = useState([]);
+    const [passData, setPassData] = useState<any>();
+
+    const [isVisMaster, setIsVisMaster] = useState(true);
+    const [createVisEnt, setCreateVisEnt] = useState(true);
+
+    const [visType, setVisType] = useState<any>(35);
+    const [selectedVehType, setSelectedVehType] = useState<any>(1);
+    // X X X Visitor Entry Create
+    const [changeField, setChangeField] = useState<any>({});
+    const PlantId = +localStorage["PlantId"];
+    const CompanyId = +localStorage["CompanyId"];
+
+    // VEHICLE TYPE
+    const [tempRefTypeList, setTempRefTypeList] = useState([]);
+    const [RefTypeList, setRefTypeList] = useState([]);
+    const [VehicleTypeList, setVehicleTypeList] = useState([]);
+    const [VehicleNoList, setVehicleNoList] = useState([]);
+    const [checkVehAction, setCheckVehAction] = useState(true);
+    const [vehicleHead, setVehicleHead] = useState<any>();
+
+    // VEHICLE TYPE
+
+    const [tabConfig, setTabConfig] = useState<any>([
+        // {id: 0, visitorTypeImg: BackImg, visitorTypeTxt: "Back", type: "BACK" },
+        {
+            id: 1,
+            visitorTypeImg: VisitorImg,
+            visitorTypeTxt: "One Day Pass",
+            active: true,
+            disable: false,
+            type: 35,
+        },
+        {
+            id: 2,
+            visitorTypeImg: ContractorImg,
+            visitorTypeTxt: "Extended Pass",
+            disable: false,
+            type: 36,
+        },
+
+        {
+            id: 4,
+            visitorTypeImg: VehicleTripImg,
+            visitorTypeTxt: "Vehicle Entry",
+            disable: false,
+            type: 66,
+        },
+        // {
+        //   id: 3,
+        //   visitorTypeImg: ContractorImg,
+        //   visitorTypeTxt: "Work Permit",
+        //   disable: false,
+        //   type: 100,
+        // },
+        // {
+        //   id: 3,
+        //   visitorTypeImg: DeliveryChallanImg,
+        //   visitorTypeTxt: "Delivery Challan",
+        //   disable: false,
+        //   type: 64,
+        // },
+        // // {id:3,visitorTypeImg:InterviewImg, visitorTypeTxt:"Interview"},
+        // {
+        //   id: 5,
+        //   visitorTypeImg: InvoiceImg,
+        //   visitorTypeTxt: "Invoice",
+        //   disable: false,
+        //   type: 65,
+        // },
+        // {
+        //   id: 6,
+        //   visitorTypeImg: NextImg,
+        //   visitorTypeTxt: "Next",
+        //   type: "NEXT",
+        // },
+    ]);
+    // const [searchConfig, setSearchConfig] = useState({
+    //   isVisitor: true,
+    //   isContract: false,
+    //   isVehTrip: false,
+    //   isInvoice: false,
+    // });
+
+    const {
+        isCreate,
+        isView,
+        SearchData,
+        loading,
+        error,
+        tranStatus,
+        DtoEmployeeList,
+        DtoDepartmentList,
+        DtoStatusList,
+        DtoTitleList,
+        DtoIsPreBookingList,
+        DtoVisitorTypeList,
+        DtoProofList,
+        DtoVisitorEntryTypeList,
+        DtoVisitorEntryHeader,
+        DtoVisitorEntryDetail,
+        DtoVisitorEntryBelongingDetail,
+        DtoVisitorEntryMaterialDetail,
+        DtoVisitorEntryList,
+        DtoVisitorEntryCodeList,
+        DtoVisitorEmployeeList,
+        DtoVisitorNameList,
+        DtoVisitorWorkerList,
+        DtoPreBookingList,
+        DtoPartyTypeList,
+        DtoAreaList,
+        DtoChallanTypeList,
+        DtoRouteList,
+        DtoPartyNameList,
+        DtoDriverList,
+        DtoVehicleList,
+        DtoMaterialList,
+        DtoPurposeList,
+        DtoVisitorEntryPovDetail,
+        tabConfigs,
+        activeTabs,
+    } = useSelector((state: any) => state.visitorentry);
+
+    const dispatch: any = useDispatch();
+
+    useEffect(() => {
+        pageLoadScript();
+    });
+
+    const shouldTriggerOnChange = useMemo(() => {
+        return (
+            selectedVeh &&
+            selectedVeh?.hasOwnProperty("vehicleNo") &&
+            VehicleNoList &&
+            VehicleNoList.length > 0 &&
+            selectedVeh?.vehicleNo !== ""
+        );
+    }, [VehicleNoList, selectedVeh]);
+
+    useEffect(() => {
+        if (shouldTriggerOnChange) {
+            if (
+                !selectedVeh?.entryTime ||
+                selectedVeh?.entryTime == null ||
+                !selectedVeh?.exitTime ||
+                selectedVeh?.exitTime == null
+            ) {
+                OnChangeVehNo("VehicleNo", {}, selectedVeh?.vehicleNo);
+            } else if (
+                selectedVeh?.entryTime != null &&
+                selectedVeh?.exitTime != null
+            ) {
+                OnChangeExistVehNo("VehicleNo", {}, selectedVeh);
+            }
+        }
+    }, [shouldTriggerOnChange]);
+
+    // Visitor Entry Functions
+    const visitorEntryForm = {
+        VisitorEntryId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorEntryId
+            : 0,
+        VisitorEntryCode: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorEntryCode
+            : "",
+        VisitorEntryDate: DtoVisitorEntryHeader
+            ? new Date(DtoVisitorEntryHeader.VisitorEntryDate)
+            : new Date(),
+        CompanyId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.CompanyId
+            : localStorage["CompanyId"],
+        PlantId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.PlantId
+            : localStorage["PlantId"],
+        GateId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.GateId
+            : localStorage["GateId"],
+        VisitorTypeId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorTypeId
+            : 35,
+        VisitorId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VisitorId : null,
+        PersonName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PersonName : "",
+        MobileNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.MobileNo : "",
+        IdProofType: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IdProofType
+            : null,
+        IdProofNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.IdProofNo : "",
+        VisitedEmployeeId: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitedEmployeeId
+            : null,
+        ValidFrom: DtoVisitorEntryHeader
+            ? new Date(DtoVisitorEntryHeader.ValidFrom)
+            : new Date(),
+        ValidTo: DtoVisitorEntryHeader
+            ? new Date(DtoVisitorEntryHeader.ValidTo)
+            : new Date(),
+        AccessType: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.AccessType : null,
+        IsExtended: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsExtended
+            : false,
+        IsAppointmentBooking: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsAppointmentBooking
+            : false,
+        IsPreBooking: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsPreBooking
+            : 16,
+        VisitorRemarks: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorRemarks
+            : "",
+        PurposeOfVisit: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.PurposeOfVisit
+            : "",
+        AreaToVisit: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.AreaToVisit
+            : null,
+        VisitorImageName: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorImageName
+            : "",
+        VisitorImageUrl: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VisitorImageUrl
+            : "",
+        PartyType: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PartyType : null,
+        PartyName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PartyName : null,
+        InvoiceNumber: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.InvoiceNumber
+            : "",
+        DcNumber: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.DcNumber : "",
+        PoNumber: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PoNumber : "",
+        ContainerNumber: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.ContainerNumber
+            : "",
+        IsExistingVehicle: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsExistingVehicle
+            : null,
+        VehicleType: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VehicleType : "",
+        VehicleName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VehicleName : "",
+        VehicleModel: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VehicleModel
+            : "",
+        VehicleNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VehicleNo : "",
+        IsExistingDriver: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsExistingDriver
+            : null,
+        EntryType: vehicleHead ? vehicleHead.EntryType : null,
+        EntryTime: DtoVisitorEntryHeader
+            ? new Date(DtoVisitorEntryHeader.EntryTime)
+            : tLDS(new Date()),
+        ExitTime: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.ExitTime : null,
+        IsEwayBillNo: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsEwayBillNo
+            : false,
+        IsEinvBillNo: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.IsEinvBillNo
+            : false,
+        DriverId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.DriverId : "",
+        DriverName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.DriverName : "",
+        VehicleDocumentName: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VehicleDocumentName
+            : "",
+        VehicleDocumentUrl: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.VehicleDocumentUrl
+            : "",
+        RouteId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.RouteId : null,
+        NumberOfPassengers: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.NumberOfPassengers
+            : "",
+        StartingKm: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.StartingKm : "",
+        EndingKm: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.EndingKm : "",
+        PlannedTravellingKm: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.PlannedTravellingKm
+            : "",
+        ActualTravellingKm: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.ActualTravellingKm
+            : "",
+        Status: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.Status : 74,
+        //Status: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.Status : 74,
+        CreatedBy: DtoVisitorEntryHeader
+            ? DtoVisitorEntryHeader.CreatedBy
+            : +localStorage["UserId"],
+        CreatedOn: DtoVisitorEntryHeader
+            ? new Date(DtoVisitorEntryHeader.CreatedOn)
+            : new Date(),
+        ModifiedBy: DtoVisitorEntryHeader ? +localStorage["UserId"] : null,
+        ModifiedOn: DtoVisitorEntryHeader ? new Date() : null,
+        ChallanType: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.ChallanType : 98,
+    };
+
+    const visitorEntryFormik: any = useFormik({
+        initialValues: visitorEntryForm,
+        validationSchema: VisitorEntryValidationSchema,
+        onSubmit: (values: any, { resetForm }) => {
+            values.IsExternal = false;
+            values.VisitorTypeId = tabConfig.filter((t) => t.active == true)[0]?.type;
+
+            if (values) {
+                let gotData;
+                if (
+                    values?.VehicleNo !== "" &&
+                    VehicleNoList &&
+                    VehicleNoList.length > 0 &&
+                    values?.VisitorEntryId === 0
+                ) {
+                    const vehicleExists =
+                        VehicleNoList.filter(
+                            (item) =>
+                                item.VehicleNo === values?.VehicleNo ||
+                                values?.VehicleNo?.VehicleNo
+                        ).length > 0;
+
+                    if (vehicleExists && !updateCheckVeh) {
+                        const vNo = values?.VehicleNo?.VehicleNo ?? values?.VehicleNo;
+                        const obj = {
+                            VehicleNo: vNo,
+                            VisitorEntryId: values?.VisitorEntryId,
+                        };
+
+                        try {
+                            const result = dispatch(OnChangeVehicleNo(obj));
+                            result.then((resV) => {
+                                if (resV.payload.tranStatus.result) {
+                                    if (
+                                        resV.payload.VisitorEntryHeader &&
+                                        Object.keys(resV.payload.VisitorEntryHeader).length > 0
+                                    ) {
+                                        gotData = resV.payload.VisitorEntryHeader;
+
+                                        if (resV.payload.VisitorEntryHeader.VisitorEntryId > 0) {
+                                            confirmDialog({
+                                                message: `Vehicle ${resV.payload.VisitorEntryHeader.EntryType == 102
+                                                        ? "IN"
+                                                        : "OUT"
+                                                    } Data Found for the Vehicle ${resV?.payload?.VisitorEntryHeader?.VehicleNo
+                                                    }!`,
+                                                header: "Confirmation",
+                                                acceptClassName: "text-right",
+                                                icon: "pi pi-exclamation-triangle",
+                                                accept: () => {
+                                                    setSelectedEntryData(resV.payload.VisitorEntryHeader);
+                                                    setUpdateCheckVeh(true);
+                                                    const vehObj = {
+                                                        VehicleNo:
+                                                            resV.payload.VisitorEntryHeader.VehicleNo,
+                                                        VisitorEntryId:
+                                                            resV.payload.VisitorEntryHeader.VisitorEntryId,
+                                                    };
+                                                    OnChangeVehNo("VehicleNo", {}, vehObj);
+                                                },
+                                                rejectClassName: "hidden",
+                                                acceptLabel: "Ok",
+                                            });
+                                        } else {
+                                            proceedToSave(values);
+                                        }
+                                    } else {
+                                        proceedToSave(values);
+                                    }
+                                }
+                            });
+                        } catch (error) {
+                            console.error("Error in OnChangeVehicleNo:", error);
+                        }
+                    } else {
+                        proceedToSave(values);
+                    }
+                } else if (
+                    values.VehicleTypeId == 129 &&
+                    !updateCheckVeh &&
+                    values.VisitorEntryId == 0 &&
+                    values?.VehicleNo != ""
+                ) {
+                    const vNo = values?.VehicleNo?.VehicleNo ?? values?.VehicleNo;
+                    const obj = {
+                        VehicleNo: vNo,
+                        VisitorEntryId: values?.VisitorEntryId,
+                    };
+
+                    try {
+                        const result = dispatch(OnChangeVehicleNo(obj));
+                        result.then((resV) => {
+                            if (resV.payload.tranStatus.result) {
+                                if (
+                                    resV.payload.VisitorEntryHeader &&
+                                    Object.keys(resV.payload.VisitorEntryHeader).length > 0
+                                ) {
+                                    gotData = resV.payload.VisitorEntryHeader;
+
+                                    if (resV.payload.VisitorEntryHeader.VisitorEntryId > 0) {
+                                        confirmDialog({
+                                            message: `Vehicle ${resV.payload.VisitorEntryHeader.EntryType == 102
+                                                    ? "IN"
+                                                    : "OUT"
+                                                } Data Found for the Vehicle ${resV?.payload?.VisitorEntryHeader?.VehicleNo
+                                                }!`,
+                                            header: "Confirmation",
+                                            acceptClassName: "text-right",
+                                            icon: "pi pi-exclamation-triangle",
+                                            accept: () => {
+                                                setSelectedEntryData(resV.payload.VisitorEntryHeader);
+                                                setUpdateCheckVeh(true);
+                                                const vehObj = {
+                                                    VehicleNo: resV.payload.VisitorEntryHeader.VehicleNo,
+                                                    VisitorEntryId:
+                                                        resV.payload.VisitorEntryHeader.VisitorEntryId,
+                                                };
+                                                OnChangeVehNo("VehicleNo", {}, vehObj);
+                                            },
+                                            rejectClassName: "hidden",
+                                            acceptLabel: "Ok",
+                                        });
+                                    } else {
+                                        proceedToSave(values);
+                                    }
+                                } else {
+                                    proceedToSave(values);
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error in OnChangeVehicleNo:", error);
+                    }
+                } else {
+                    proceedToSave(values);
+                }
+            }
+        },
+    });
+
+    const proceedToSave = (values) => {
+        setIsdisableSave(true);
+        const formData: any = new FormData();
+        if (values.VisitorTypeId != 66) {
+            if (
+                values.VisitorId == "" &&
+                (values.VisitorTypeId == 35 || values.VisitorTypeId == 36)
+            )
+                return toastValidation("Please Select Visitor Name");
+            if (
+                values.PersonName == "" &&
+                values.VisitorTypeId != 35 &&
+                values.VisitorTypeId != 36
+            )
+                return toastValidation("Please Enter Visitor Name");
+            if (!values.VisitedEmployeeId)
+                return toastValidation("Please Select Person To Visit");
+            // if (values.MobileNo == "")
+            //   return toastValidation("Please Enter Mobile No");
+            // if (values.MobileNo.length < 9 || values.MobileNo.length > 15)
+            //   return toastValidation(
+            //     "Invalid mobile number. It should be 9 to 15 digits"
+            //   );
+            // if (!values.IdProofType)
+            //   return toastValidation("Please Select ID Proof Type");
+            // if (values.IdProofNo == "")
+            //   return toastValidation("Please Enter ID Proof No");
+
+            if (values.IdProofNo != "")
+                if (values.idProofType === 17 && !/^\d{12}$/.test(values.IdProofNo)) {
+                    return toastValidation("Please Enter Valid Aadhar Proof No");
+                }
+
+            // if (values.AreaToVisit == "" || values.AreaToVisit == null)
+            //   return toastValidation("Please Select Area To Visit");
+            if (!values.ValidFrom && values.VisitorTypeId == 36)
+                return toastValidation("Please Select Valid From");
+            if (!values.ValidFrom && values.VisitorTypeId != 36)
+                return toastValidation("Please Select Appointment Date");
+            if (values.VisitorTypeId == 36 && !values.ValidTo)
+                return toastValidation("Please Select Valid To");
+            if (values.VisitorTypeId == 36 && values.ValidFrom > values.ValidTo)
+                return toastValidation("From Date Should Not be Greater Than To Date");
+            if (values.VisitorTypeId == 64 || values.VisitorTypeId == 65) {
+                if (!values.PartyType)
+                    return toastValidation("Please Select Party Type");
+                if (!values.PartyName)
+                    return toastValidation("Please Select Party Name");
+                if (
+                    !VisitorEntryMaterialDetailList ||
+                    !VisitorEntryMaterialDetailList.length ||
+                    VisitorEntryMaterialDetailList.length == 0
+                )
+                    return toastValidation("Please Add Material Details");
+                let exists: any[] = VisitorEntryMaterialDetailList.filter(
+                    (f) => f.MaterialId == null || f.Qty == ""
+                );
+                if (exists.length > 0)
+                    return toastValidation(
+                        "Please Add All the Details In Material Details."
+                    );
+            }
+            if (
+                (values.VisitorTypeId == 35 || values.VisitorTypeId == 36) &&
+                VisitorEntryBelongingDetailList.length > 0
+            ) {
+                let exists: any[] = VisitorEntryBelongingDetailList.filter(
+                    (f) => f.DeviceName == "" && f.DeviceNo == ""
+                );
+                if (VisitorEntryBelongingDetailList.length == 1 && exists.length > 0) {
+                } else {
+                    let existsval: any[] = VisitorEntryBelongingDetailList.filter(
+                        (f) => f.DeviceName == "" || f.DeviceNo == ""
+                    );
+                    if (existsval.length > 0)
+                        return toastValidation("Please Add All the Details In Belongings.");
+                }
+            }
+            if (values.VisitorTypeId == 64 && values.DcNumber == "")
+                return toastValidation("Please Enter DC Number");
+            if (values.VisitorTypeId == 65 && values.InvoiceNumber == "")
+                return toastValidation("Please Enter Invoice Number");
+            if (values.VisitorTypeId != 35 && values.VisitorTypeId != 36) {
+                if (values.VehicleName == "" && values.IsExistingVehicle)
+                    return toastValidation("Please Select Vehicle Name");
+                if (values.VehicleName == "" && !values.IsExistingVehicle)
+                    return toastValidation("Please Enter Vehicle Name");
+                if (values.VehicleNo == "")
+                    return toastValidation("Please Enter Vehicle No");
+                if (!values.RouteId) return toastValidation("Select Route");
+                if (values.PlannedTravellingKm == "")
+                    return toastValidation("Please Enter Planned Travelling Km");
+                if (values.ActualTravellingKm == "")
+                    return toastValidation("Please Enter Actual Travelling Km");
+                if (
+                    !VisitorEntryPovDetail ||
+                    !VisitorEntryPovDetail.length ||
+                    VisitorEntryPovDetail.length == 0
+                ) {
+                    return toastValidation("Please Select Area To Visit");
+                }
+            }
+            if (values.PurposeOfVisit == null || values.PurposeOfVisit == "") {
+                return toastValidation("Please Select Purpose Of Visit");
+            }
+        } else if (values.VisitorTypeId == 66) {
+            if (values.VehicleNo == "" || values.VehicleNo == null)
+                return toastValidation("Please Select Vehicle No");
+            // if (
+            //     !validateVehicleNumber(
+            //         values?.VehicleNo?.VehicleNo || values?.VehicleNo
+            //     )
+            // )
+            //     return toastValidation(
+            //         "Invalid Vehicle Number Format. Expected format: AB00EX0000."
+            //     );
+
+            // if (
+            //   (values.DriverName == "" || values.DriverName == null) &&
+            //   values.VehicleTypeId == 129
+            // )
+            //   return toastValidation("Please Enter Driver Name");
+            if (values.IsEwayBillNo) {
+                let tempEwayCheck = VisitorEntryRefDetailList?.filter(
+                    (item) => item.RefTypeId == 130
+                );
+                let tempEwayCheckRefVal = VisitorEntryRefDetailList?.filter(
+                    (item) => item.RefTypeId == 130
+                );
+                if (!tempEwayCheck || tempEwayCheck.length == 0) {
+                    return toastValidation("Please Add Eway Bill in Reference Details.");
+                } else if (
+                    tempEwayCheckRefVal[0].RefValue == null ||
+                    tempEwayCheckRefVal[0].RefValue == ""
+                ) {
+                    return toastValidation(
+                        "Please Add Eway Bill No in Reference Details."
+                    );
+                }
+            }
+            if (values.IsEinvBillNo) {
+                let tempEinvCheck = VisitorEntryRefDetailList?.filter(
+                    (item) => item.RefTypeId == 131
+                );
+                let tempEinvCheckRefVal = VisitorEntryRefDetailList?.filter(
+                    (item) => item.RefTypeId == 131
+                );
+                if (!tempEinvCheck || tempEinvCheck.length == 0) {
+                    return toastValidation(
+                        "Please Add EInvoice No in Reference Details."
+                    );
+                } else if (
+                    tempEinvCheckRefVal[0].RefValue == null ||
+                    tempEinvCheckRefVal[0].RefValue == ""
+                ) {
+                    return toastValidation(
+                        "Please Add EInvoice Bill No in Reference Details."
+                    );
+                }
+            }
+            if (values.PurposeOfVisit == null || values.PurposeOfVisit == "")
+                return toastValidation("Please Select Purpose Of Visit");
+            if (
+                checkedVehicle &&
+                values.StartingKm != 0.0 &&
+                values.EndingKm != 0.0 &&
+                values.StartingKm > values.EndingKm
+            )
+                return toastValidation("Ending Km Should not Less than Starting Km ");
+        }
+
+        let List1: any[] = visitorEntryDetailList;
+        let List2: any[] = VisitorEntryBelongingDetailList;
+        let List3: any[] = VisitorEntryMaterialDetailList;
+        let List4: any[] = VisitorEntryRefDetailList;
+        if (values.VisitorTypeId == 35) {
+            List3 = [];
+            // List1 = [];
+        }
+        if (values.VisitorTypeId == 36) {
+            List3 = [];
+        }
+        if (values.VisitorTypeId == 64) {
+            List1 = [];
+            List2 = [];
+        }
+        if (values.VisitorTypeId == 65) {
+            List1 = [];
+            List2 = [];
+        }
+        if (values.VisitorTypeId == 66) {
+            List1 = [];
+            List2 = [];
+            List3 = [];
+        }
+        let ListvisitorEntryDetailList: any[] = [],
+            ListVisitorEntryBelongingDetailList: any[] = [],
+            ListVisitorEntryMaterialDetailList: any[] = [],
+            ListvehicleReferenceDetailList: any[] = [];
+
+        let validToDateDtl;
+
+        if (values.ValidFrom) {
+            const validFromDate =
+                values.ValidFrom instanceof Date
+                    ? values.ValidFrom
+                    : new Date(values.ValidFrom);
+
+            validToDateDtl = new Date(
+                validFromDate.getFullYear(),
+                validFromDate.getMonth(),
+                validFromDate.getDate()
+            );
+
+            validToDateDtl.setHours(23, 59, 59, 999);
+        }
+
+        if (List1.length > 0) {
+            for (let i = 0; i < List1.length; i++) {
+                const x = List1[i];
+                let vedObj: any = {};
+                vedObj.VisitorEntryDetailId = x.VisitorEntryDetailId ?? 0;
+                vedObj.VisitorEntryDetailCode = x.VisitorDetailCode ?? 0;
+                vedObj.VisitorEntryId = x.VisitorEntryId ?? 0;
+                vedObj.VisitorId = x.VisitorDetailId ?? 0;
+                vedObj.TitleId = x.TitleId;
+                vedObj.FirstName = x.FirstName;
+                vedObj.LastName = x.LastName;
+                vedObj.DepartmentId = x.DepartmentId;
+                vedObj.Dob = x.Dob;
+                vedObj.MailId = x.MailId;
+                vedObj.MobileNo = x.MobileNo;
+                vedObj.TagNo = x.TagNo;
+                vedObj.VisitorCompany = x.VisitorCompany;
+                vedObj.DigitalSignName = x.DigitalSignName || "";
+                vedObj.DigitalSignUrl = x.DigitalSignUrl || "";
+                vedObj.SignedVersion = x.SignedVersion || 0;
+                vedObj.IsTermsAgreed = x.IsTermsAgreed || 0;
+                vedObj.IdCardType = x.IdCardType;
+                vedObj.IdCardNo = x.IdCardNo;
+                vedObj.DocumentName = documentUrl;
+                vedObj.DocumentUrl = documentUrl;
+                vedObj.Status = x.Status;
+                vedObj.ValidFrom = tLDS(values.ValidFrom);
+                vedObj.ValidTo =
+                    values.VisitorTypeId == 35
+                        ? datepipes(validToDateDtl)
+                        : tLDS(values.ValidTo);
+                vedObj.IsEditedImage = true;
+                ListvisitorEntryDetailList.push(vedObj);
+            }
+        }
+        if (List2.length > 0) {
+            for (let i = 0; i < List2.length; i++) {
+                const x = List2[i];
+                let vebdObj: any = {};
+                vebdObj.VisitorEntryBelongingDetailId =
+                    x.VisitorEntryBelongingDetailId ?? 0;
+                vebdObj.VisitorEntryId = x.VisitorEntryId ?? 0;
+                vebdObj.DeviceNo = x.DeviceNo;
+                vebdObj.DeviceName = x.DeviceName;
+                ListVisitorEntryBelongingDetailList.push(vebdObj);
+            }
+        }
+        if (List3.length > 0) {
+            for (let i = 0; i < List3.length; i++) {
+                const x = List3[i];
+                let vemdObj: any = {};
+                vemdObj.VisitorEntryMaterialDetailId =
+                    x.VisitorEntryMaterialDetailId ?? 0;
+                vemdObj.VisitorEntryId = x.VisitorEntryId ?? 0;
+                vemdObj.MaterialId = x.MaterialId;
+                vemdObj.Uom = x.Uom;
+                vemdObj.Qty = x.Qty;
+                if (
+                    (vemdObj.Uom != null && vemdObj.Uom != "" && vemdObj.Qty != null) ||
+                    vemdObj.Qty != ""
+                ) {
+                    ListVisitorEntryMaterialDetailList.push(vemdObj);
+                }
+            }
+        }
+        if (List4.length > 0) {
+            for (let i = 0; i < List4.length; i++) {
+                const x = List4[i];
+                let vebdObj: any = {};
+                vebdObj.VisitorEntryRefDetailId = x.VisitorEntryRefDetailId ?? 0;
+                vebdObj.VisitorEntryId = x.VisitorEntryId ?? 0;
+                vebdObj.RefTypeId = x.RefTypeId;
+                vebdObj.RefValue = x.RefValue;
+                if (
+                    (vebdObj.RefTypeId != null &&
+                        vebdObj.RefTypeId != "" &&
+                        vebdObj.RefValue != null) ||
+                    vebdObj.RefValue != ""
+                ) {
+                    ListvehicleReferenceDetailList.push(vebdObj);
+                }
+            }
+        }
+        if (!photo && values.VisitorTypeId != 66) {
+            setIsdisableSave(false);
+            toast.current?.show({
+                severity: "warn",
+                detail: "Please Capture Image",
+                summary: "Warning Message",
+            });
+            return;
+        }
+        // var validto = new Date(
+        //   values.ValidFrom.getFullYear(),
+        //   values.ValidFrom.getMonth(),
+        //   values.ValidFrom.getDate()
+        // );
+        // validto.setHours(23, 59, 59, 999);
+        var validto;
+
+        if (values.ValidFrom) {
+            // Ensure we are working with a Date object
+            const validFromDate =
+                values.ValidFrom instanceof Date
+                    ? values.ValidFrom
+                    : new Date(values.ValidFrom);
+
+            // Add one day to the date
+            validto = new Date(
+                validFromDate.getFullYear(),
+                validFromDate.getMonth(),
+                validFromDate.getDate()
+            );
+
+            // Set time to end of the day
+            validto.setHours(23, 59, 59, 999);
+        }
+        values.ValidFrom = datepipes(new Date(values.ValidFrom));
+
+        values.ValidFrom = datepipes(new Date(values.ValidFrom));
+        if (values.VisitorTypeId == 66) {
+            values.EntryTime =
+                values.EntryTime != null && values.EntryTime != ""
+                    ? tLDS(new Date(values.EntryTime))
+                    : null;
+            values.ExitTime =
+                values.ExitTime != null && values.ExitTime != ""
+                    ? tLDS(new Date(values.ExitTime))
+                    : null;
+        }
+        values.ValidTo =
+            values.VisitorTypeId == 35
+                ? datepipes(validto)
+                : datepipes(new Date(values.ValidTo));
+        values.VisitorEntryDate = datepipes(new Date(values.VisitorEntryDate));
+        values.CreatedOn = datepipes(new Date(values.CreatedOn));
+        values.IsInternalAppointment = false;
+        // values.VisitorId = visitorEntryDetailList[0].VisitorDetailId;
+
+        if (!isCreate || checkedVehicle) {
+            values.ModifiedOn = datepipes(new Date());
+            values.ModifiedBy = +localStorage["UserId"];
+        }
+        if (values.GateId == "null" || values.GateId == "") {
+            values.GateId = null;
+        }
+        values.VehicleNo = values.VehicleNo.VehicleNo
+            ? values.VehicleNo.VehicleNo
+            : values.VehicleNo;
+        values.VisitorRemarks = values.VisitorRemarks
+
+        let obj = {
+            VisitorEntry: values,
+            VisitorEntryDetail: ListvisitorEntryDetailList ?? [],
+            VisitorEntryRefDetail: ListvehicleReferenceDetailList ?? [],
+            VisitorEntryBelongingDetail: ListVisitorEntryBelongingDetailList ?? [],
+            VisitorEntryMaterialDetail: ListVisitorEntryMaterialDetailList ?? [],
+            VisitorEntryAtvDetail: VisitorEntryPovDetail ?? [],
+        };
+        let input: string = JSON.stringify(obj);
+        formData.append("input", input);
+        formData.append("webfile", photo);
+        formData.append("webfile1", document);
+        formData.append("webfiles", []);
+        formData.append("digSign", null);
+
+        if (values.VisitorTypeId != 66) {
+            if (!createVisEnt) {
+                var updateres = dispatch(update(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            toast.current?.show({
+                                severity: "success",
+                                summary: "Success Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+
+                            setVisible(false);
+                            setIsdisableSave(false);
+                            handleTabAction({
+                                target: {
+                                    value: values.VisitorTypeId,
+                                    id: values.VisitorTypeId,
+                                },
+                            });
+                            resetAllForm();
+                        } else {
+                            handleTabAction({
+                                target: {
+                                    value: values.VisitorTypeId,
+                                    id: values.VisitorTypeId,
+                                },
+                            });
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "error",
+                                summary: "Error Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        handleTabAction({
+                            target: {
+                                value: values.VisitorTypeId,
+                                id: values.VisitorTypeId,
+                            },
+                        });
+                        setIsdisableSave(false);
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: JSON.stringify(error),
+                        });
+                    });
+            } else {
+                var updateres = dispatch(create(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "success",
+                                summary: "Success Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                            setVisible(false);
+                            // if (
+                            //   +selectedData.selectedType == 35 ||
+                            //   (+selectedData.selectedType == 36 &&
+                            //     +selectedData.selectedType != 66)
+                            // ) {
+                            if (+selectedData.selectedType == 35) {
+                                handleBookedVisitor(
+                                    event,
+                                    res.payload.VisitorEntryHeader,
+                                    false
+                                );
+                                onChangeVisitorType(
+                                    "VisitorTypeId",
+                                    {},
+                                    +selectedData.selectedType
+                                );
+                            } else if (+selectedData.selectedType == 36) {
+                                handleTabAction({
+                                    target: {
+                                        value: values.VisitorTypeId,
+                                        id: values.VisitorTypeId,
+                                    },
+                                });
+                            }
+                            if (
+                                values.IsAppointmentBooking == false &&
+                                +selectedData.selectedType != 66
+                            ) {
+                                let obj = {
+                                    VisitorEntryDetailId:
+                                        res.payload.VisitorEntryDetail[0].VisitorEntryDetailId,
+                                    VisitorEntryCode:
+                                        res.payload.VisitorEntryHeader.VisitorEntryCode,
+                                };
+                                selfApproval(obj);
+                            }
+                            // fetchVisEntryDtl(res.payload.VisitorEntryHeader);
+                            // handleTabAction({
+                            //   target: {
+                            //     value: values.VisitorTypeId,
+                            //     id: values.VisitorTypeId
+                            //   },
+                            // });
+                            setIsdisableSave(false);
+                            resetAllForm();
+                        } else {
+                            handleTabAction({
+                                target: {
+                                    value: values.VisitorTypeId,
+                                    id: values.VisitorTypeId,
+                                },
+                            });
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "error",
+                                summary: "Error",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        setIsdisableSave(false);
+                        handleTabAction({
+                            target: {
+                                value: values.VisitorTypeId,
+                                id: values.VisitorTypeId,
+                            },
+                        });
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: JSON.stringify(error),
+                        });
+                    });
+            }
+        } else if (values.VisitorTypeId == 66) {
+            if (!checkVehAction) {
+                var updateres = dispatch(update(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            toast.current?.show({
+                                severity: "success",
+                                summary: "Success Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                            let dataObj = { ...values };
+                            dataObj.VehicleTypeName =
+                                VehicleTypeList && VehicleTypeList.length > 0
+                                    ? VehicleTypeList.filter(
+                                        (item) => item.MetaSubId == values.VehicleTypeId
+                                    )[0]?.MetaSubDescription
+                                    : "-";
+                            if (values?.DriverId != null) {
+                                dataObj.DriverName =
+                                    DriverList && DriverList.length > 0
+                                        ? DriverList.filter(
+                                            (item) => item.UserId == values.DriverId
+                                        )[0]?.UserName
+                                        : "-";
+                            }
+                            if (values?.DriverName != null) {
+                                dataObj.DriverName = values.DriverName || "-";
+                            }
+                            setSelectedVehData({
+                                data: dataObj,
+                            });
+                            setVisible(false);
+                            setIsdisableSave(false);
+
+                            resetAllVehForm();
+                            setVehicleNoList([]);
+                            setSelectedVeh({});
+                        } else {
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "error",
+                                summary: "Error Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                            setVehicleNoList([]);
+                            setSelectedVeh({});
+                        }
+                    })
+                    .catch((error) => {
+                        setIsdisableSave(false);
+                        setVehicleNoList([]);
+                        setSelectedVeh({});
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: JSON.stringify(error),
+                        });
+                    });
+            } else {
+                var updateres = dispatch(create(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            handleVehPassPrev();
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "success",
+                                summary: "Success Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                            let dataObj = { ...values };
+                            dataObj.VehicleTypeName =
+                                VehicleTypeList && VehicleTypeList.length > 0
+                                    ? VehicleTypeList.filter(
+                                        (item) => item.MetaSubId == values.VehicleTypeId
+                                    )[0]?.MetaSubDescription
+                                    : "-";
+                            if (values?.DriverId != null) {
+                                dataObj.DriverName =
+                                    DriverList && DriverList.length > 0
+                                        ? DriverList.filter(
+                                            (item) => item.UserId == values.DriverId
+                                        )[0]?.UserName
+                                        : "-";
+                            }
+                            if (values?.DriverName != null) {
+                                dataObj.DriverName = values.DriverName || "-";
+                            }
+                            setSelectedVehData({
+                                data: dataObj,
+                            });
+                            setVisible(false);
+                            resetAllVehForm();
+                            setVehicleNoList([]);
+                            setSelectedVeh({});
+                        } else {
+                            setIsdisableSave(false);
+                            setVehicleNoList([]);
+                            setSelectedVeh({});
+                            toast.current?.show({
+                                severity: "error",
+                                summary: "Error",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        setIsdisableSave(false);
+                        setVehicleNoList([]);
+                        setSelectedVeh({});
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: JSON.stringify(error),
+                        });
+                    });
+            }
+        }
+    };
+
+    const changeEntryType = (e) => {
+        resetOnlyForm();
+
+        if (!e.target.value) {
+            visitorEntryFormik.setFieldValue("EntryTime", null);
+            visitorEntryFormik.setFieldValue("ExitTime", new Date());
+        } else if (e.target.value) {
+            visitorEntryFormik.setFieldValue("EntryTime", new Date());
+            visitorEntryFormik.setFieldValue("ExitTime", null);
+        }
+        setRefTypeList([]);
+        setVisitorEntryRefDetailList([
+            {
+                VisitorEntryRefDetailId: 0,
+                VisitorEntryId: 0,
+                show: true,
+                RefTypeId: null,
+                RefValue: "",
+                adisable: false,
+                cdisable: true,
+                ddisable: false,
+                idisable: false,
+            },
+        ]);
+        if (!checkVehAction) {
+            resetAllVehForm();
+        }
+        onCheckboxChange(
+            {
+                target: {
+                    name: "IsEwayBillNo",
+                },
+                checked: false,
+            },
+            {
+                clr: false,
+            }
+        );
+        onCheckboxChange(
+            {
+                target: {
+                    name: "IsEinvBillNo",
+                },
+                checked: false,
+            },
+            {
+                clr: false,
+            }
+        );
+        visitorEntryFormik?.setFieldValue(
+            "EntryType",
+            e.target.value == true ? 102 : 103
+        );
+        if (!e.target.value) {
+            visitorEntryFormik.setFieldValue("EntryTime", null);
+            visitorEntryFormik.setFieldValue("ExitTime", new Date());
+        } else if (e.target.value) {
+            visitorEntryFormik.setFieldValue("EntryTime", new Date());
+            visitorEntryFormik.setFieldValue("ExitTime", null);
+        }
+        setSelectedEntryData({
+            ...selectedEntryData,
+            VehicleTypeId: visitorEntryFormik.values.VehicleTypeId,
+            VehicleNo: "",
+            DriverId: null,
+            PurposeOfVisit: null,
+            EntryType: 102,
+            NumberOfPassengers: "",
+            DriverName: null,
+            StartingKm: "",
+            EndingKm: "",
+            IsEwayBillNo: false,
+            IsEinvBillNo: false,
+            VisitorRemarks: "",
+            EntryTime: !e.target.value ? null : new Date(),
+            ExitTime: !e.target.value ? new Date() : null,
+        });
+        setSelectedVehType(visitorEntryFormik.values.VehicleTypeId);
+        checkVehControl();
+    };
+
+    const checkForVehEntry = (formVals) => {
+        if (formVals) {
+            let gotData;
+            if (
+                formVals?.VehicleNo !== "" &&
+                VehicleNoList &&
+                VehicleNoList.length > 0 &&
+                formVals?.VisitorEntryId === 0
+            ) {
+                const vehicleExists =
+                    VehicleNoList.filter(
+                        (item) =>
+                            item.VehicleNo === formVals?.VehicleNo ||
+                            formVals?.VehicleNo?.VehicleNo
+                    ).length > 0;
+
+                if (vehicleExists && !updateCheckVeh) {
+                    const obj = {
+                        VehicleNo: formVals?.VehicleNo || formVals?.VehicleNo?.VehicleNo,
+                        VisitorEntryId: formVals?.VisitorEntryId,
+                    };
+
+                    try {
+                        const result = dispatch(OnChangeVehicleNo(obj));
+                        result.then((resV) => {
+                            if (resV.payload.tranStatus.result) {
+                                if (
+                                    resV.payload.VisitorEntryHeader &&
+                                    Object.keys(resV.payload.VisitorEntryHeader).length > 0
+                                ) {
+                                    gotData = resV.payload.VisitorEntryHeader;
+
+                                    if (resV.payload.VisitorEntryHeader.VisitorEntryId > 0) {
+                                        confirmDialog({
+                                            message: `Vehicle ${resV.payload.VisitorEntryHeader.EntryType == 102
+                                                    ? "IN"
+                                                    : "OUT"
+                                                } Data Found for the Vehicle!`,
+                                            header: "Confirmation",
+                                            acceptClassName: "text-right",
+                                            icon: "pi pi-exclamation-triangle",
+                                            accept: () => {
+                                                setSelectedEntryData(resV.payload.VisitorEntryHeader);
+                                                setUpdateCheckVeh(true);
+                                                const vehObj = {
+                                                    VehicleNo: resV.payload.VisitorEntryHeader.VehicleNo,
+                                                    VisitorEntryId:
+                                                        resV.payload.VisitorEntryHeader.VisitorEntryId,
+                                                };
+                                                OnChangeVehNo("VehicleNo", {}, vehObj);
+                                            },
+                                            rejectClassName: "hidden",
+                                            acceptLabel: "Ok",
+                                        });
+                                    }
+                                }
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error in OnChangeVehicleNo:", error);
+                    }
+                }
+
+                return gotData?.VisitorEntryId > 0;
+            }
+        }
+        return false;
+    };
+
+    const handleVehPassPrevPrint = (e, item) => {
+        e.stopPropagation();
+
+        const data = {
+            VisitorEntryId: 0,
+            VisitorTypeId: tabConfig.filter((t) => t.active == true)[0]?.type,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(createInit(data));
+        result.then((res) => {
+            if (res.payload.tranStatus.result == true) {
+                let dataObj = { ...item };
+                dataObj.VehicleTypeName =
+                    res.payload.VehicleTypeList && res.payload.VehicleTypeList.length > 0
+                        ? res.payload.VehicleTypeList.filter(
+                            (itemRes) => itemRes.MetaSubId == item.VehicleTypeId
+                        )[0]?.MetaSubDescription
+                        : "-";
+                if (item?.DriverId != null) {
+                    dataObj.DriverName =
+                        res.payload.DriverList && res.payload.DriverList.length > 0
+                            ? res.payload.DriverList.filter(
+                                (itemRes) => itemRes.UserId == item.DriverId
+                            )[0]?.UserName
+                            : "-";
+                }
+                if (item?.DriverName != null) {
+                    dataObj.DriverName = item.DriverName || "-";
+                }
+                setSelectedVehData({
+                    data: dataObj,
+                });
+            }
+        });
+    };
+
+    useEffect(() => {
+        if (
+            selectedVehData &&
+            Object.keys(selectedVehData).length > 0 &&
+            tabConfig.filter((t) => t.active == true)[0]?.type == 66
+        ) {
+            setVehPopVisible(true);
+        }
+    }, [selectedVehData]);
+
+    const handleVehPassPrev = () => {
+        setVehPopVisible(true);
+    };
+
+    const handleEditData = (itemData) => {
+        setCreateVisEnt(false);
+        setIsBelongingDetailsShow(false);
+        const data = {
+            VisitorId: itemData.VisitorId,
+            PlantId: +localStorage["PlantId"],
+            CompanyId: +localStorage["CompanyId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(createInitVM(data));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result) {
+                    let data = {
+                        ...res.payload.VisitorHeader,
+                    };
+                    data.VisitorDetails = res.payload.VisitorDetail;
+
+                    loadVisitorFormikValues(data);
+                    setVisitorShow(true);
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem.message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+
+    const editData = (itemData) => {
+        dispatch(createOrEdit(itemData));
+        setCreateVisEnt(false);
+        loadVisCreateInit(itemData.VisitorId);
+        const data = {
+            VisitorEntryId: itemData.VisitorEntryId,
+            VisitorTypeId: tabConfig.filter((t) => t.active == true)[0]?.type,
+            PlantId: +localStorage["PlantId"],
+            CompanyId: +localStorage["CompanyId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        const dataFetched = dispatch(createInit(data));
+        dataFetched
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    loadEditValues(res.payload.VisitorEntryHeader);
+                    setVisible(true);
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error Message",
+                        detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((err) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error Message",
+                    detail: JSON.stringify(err),
+                });
+            });
+    };
+
+    const selfApproval = (itemData) => {
+        let obj = {
+            UserId: localStorage["UserId"],
+            VisitorEntryCode: itemData.VisitorEntryCode,
+            VisitorEntryDetailId: itemData.VisitorEntryDetailId,
+            Checkintime: tLDS(new Date()),
+            type: "SelfApproval",
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(CheckIn(obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result) {
+                    toast.current?.show({
+                        severity: "success",
+                        summary: "Success Message",
+                        detail: "Checked In Successfully.",
+                    });
+                    Fetch();
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+
+    const setList = () => {
+        setVisitorTypeList(DtoVisitorTypeList);
+        setIsPreBookingList(DtoIsPreBookingList);
+        setProofList(DtoProofList);
+        setStatusList(DtoStatusList);
+        setDeliveryChallanList(DtoChallanTypeList);
+        setTitleList(DtoTitleList);
+        setEmployeeList(DtoEmployeeList);
+        setDepartmentList(DtoDepartmentList);
+        setTempVisitorNameList(DtoVisitorNameList);
+        setPartyTypeList(DtoPartyTypeList);
+        setAreaList(DtoAreaList);
+        setRouteList(DtoRouteList);
+        setDriverList(DtoDriverList);
+        setVehicleList(DtoVehicleList);
+        setMaterialList(DtoMaterialList);
+        setPurposeList(DtoPurposeList);
+        let List: any[] = [];
+        for (let i = 0; i < DtoVisitorEntryDetail.length; i++) {
+            const x = DtoVisitorEntryDetail[i];
+            let obj: any = {};
+            obj.VisitorEntryDetailId = x.VisitorEntryDetailId;
+            obj.VisitorEntryDetailCode = x.VisitorDetailCode;
+            obj.VisitorEntryId = x.VisitorEntryId;
+            obj.VisitorId = x.VisitorDetailId;
+            obj.TitleId = x.TitleId;
+            obj.FirstName = x.FirstName;
+            obj.LastName = x.LastName;
+            obj.DepartmentId = x.DepartmentId;
+            obj.Dob = new Date(x.Dob);
+            obj.MailId = x.MailId;
+            obj.MobileNo = x.MobileNo;
+            obj.IdCardType = x.IdCardType;
+            obj.IdCardNo = x.IdCardNo;
+            obj.DocumentName = x.DocumentName;
+            obj.DocumentUrl = x.DocumentName;
+            obj.Status = x.Status;
+            obj.VisitorName =
+                DtoTitleList.find((f) => f.MetaSubId == x.TitleId).MetaSubDescription +
+                "." +
+                obj.FirstName +
+                " " +
+                obj.LastName;
+            obj.StatusName = DtoStatusList.find(
+                (f) => f.MetaSubId == x.Status
+            ).MetaSubDescription;
+            obj.IdCardTypeName = DtoProofList.find(
+                (f) => f.MetaSubId == x.IdCardType
+            ).MetaSubDescription;
+            if (x.DepartmentId) {
+                obj.DepartMentName = DtoDepartmentList.find(
+                    (f) => f.DepartmentId == x.DepartmentId
+                ).DepartmentName;
+            } else {
+                obj.DepartMentName = "";
+            }
+            const formattedDate = new Date(x.Dob).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            });
+            obj.ShowDate = formattedDate;
+            List.push(obj);
+        }
+        setvisitorEntryDetailList(List);
+        setVisitorEntryBelongingDetailList(DtoVisitorEntryBelongingDetail);
+        setVisitorEntryMaterialDetailList(DtoVisitorEntryMaterialDetail);
+
+        setVisitorEntryPovDetail(DtoVisitorEntryPovDetail);
+        onChangeVisitorType(
+            "VisitorTypeId",
+            {},
+            DtoVisitorEntryHeader.VisitorTypeId
+        );
+        if (DtoVisitorEntryHeader.PartyType) {
+            OnChangePartyTypes("PartyType", {}, DtoVisitorEntryHeader.PartyType);
+        }
+        let SavedPovList = DtoVisitorEntryPovDetail.map((f) => f.AreaToVisit);
+        handlePoVSelect("AreaToVisit", {}, SavedPovList, 1);
+        fetchBlobFromUrl(DtoVisitorEntryHeader.VisitorImageUrl)
+            .then((blob) => {
+                const file = new File([blob], DtoVisitorEntryHeader.VisitorImageName, {
+                    type: "image/*",
+                    lastModified: 1695716506050,
+                });
+                setPhoto(file);
+                setImageUrl(DtoVisitorEntryHeader.VisitorImageUrl);
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    detail: "Error",
+                    summary: JSON.stringify(error),
+                });
+            });
+        if (
+            DtoVisitorEntryHeader.VisitorTypeId == 64 ||
+            DtoVisitorEntryHeader.VisitorTypeId == 65 ||
+            DtoVisitorEntryHeader.VisitorTypeId == 66
+        ) {
+            fetchBlobFromUrl(DtoVisitorEntryHeader.VehicleDocumentUrl)
+                .then((blob) => {
+                    const file = new File(
+                        [blob],
+                        DtoVisitorEntryHeader.VehicleDocumentName,
+                        {
+                            type: "image/*",
+                            lastModified: 1695716506050,
+                        }
+                    );
+                    setDocument(file);
+                    setDocumentUrl(DtoVisitorEntryHeader.VehicleDocumentUrl);
+                })
+                .catch((error) => {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: JSON.stringify(error),
+                    });
+                });
+        }
+    };
+
+    const CreatePageOnLoadCVisitorEntry = (VisitorEntryId: number) => {
+        const data = {
+            VisitorEntryId: VisitorEntryId,
+            VisitorTypeId: tabConfig.filter((t) => t.active == true)[0]?.type,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(createInit(data));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setVisitorTypeList(res.payload.VisitorTypeList);
+                    setIsPreBookingList(res.payload.IsPreBookingList);
+                    setProofList(res.payload.ProofList);
+                    setStatusList(res.payload.StatusList);
+                    setDeliveryChallanList(res.payload.ChallanTypeList);
+                    setVehicleTypeList(res.payload.VehicleTypeList);
+                    setTempRefTypeList(res.payload.RefList);
+                    setTitleList(res.payload.TitleList);
+                    setEmployeeList(res.payload.EmployeeList);
+                    setDepartmentList(res.payload.DepartmentList);
+                    setTempVisitorNameList(res.payload.VisitorNameList);
+                    setVisitorNameList(res.payload.VisitorNameList);
+                    setPartyTypeList(res.payload.PartyTypeList);
+                    setAreaList(res.payload.AreaList);
+                    setRouteList(res.payload.RouteList);
+                    setDriverList(res.payload.DriverList);
+                    setVehicleList(res.payload.VehicleList);
+                    setTempVehicleList(res.payload.VehicleList);
+                    setMaterialList(res.payload.MaterialList);
+                    setWorkPermitList(res.payload.WorkPermitList);
+                    setTempWorkPermitList(res.payload.WorkPermitList);
+
+                    setPurposeList(res.payload.PurposeList);
+                    if (+selectedData?.selectedType == 66) {
+                        FilterVehNo({
+                            query: selectedVeh?.vehicleNo,
+                        });
+                        onChangeVehicleType(
+                            {
+                                target: {
+                                    name: "VehicleTypeId",
+                                },
+                                value: 28,
+                            },
+                            {
+                                type: 1,
+                            }
+                        );
+                    }
+                    if (isCreate == true) {
+                        if (
+                            +selectedData?.selectedType != 66 &&
+                            +selectedData?.selectedType != 65
+                        ) {
+                            onChangeVisitorType(
+                                "VisitorTypeId",
+                                {},
+                                selectedData?.selectedType
+                            );
+                        }
+                        let obj: any = {};
+                        obj.VisitorEntryBelongingDetailId = 0;
+                        obj.VisitorEntryId = 0;
+                        obj.DeviceNo = "";
+                        obj.DeviceName = "";
+                        setVisitorEntryBelongingDetailList([obj]);
+                        let matobj: any = {};
+                        matobj.VisitorEntryMaterialDetailId = 0;
+                        matobj.VisitorEntryId = 0;
+                        matobj.MaterialId = null;
+                        matobj.Uom = null;
+                        matobj.Qty = "";
+                        setVisitorEntryMaterialDetailList([matobj]);
+                        if (!isCurrentCreate) {
+                            visitorEntryFormik.setFieldValue(
+                                "VisitedEmployeeId",
+                                selectedData.selectedWhomToVisit
+                            );
+                        }
+                    }
+                    // if(selectedData?.selectedType == 66) {
+                    //   setCheckedVehicle(true);
+                    //   setVisible(true);
+                    // }
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    detail: "Error",
+                    summary: JSON.stringify(error),
+                });
+            });
+    };
+
+    useEffect(() => {
+        if (selectedData?.selectedType == 66) {
+            setCheckedVehicle(true);
+            setVisible(true);
+        }
+    }, [VehicleTypeList]);
+
+    // useEffect(() => {
+    //   onChangeVisitorType("VisitorTypeId", { }, selectedData.selectedType);
+    // }, [selectedData]);
+
+    const handleSelect = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+    };
+    const handlePoVSelect = (name, other, value, type: number = 0) => {
+        visitorEntryFormik.setFieldValue(name, value);
+        if (type == 0) {
+            setVisitorEntryPovDetail([]);
+            let List: any[] = [];
+            for (let i = 0; i < value.length; i++) {
+                const x = value[i];
+                let Obj: any = {};
+                Obj.VisitorEntryAtvDetailId = 0;
+                Obj.VisitorEntryId = 0;
+                Obj.AreaToVisit = x;
+                List.push(Obj);
+            }
+            setVisitorEntryPovDetail(List);
+        }
+    };
+    const handleRouteSelect = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+        let Planned = RouteList.find((f) => f.RouteId == value).RouteDistanceInKm;
+        visitorEntryFormik.setFieldValue("PlannedTravellingKm", Planned);
+    };
+    const handleChange = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.value);
+    };
+    const OnSelectVisitorCode = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+    };
+
+    const toastValidation = (message: string) => {
+        setIsdisableSave(false);
+        toast.current?.show({
+            severity: "warn",
+            summary: "Warning Message",
+            detail: message,
+        });
+        return;
+    };
+
+    // const fetchVisEntryDtl = (reqData) => {
+    //   let cData = {
+    //     VisitorEntryId: reqData.VisitorEntryId,
+    //     CompanyId: +localStorage["CompanyId"],
+    //     PlantId: +localStorage["PlantId"],
+    //   };
+    //   var fetchData = dispatch(createInit(cData));
+    //   fetchData
+    //     .then((res) => {
+    //       if (![65, 66].includes(reqData.VisitorTypeId)) {
+    //         let data: any = {
+    //           data: res.payload.VisitorEntryHeader,
+    //         };
+    //         setShowEntryDetail(true);
+    //         setVisible(false);
+    //         localStorage.setItem("clickedRowData", JSON.stringify(data));
+    //       }
+    //       setVisible(false);
+    //     })
+    //     .catch((err) => {});
+    // };
+
+    const datepipes = (date: any) => {
+        return date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+        });
+    };
+    async function fetchBlobFromUrl(url: string): Promise<Blob> {
+        const response: any = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+        return await response.blob();
+    }
+    const resetAllForm = () => {
+        visitorEntryFormik.resetForm();
+        let obj: any = {};
+        obj.VisitorEntryBelongingDetailId = 0;
+        obj.VisitorEntryId = 0;
+        obj.DeviceNo = "";
+        obj.DeviceName = "";
+        setVisitorEntryBelongingDetailList([obj]);
+        let matobj: any = {};
+        matobj.VisitorEntryMaterialDetailId = 0;
+        matobj.VisitorEntryId = 0;
+        matobj.MaterialId = null;
+        matobj.Uom = null;
+        matobj.Qty = "";
+        setVisitorEntryMaterialDetailList([matobj]);
+        setVisitorEntryPovDetail([]);
+        setPhoto(null);
+        setImageUrl(IMAGES.NO_IMG);
+        setDocument(null);
+        setDocumentUrl("");
+        setPartyNameList([]);
+        setSearchTerm("");
+        setSelectedHost({});
+        setSelectedVisitor({});
+        setSelectedVeh({});
+        setIsdisableSave(false);
+        if (visible) {
+            CreatePageOnLoad(0);
+        }
+        // setVisible(false);
+        // setCheckedVehicle(false);
+        // handleTabAction({
+        //   target: {
+        //     value: 35,
+        //     id: 35,
+        //   },
+        // });
+        resetAllFormVM();
+    };
+
+    useEffect(() => {
+        if (!isCurrentCreate) {
+            if (VisitorNameList && VisitorNameList.length > 0) {
+                // onChangeVisitor("VisitorId", {}, selectedData.selectedVisitorId, []);
+                onChangeVisitor("VisitorId", {}, selectedData.selectedVisitorId, []);
+                handleSelect(
+                    "VisitedEmployeeId",
+                    {},
+                    selectedData?.selectedWhomToVisit
+                );
+
+                // const updatedTabConfig = tabConfig.map((item) => ({
+                //   ...item,
+                //   active: item.type === +selectedData?.selectedType,
+                // }));
+                // setTabConfig(updatedTabConfig);
+            }
+        }
+    }, [VisitorNameList]);
+
+    const onChangeVisitor = (name, other, value, updatedList) => {
+        visitorEntryFormik.setFieldValue(name, value);
+
+        // let selectedVis = updatedList
+        //   .filter((item) =>
+        //     item.VisitorDetails.some((i) => i.VisitorDetailId === visitorId)
+        //   )
+        //   .map((item) => ({
+        //     ...item,
+        //     VisitorDetails: item.VisitorDetails.filter(
+        //       (i) => i.VisitorDetailId === visitorId
+        //     ),
+        //   }));
+
+        // let selectedVisitorDetails = selectedVis.flatMap(
+        //   (item) => item.VisitorDetails
+        // );
+
+        if (updatedList && updatedList.length > 0) {
+            let visitor: any = updatedList.find((f) =>
+                f.VisitorDetails?.find((i) => i.VisitorDetailId == value)
+            );
+            if (visitor) {
+                loadFoundVis(visitor, value);
+            }
+        } else if (VisitorNameList && VisitorNameList.length > 0) {
+            let visitor: any = VisitorNameList.find(
+                (i) => i.VisitorDetailId == value
+            );
+            if (visitor) {
+                loadFoundVis(visitor, value);
+            }
+        }
+    };
+
+    const loadFoundVis = (visitor, value) => {
+        visitorEntryFormik.setFieldValue("PersonName", visitor.FirstName);
+        visitorEntryFormik.setFieldValue("VisitorId", visitor.VisitorDetailId);
+        visitorEntryFormik.setFieldValue("MobileNo", visitor.MobileNo);
+        visitorEntryFormik.setFieldValue("IdProofType", visitor.IdCardType);
+        visitorEntryFormik.setFieldValue("IdProofNo", visitor.IdCardNo);
+        visitorEntryFormik.setFieldValue("VisitorTypeId", visitor.VisitorTypeId);
+        // setIsMaterialDetailsShow(false);
+        setvisitorEntryDetailList([]);
+        if (
+            visitorEntryFormik.values.VisitorTypeId == 36 ||
+            visitorEntryFormik.values.VisitorTypeId == 35
+        ) {
+            let visDtlId;
+            if (visitor && visitor.hasOwnProperty("VisitorDetails")) {
+                visDtlId = visitor?.VisitorDetails[0]?.VisitorDetailId;
+            } else {
+                visDtlId = visitor?.VisitorDetailId;
+            }
+            let obj = {
+                VisitorTypeId: visitorEntryFormik.values.VisitorTypeId,
+                VisitorId: visDtlId,
+                VisitorDetailIds: "",
+                PlantId: +localStorage["PlantId"],
+                CompanyId: +localStorage["CompanyId"],
+                RoleId: +localStorage["DefaultRoleId"],
+            };
+            var result = dispatch(OnChangeVisitor(obj));
+            result
+                .then((res) => {
+                    if (res.payload.tranStatus.result == true) {
+                        let List: any[] = res.payload.VisitorWorkerList;
+                        for (let i = 0; i < List.length; i++) {
+                            const x = List[i];
+                            x.Dob = new Date(x.Dob);
+                            const formattedDate = x.Dob.toLocaleDateString("en-GB", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                            });
+                            x.ShowDate = formattedDate;
+                        }
+                        setvisitorEntryDetailList(List);
+                    } else {
+                        toast.current?.show({
+                            severity: "error",
+                            detail: "Error",
+                            summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: JSON.stringify(error),
+                    });
+                });
+        }
+    };
+
+    const OnChangePartyTypes = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+        let obj = {
+            PartyType: value,
+        };
+        var result = dispatch(OnChangePartyType(obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setPartyNameList(res.payload.PartyNameList);
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    detail: "Error",
+                    summary: JSON.stringify(error),
+                });
+            });
+    };
+    const onClickIsAppointmentBooking = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.checked);
+        let VisitorTypeId: number = event.value
+            ? event.value
+            : visitorEntryFormik.values.VisitorTypeId;
+        let obj = {
+            target: { name: "ValidFrom" },
+            value: DtoVisitorEntryHeader
+                ? new Date(DtoVisitorEntryHeader.ValidFrom)
+                : new Date(),
+            VisitorTypeId: VisitorTypeId,
+        };
+        let isexisvehicle = {
+            target: { name: "IsExistingVehicle" },
+            checked: DtoVisitorEntryHeader
+                ? DtoVisitorEntryHeader.IsExistingVehicle
+                : true,
+        };
+        onClickIsExistingVehicle(isexisvehicle);
+        let isexisdriver = {
+            target: { name: "IsExistingDriver" },
+            checked: DtoVisitorEntryHeader
+                ? DtoVisitorEntryHeader.IsExistingDriver
+                : true,
+        };
+        onClickIsExistingDriver(isexisdriver);
+        setIsPartyDisable(true);
+        setIsDeliveryChallan(false);
+        setIsInvoiceBased(false);
+        setIsVehicleTripBased(false);
+        setIsVehicleDetailsDisable(true);
+        setShowVisitorContranctor(true);
+        setIsMaterialDetailsShow(false);
+        if (isCreate) {
+            visitorEntryFormik.setFieldValue("PartyType", null);
+            visitorEntryFormik.setFieldValue("PartyName", null);
+            visitorEntryFormik.setFieldValue("RouteId", null);
+            visitorEntryFormik.setFieldValue("NumberOfPassengers", "");
+            visitorEntryFormik.setFieldValue("PlannedTravellingKm", "");
+            visitorEntryFormik.setFieldValue("ActualTravellingKm", "");
+            visitorEntryFormik.setFieldValue("ValidFrom", new Date());
+            visitorEntryFormik.setFieldValue("ValidTo", new Date());
+            setPartyNameList([]);
+            setVisitorEntryMaterialDetailList([]);
+            setVisitorEntryBelongingDetailList([]);
+            // setvisitorEntryDetailList([]);
+            let obj1: any = {};
+            obj1.VisitorEntryBelongingDetailId = 0;
+            obj1.VisitorEntryId = 0;
+            obj1.DeviceNo = "";
+            obj1.DeviceName = "";
+            setVisitorEntryBelongingDetailList([obj1]);
+            let matobj: any = {};
+            matobj.VisitorEntryMaterialDetailId = 0;
+            matobj.VisitorEntryId = 0;
+            matobj.MaterialId = null;
+            matobj.Uom = null;
+            matobj.Qty = "";
+            setVisitorEntryMaterialDetailList([matobj]);
+        }
+        setIsBelongingDetailsShow(false);
+        setIsWorkerDetailsShow(false);
+        setInvoiceNumberDisable(true);
+        setDcNumberDisable(true);
+        setPoNumberDisable(true);
+        setContainerNumberDisable(true);
+        setCheckboxDisable(true);
+        if (VisitorTypeId == 35) {
+            //Individual
+            setIsBelongingDetailsShow(true);
+            setCheckboxDisable(false);
+            if (event.checked) {
+                setValidFromDisable(false);
+                setValidToDisable(true);
+            } else {
+                setValidFromDisable(true);
+                setValidToDisable(true);
+            }
+            onChageFromDate(obj);
+        } else if (VisitorTypeId == 36) {
+            //Contractor
+            setIsBelongingDetailsShow(true);
+            setIsWorkerDetailsShow(true);
+            if (event.checked) {
+                setValidFromDisable(false);
+                setValidToDisable(false);
+                onChageFromDate(obj);
+            } else {
+                setValidFromDisable(true);
+                setValidToDisable(true);
+            }
+        } else {
+            setShowVisitorContranctor(false);
+
+            if (VisitorTypeId == 64) {
+                //Delivery Challan
+                setIsPartyDisable(false);
+                setIsDeliveryChallan(true);
+                setIsVehicleDetailsDisable(false);
+                setIsMaterialDetailsShow(true);
+                setValidFromDisable(true);
+                setValidToDisable(true);
+                setInvoiceNumberDisable(false);
+                setDcNumberDisable(false);
+                setContainerNumberDisable(false);
+            } else if (VisitorTypeId == 65) {
+                //Invoice Based
+                setIsPartyDisable(false);
+                setIsInvoiceBased(true);
+                setIsVehicleDetailsDisable(false);
+                setIsMaterialDetailsShow(true);
+                setValidFromDisable(true);
+                setValidToDisable(true);
+                setInvoiceNumberDisable(false);
+                setPoNumberDisable(false);
+                setContainerNumberDisable(false);
+            } else if (VisitorTypeId == 66) {
+                //Vehicle Trip Based
+                setIsVehicleTripBased(true);
+                setIsVehicleDetailsDisable(false);
+                setValidFromDisable(true);
+                setValidToDisable(true);
+            }
+        }
+    };
+    const handleIsPreBook = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.value);
+        let idprebooking = event.value;
+        if (idprebooking == 15) {
+            //Yes
+            route.push("/home/vVisitorEntry");
+        } else {
+            //No
+            visitorEntryFormik.setFieldValue("VisitorEntryCode", "");
+            visitorEntryFormik.setFieldValue("VisitorEntryDate", new Date());
+            onChangeVisitorType("VisitorTypeId", {}, 35);
+            onChangeVisitorTypeVM("VisitorTypeId", {}, 35);
+        }
+    };
+    const onChageFromDate = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.value);
+        let VisitorTypeId = event.VisitorTypeId
+            ? event.VisitorTypeId
+            : visitorEntryFormik.values.VisitorTypeId;
+        if (VisitorTypeId == 35) {
+            //Indivudal
+            visitorEntryFormik.setFieldValue("ValidTo", null);
+        } else if (VisitorTypeId == 36) {
+            //Contractor
+            // if (!isCreate && !isView)
+            visitorEntryFormik.setFieldValue("ValidTo", null);
+            setTominDate(event.value);
+        }
+    };
+    const onChageToDate = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.value);
+    };
+    const onClickIsExistingVehicle = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.checked);
+        if (isCreate) {
+            visitorEntryFormik.setFieldValue("VehicleName", "");
+            visitorEntryFormik.setFieldValue("VehicleNo", "");
+        }
+        setHideVehicleDD(event.checked);
+    };
+    const onChangeVehicleType = (event, type: any = 0) => {
+        resetOnlyForm();
+        if (type == 0) {
+            visitorEntryFormik.setFieldValue("VisitorEntryId", 0);
+        }
+
+        visitorEntryFormik.setFieldValue(event.target.name, event.value);
+        if (visitorEntryFormik.values.EntryType == 102) {
+            visitorEntryFormik.setFieldValue("EntryTime", new Date());
+            visitorEntryFormik.setFieldValue("ExitTime", null);
+        } else if (visitorEntryFormik.values.EntryType == 103) {
+            visitorEntryFormik.setFieldValue("EntryTime", null);
+            visitorEntryFormik.setFieldValue("ExitTime", new Date());
+        }
+        setSelectedEntryData({
+            ...selectedEntryData,
+            VehicleTypeId: event.value,
+            VehicleNo: "",
+            DriverId: null,
+            PurposeOfVisit: null,
+            EntryType: 102,
+            NumberOfPassengers: "",
+            DriverName: null,
+            StartingKm: "",
+            EndingKm: "",
+            IsEwayBillNo: false,
+            IsEinvBillNo: false,
+            VisitorRemarks: "",
+            EntryTime: visitorEntryFormik.values.EntryType == 102 ? new Date() : null,
+            ExitTime: visitorEntryFormik.values.EntryType == 103 ? null : new Date(),
+        });
+        setSelectedVehType(event.value);
+        checkVehControl();
+        setUpdateCheckVeh(false);
+    };
+    const OnChangeVehicle = (name, other, value, vehNo) => {
+        visitorEntryFormik.setFieldValue(name, value);
+
+        visitorEntryFormik.setFieldValue(
+            "VehicleNo",
+            VehicleList.find((f) => f.VehicleNo == vehNo).VehicleNo
+        );
+    };
+    const OnChangeDriver = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value.UserName);
+        visitorEntryFormik.setFieldValue("DriverId", value.UserId);
+        // if (DriverList && DriverList.length > 0) {
+        //   visitorEntryFormik.setFieldValue(
+        //     "DriverId",
+        //     DriverList.find((f) => f.UserId == value).UserId
+        //   );
+        // }
+    };
+    const onClickIsExistingDriver = (event) => {
+        visitorEntryFormik.setFieldValue(event.target.name, event.checked);
+        if (isCreate) visitorEntryFormik.setFieldValue("DriverId", "");
+        setHideDriverDD(event.checked);
+    };
+    const onChangeMatType = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+    };
+    const onUpload = (e) => {
+        setPhoto(e);
+        visitorEntryFormik.setFieldValue("VisitorImageName", e.name);
+        visitorEntryFormik.setFieldValue("VisitorImageUrl", e.name);
+        const uploadedImageUrl = URL.createObjectURL(e);
+        setImageUrl(uploadedImageUrl);
+        visitorFormik.setFieldValue("DocumentName", e.name);
+        visitorFormik.setFieldValue("DocumentUrl", e.name);
+        setDocumentUrl(e.name);
+    };
+    const onUploadDocument = (e) => {
+        setDocument(e.files[0]);
+        visitorEntryFormik.setFieldValue("VehicleDocumentName", e.files[0].name);
+        visitorEntryFormik.setFieldValue("VehicleDocumentUrl", e.files[0].name);
+        const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+        setDocumentUrl(uploadedImageUrl);
+    };
+    const deleteDocuments = () => {
+        setDocumentUrl("");
+        setDocument(null);
+        visitorEntryFormik.setFieldValue("VehicleDocumentName", "");
+        visitorEntryFormik.setFieldValue("VehicleDocumentUrl", "");
+    };
+    const handleHyperlink = () => {
+        if (documentUrl != "") {
+            window.open(documentUrl, "_blank");
+        }
+    };
+    const itemTemplate = () => {
+        return (
+            <div className="flex align-items-center flex-column">
+                <i
+                    className="pi pi-image mt-3 p-5"
+                    style={{
+                        fontSize: "5em",
+                        borderRadius: "50%",
+                        backgroundColor: "var(--surface-b)",
+                        color: "var(--surface-d)",
+                    }}
+                ></i>
+                <span
+                    style={{ fontSize: "1.2em", color: "var(--text-color-secondary)" }}
+                    className="my-5"
+                >
+                    Drag and Drop Image Here
+                </span>
+            </div>
+        );
+    };
+
+    const onChangeVisitorType = (name, other, value) => {
+        setVisitorNameList([]);
+
+        if (isCreate) setvisitorEntryDetailList([]);
+        visitorEntryFormik.setFieldValue(name, value);
+        let obj = {
+            VisitorTypeId: value,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+
+        var result = dispatch(OnChangeVisitorType(obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setVisitorNameList(res.payload.VisitorNameList);
+                    setTempVisitorNameList(res.payload.VisitorNameList);
+                    setVehicleList(res.payload.VehicleList);
+                    setTempVehicleList(res.payload.VehicleList);
+                    setWorkPermitList(res.payload.WorkPermitList);
+                    setTempWorkPermitList(res.payload.WorkPermitList);
+                    if (isCreate) {
+                        // visitorEntryFormik.setFieldValue("VisitorId", null);
+                        // visitorEntryFormik.setFieldValue("PersonName", "");
+                        // visitorEntryFormik.setFieldValue("MobileNo", "");
+                        visitorEntryFormik.setFieldValue("IdProofType", null);
+                        visitorEntryFormik.setFieldValue("IdProofNo", "");
+                        visitorEntryFormik.setFieldValue("InvoiceNumber", "");
+                        visitorEntryFormik.setFieldValue("DcNumber", "");
+                        visitorEntryFormik.setFieldValue("PoNumber", "");
+                        visitorEntryFormik.setFieldValue("ContainerNumber", "");
+                    }
+                    let event = {
+                        target: { name: "IsAppointmentBooking" },
+                        checked: isCreate
+                            ? value == 36
+                                ? true
+                                : false
+                            : DtoVisitorEntryHeader.IsAppointmentBooking,
+                        value: value,
+                    };
+                    onClickIsAppointmentBooking(event);
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    detail: "Error",
+                    summary: JSON.stringify(error),
+                });
+            });
+    };
+    // Visitor Entry Functions
+
+    useEffect(() => {
+        pageLoadScript();
+        setSelectedData({
+            ...selectedData,
+            selectedType: tabConfig.filter((t) => t.active == true)[0]?.type,
+        });
+        if (checked || !checked) {
+            CreatePageOnLoad(0);
+        }
+    }, [checked, tabConfig]);
+
+    const handleToastNotify = (error) => {
+        toast?.current?.show({
+            severity: "error",
+            detail: "Error",
+            summary: "error",
+        });
+        toast.current?.show({
+            severity: "error",
+            summary: "Error Message",
+            detail: error.payload.tranStatus.lstErrorItem[0].Message,
+        });
+        toast.current?.show({
+            severity: "error",
+            summary: "Error Message",
+            detail: JSON.stringify(error),
+        });
+        toast.current?.show({
+            severity: "error",
+            summary: "Error Message",
+            detail: "Check In Already Done for this Specific Date/ Time.",
+        });
+        toast.current?.show({
+            severity: "success",
+            summary: "Success Message",
+            detail: error.payload.tranStatus.lstErrorItem[0].Message,
+        });
+    };
+
+    const handleVehEntryCreate = () => {
+        setIsCurrentCreate(true);
+        CreatePageOnLoadCVisitorEntry(0);
+        visitorEntryFormik.setFieldValue("EntryType", 102);
+        visitorEntryFormik.setFieldValue("EntryTime", new Date());
+        visitorEntryFormik.setFieldValue("ExitTime", null);
+    };
+
+    useEffect(() => {
+        if (!checked) {
+            if (
+                selectedData?.selectedType != 66 &&
+                selectedData?.selectedType != 65 &&
+                !dialogVisible
+            ) {
+                if (selectedData?.selectedType == 100) {
+                    route.push("/home/cWorkPermit");
+                } else if (
+                    selectedVisitor &&
+                    selectedHost &&
+                    Object.keys(selectedVisitor).length > 0 &&
+                    Object.keys(selectedHost).length > 0
+                ) {
+                    if (selectedVisitor && selectedHost) {
+                        setIsCurrentCreate(false);
+                        setVisible(true);
+                    }
+                }
+            }
+            if (selectedVeh) {
+                if (Object.keys(selectedVeh).length > 0) {
+                    let obj = {
+                        VehicleData: selectedVeh.vehicleNo,
+                        CompanyId: +localStorage["CompanyId"],
+                        PlantId: +localStorage["PlantId"],
+                    };
+                    CreatePageOnLoadCVisitorEntry(0);
+                    if (selectedVeh?.entryType != 103) {
+                        visitorEntryFormik.setFieldValue("EntryType", 102);
+                    }
+
+                    // var result = dispatch(VehicleData(obj));
+                    // result.then((res) => {
+                    //   if (res.payload.tranStatus.result) {
+                    //     if (
+                    //       res.payload.VehicleDataList != null &&
+                    //       res.payload.VehicleDataList.length > 0
+                    //     ) {
+                    //       setVehicleDetails(res.payload.VehicleDataList);
+                    //       let vehData = res.payload.VehicleDataList[0];
+                    //       // visitorEntryFormik.setFieldValue("DriverId", +vehData.Driver_Id);
+                    //       handleDriverSelect(
+                    //         {},
+                    //         {
+                    //           DriverId: +vehData.Driver_Id,
+                    //         }
+                    //       );
+                    //       visitorEntryFormik.setFieldValue(
+                    //         "StartingKm",
+                    //         vehData.Starting_Km
+                    //       );
+                    //       visitorEntryFormik.setFieldValue(
+                    //         "PurposeOfVisit",
+                    //         vehData.Purpose_Of_Visit
+                    //       );
+                    //       visitorEntryFormik.setFieldValue(
+                    //         "VisitorEntryId",
+                    //         vehData.Visitor_Entry_Id
+                    //       );
+                    //       visitorEntryFormik.setFieldValue(
+                    //         "VisitorEntryCode",
+                    //         vehData.Visitor_Entry_Code
+                    //       );
+                    //       visitorEntryFormik.setFieldValue(
+                    //         "VisitorTypeId",
+                    //         vehData.Visitor_Type_Id
+                    //       );
+                    //       visitorEntryFormik.setFieldValue("Status", vehData.Status);
+                    //       setCheckedVehicle(true);
+                    //       setVisible(true);
+                    //     } else {
+                    //       visitorEntryFormik.setFieldValue("StartingKm", "");
+                    //       visitorEntryFormik.setFieldValue("EndingKm", "");
+                    //       visitorEntryFormik.setFieldValue("PurposeOfVisit", "");
+                    //       visitorEntryFormik.setFieldValue("VisitorEntryId", 0);
+                    //       visitorEntryFormik.setFieldValue("VisitorEntryCode", "");
+                    //       visitorEntryFormik.setFieldValue("Status", 74);
+                    //       setCheckedVehicle(false);
+                    //       setVisible(true);
+                    //     }
+                    //   } else {
+                    //     toast.current?.show({
+                    //       severity: "error",
+                    //       summary: "Error",
+                    //       detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    //     });
+                    //   }
+                    //   // setVisible(true);
+                    // });
+                    // setShowEntryDetail(true);
+                }
+            }
+            if (selectedWP) {
+                route.push("/home/cWorkPermit");
+                // if (Object.keys(selectedWP).length > 0) {
+                //   let obj = {
+                //     WorkPermitId: selectedWP.WorkPermitId,
+                //     WorkPermitCode: selectedWP.WorkPermitCode,
+                //     CompanyId: +localStorage["CompanyId"],
+                //     PlantId: +localStorage["PlantId"],
+                //   };
+                //   var result = dispatch(OnChangeWorkPermit(obj));
+                //   result.then((res) => {
+                //     if (res.payload.tranStatus.result) {
+                //       if (
+                //         res.payload.WorkPermitWorkerDetails != null &&
+                //         res.payload.WorkPermitWorkerDetails.length > 0
+                //       ) {
+                //         setWPValidityMinDate(
+                //           new Date(res.payload.WorkPermitHeader.ValidFrom)
+                //         );
+                //         setWPValidityMaxDate(
+                //           new Date(res.payload.WorkPermitHeader.ValidTo)
+                //         );
+                //         setSelectedWPHeader(res.payload.WorkPermitHeader);
+                //         setSelectedWPWorkerDetails(res.payload.WorkPermitWorkerDetails);
+                //         setSelectedWPEntryDetails(res.payload.WorkPermitEntryDetails);
+                //         setWorkPermit(res);
+                //         // setVehicleDetails(res.payload.VehicleDataList);
+                //         // let vehData = res.payload.VehicleDataList[0];
+                //         // // visitorEntryFormik.setFieldValue("DriverId", +vehData.Driver_Id);
+                //         // handleDriverSelect(
+                //         //   {},
+                //         //   {
+                //         //     DriverId: +vehData.Driver_Id,
+                //         //   }
+                //         // );
+                //         // visitorEntryFormik.setFieldValue(
+                //         //   "StartingKm",
+                //         //   vehData.Starting_Km
+                //         // );
+                //         // visitorEntryFormik.setFieldValue(
+                //         //   "PurposeOfVisit",
+                //         //   vehData.Purpose_Of_Visit
+                //         // );
+                //         // visitorEntryFormik.setFieldValue(
+                //         //   "VisitorEntryId",
+                //         //   vehData.Visitor_Entry_Id
+                //         // );
+                //         // visitorEntryFormik.setFieldValue(
+                //         //   "VisitorEntryCode",
+                //         //   vehData.Visitor_Entry_Code
+                //         // );
+                //         // visitorEntryFormik.setFieldValue(
+                //         //   "VisitorTypeId",
+                //         //   vehData.Visitor_Type_Id
+                //         // );
+                //         // visitorEntryFormik.setFieldValue("Status", vehData.Status);
+                //         setWorkPermitShow(true);
+                //       }
+                //     } else {
+                //       toast.current?.show({
+                //         severity: "error",
+                //         summary: "Error",
+                //         detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                //       });
+                //     }
+                //     // setVisible(true);
+                //   });
+                // }
+            }
+            if (selectedInv) {
+                setVisible(true);
+            }
+        }
+    }, [selectedVisitor, selectedHost, selectedVeh, selectedInv, selectedWP]);
+
+    const loadEditValues = (headerData) => {
+        const data = {
+            VisitorTypeId: headerData.VisitorTypeId,
+            VisitorId: headerData.VisitorId,
+            UserId: headerData.VisitedEmployeeId,
+            VisitorEntryCode: headerData.VisitorEntryCode,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(OnChangeVisHost(data));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    if (
+                        res.payload.LastVisitorEntryList &&
+                        res.payload.LastVisitorEntryList.length > 0
+                    ) {
+                        loadVisitorEntryFormikValues(res.payload.LastVisitorEntryList);
+                        loadVisitorBelongingFormikValues(
+                            res.payload.LastVisitorEntryBelongList
+                        );
+                        loadVisitorFormikValues(res.payload.LastVisitorEntryList);
+                        // setCreateVisEnt(false);
+                        setVisible(true);
+                        // setShowEntryDetail(true);
+                    } else {
+                        // setShowEntryDetail(true);
+                    }
+                }
+            })
+            .catch((error) => { });
+    };
+
+    const loadVisitorBelongingFormikValues = (lastBelongList) => { };
+
+    const loadVisitorFormikValues = (lastVisList) => {
+        visitorFormik.setFieldValue(
+            "FirstName",
+            lastVisList.hasOwnProperty("WorkerName")
+                ? lastVisList.WorkerName
+                : lastVisList.FirstName
+        );
+        visitorFormik.setFieldValue("VisitorCode", lastVisList.VisitorCode);
+        visitorFormik.setFieldValue("VisitorCompany", lastVisList.VisitorCompany);
+        visitorFormik.setFieldValue("VisitorId", lastVisList.VisitorId);
+        visitorFormik.setFieldValue("MailId", lastVisList.MailId);
+        visitorFormik.setFieldValue("MobileNo", lastVisList.MobileNo);
+        visitorFormik.setFieldValue("Status", lastVisList.Status);
+
+        visitorDFormik.setFieldValue(
+            "VisitorDetailId",
+            lastVisList.VisitorDetails[0].VisitorDetailId
+        );
+        visitorDFormik.setFieldValue(
+            "VisitorDetailCode",
+            lastVisList.VisitorDetails[0].VisitorDetailCode
+        );
+        visitorDFormik.setFieldValue(
+            "VisitorId",
+            lastVisList.VisitorDetails[0].VisitorId
+        );
+        visitorDFormik.setFieldValue(
+            "TitleId",
+            lastVisList.VisitorDetails[0].TitleId
+        );
+        visitorDFormik.setFieldValue(
+            "FirstName",
+            lastVisList.VisitorDetails[0].FirstName
+        );
+        visitorDFormik.setFieldValue(
+            "LastName",
+            lastVisList.VisitorDetails[0].LastName
+        );
+        visitorDFormik.setFieldValue(
+            "DepartmentId",
+            lastVisList.VisitorDetails[0].DepartmentId
+        );
+        visitorDFormik.setFieldValue("Dob", lastVisList.VisitorDetails[0].Dob);
+        visitorDFormik.setFieldValue(
+            "MailId",
+            lastVisList.VisitorDetails[0].MailId
+        );
+        visitorDFormik.setFieldValue(
+            "MobileNo",
+            lastVisList.VisitorDetails[0].MobileNo
+        );
+        visitorDFormik.setFieldValue(
+            "IdCardType",
+            lastVisList.VisitorDetails[0].IdCardType
+        );
+        visitorDFormik.setFieldValue(
+            "IdCardNo",
+            lastVisList.VisitorDetails[0].IdCardNo
+        );
+        visitorDFormik.setFieldValue(
+            "DocumentName",
+            lastVisList.VisitorDetails[0].DocumentName
+        );
+        visitorDFormik.setFieldValue(
+            "DocumentUrl",
+            lastVisList.VisitorDetails[0].DocumentUrl
+        );
+        visitorDFormik.setFieldValue(
+            "Status",
+            lastVisList.VisitorDetails[0].Status
+        );
+        visitorDFormik.setFieldValue(
+            "ExpirryDate",
+            new Date(lastVisList.VisitorDetails[0].ExpirryDate)
+        );
+        visitorDFormik.setFieldValue(
+            "WorkSeverity",
+            lastVisList.VisitorDetails[0].WorkSeverity
+        );
+    };
+
+    const loadVisitorEntryFormikValues = (lastVisEntList) => {
+        let visEntKeys = Object.keys(visitorEntryForm);
+        lastVisEntList &&
+            lastVisEntList.map((item) => {
+                Object.entries(item).map(([key, item]) => {
+                    if (visEntKeys.includes(key)) {
+                        visEntKeys.forEach((insKey) => {
+                            visitorEntryFormik.setFieldValue(key, item);
+                        });
+                    }
+                });
+            });
+        onChangeVisitor("VisitorId", {}, lastVisEntList[0].VisitorDetailId, []);
+        handleSelect("PersonToVisit", {}, lastVisEntList[0].VisitedEmployeeId);
+
+        // let SavedPovList = DtoVisitorEntryPovDetail.map((f) => f.AreaToVisit);
+        // handlePoVSelect("AreaToVisit", {}, SavedPovList, 1);
+        // fetchBlobFromUrl(DtoVisitorEntryHeader.VisitorImageUrl)
+        //   .then((blob) => {
+        //     const file = new File([blob], DtoVisitorEntryHeader.VisitorImageName, {
+        //       type: "image/*",
+        //       lastModified: 1695716506050,
+        //     });
+        //     setPhoto(file);
+        //     setImageUrl(DtoVisitorEntryHeader.VisitorImageUrl);
+        //   })
+        //   .catch((error) => {
+        //     toast.current?.show({
+        //       severity: "error",
+        //       detail: "Error",
+        //       summary: JSON.stringify(error),
+        //     });
+        //   });
+    };
+
+    const handleSelectedPop = () => {
+        setVisible(true);
+        setCreateVisEnt(true);
+        setIsCurrentCreate(true);
+    };
+
+    const CreatePageOnLoad = (VisitorEntryId: number) => {
+        if (checked) {
+            Fetch();
+            fetchAllData(VisitorEntryId);
+
+            // const data = {
+            //   VisitorEntryId: VisitorEntryId,
+            //   CompanyId: +localStorage["CompanyId"],
+            //   PlantId: +localStorage["PlantId"],
+            // };
+            // var result = dispatch(createInit(data));
+            // result
+            //   .then((res) => {
+            //     if (res.payload.tranStatus.result == true) {
+            //       setEmployeeList(res.payload.EmployeeList);
+            //       setTempEmployeeList(res.payload.EmployeeList);
+            //       setVisitorNameList(res.payload.VisitorNameList);
+            //       setTempVisitorNameList(res.payload.VisitorNameList);
+            //     }
+            //   })
+            //   .catch((error) => {});
+        } else {
+            fetchAllData(VisitorEntryId);
+        }
+    };
+
+    const fetchAllData = (VisitorEntryId) => {
+        const data = {
+            VisitorEntryId: VisitorEntryId,
+            VisitorTypeId: tabConfig.filter((t) => t.active == true)[0]?.type,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(createInit(data));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setEmployeeList(res.payload.EmployeeList);
+                    setTempEmployeeList(res.payload.EmployeeList);
+
+                    setVisitorNameList(res.payload.VisitorNameList);
+                    setTempVisitorNameList(res.payload.VisitorNameList);
+                }
+            })
+            .catch((error) => { });
+    };
+
+    const Fetch = () => {
+        let obj = {
+            PlantId: +localStorage["PlantId"],
+            CompanyId: +localStorage["CompanyId"],
+            UserId: +localStorage["UserId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(fetch(obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setVisitorEntryBooked(res.payload.VisitorEntryList);
+                    setVisitorTempEntryBooked(res.payload.VisitorEntryList);
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    detail: "Error",
+                    summary: JSON.stringify(error),
+                });
+            });
+    };
+
+    // const itemTemplate = () => {
+    //   return (
+    //     <div className="flex align-items-center flex-column">
+    //       <i
+    //         className="pi pi-image mt-3 p-5"
+    //         style={{
+    //           fontSize: "5em",
+    //           borderRadius: "50%",
+    //           backgroundColor: "var(--surface-b)",
+    //           color: "var(--surface-d)",
+    //         }}
+    //       ></i>
+    //       <span
+    //         style={{ fontSize: "1.2em", color: "var(--text-color-secondary)" }}
+    //         className="my-5"
+    //       >
+    //         Drag and Drop Image Here
+    //       </span>
+    //     </div>
+    //   );
+    // };
+
+    const customHeader = (
+        <React.Fragment>
+            <h2 style={{ marginBottom: 0 }}>Sidebar</h2>
+        </React.Fragment>
+    );
+
+    useEffect(() => {
+        const debounceTimer = setTimeout(() => {
+            if (searchId == "visit_search") {
+                const filteredResults = TempVisitorNameList.filter(
+                    (item) =>
+                        item.FirstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        item.VisitorCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        item.MobileNo.includes(searchTerm)
+                );
+                setVisitorNameList(filteredResults);
+                if (searchTerm == "") setVisitorNameList(TempVisitorNameList);
+            }
+            if (searchId == "host_search") {
+                const filteredResults = TempEmployeeList.filter((item) =>
+                    item.UserName.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setEmployeeList(filteredResults);
+                if (searchTerm == "") setEmployeeList(TempEmployeeList);
+            }
+            if (searchId == "vehicle_search") {
+                const filteredResults = TempVehicleList.filter((item) =>
+                    item.VehicleNo.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setVehicleList(filteredResults);
+                if (searchTerm == "") setVehicleList(TempVehicleList);
+            }
+            if (searchId == "appointment_search") {
+                const filteredResults = TempVisitorEntryBooked.filter((item) =>
+                    item.VisitorEntryCode.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setVisitorEntryBooked(filteredResults);
+                if (searchTerm == "") setVisitorEntryBooked(TempVisitorEntryBooked);
+            }
+            if (searchId == "work_permit_search") {
+                const filteredResults = TempWorkPermitList.filter(
+                    (item) =>
+                        item.WorkPermitCode.toLowerCase().includes(
+                            searchTerm.toLowerCase()
+                        ) ||
+                        item.ContractorName.toLowerCase().includes(searchTerm.toLowerCase())
+                );
+                setWorkPermitList(filteredResults);
+                if (searchTerm == "") setWorkPermitList(TempWorkPermitList);
+            }
+            // if(searchId == "visitor_search" || searchId == "host_search") {
+            //   if(selectedData.selectedType == 36) {
+
+            //   }
+            // }
+        }, 10);
+
+        return () => clearTimeout(debounceTimer);
+    }, [searchTerm, searchId]);
+    // }, [searchTerm, VisitorNameList, EmployeeList, searchId]);
+
+    const handleSearchAction = (e) => {
+        setSearchTerm(e.target.value);
+        setSearchId(e.target.id);
+    };
+
+    const handleEmployeeSelect = (item) => {
+        if (item) {
+            setSelectedData({
+                ...selectedData,
+                selectedWhomToVisit: item.UserId,
+            });
+            setSelectedHost(item);
+            setEmployeeList({
+                ...EmployeeList,
+            });
+            const updatedEmpHost = EmployeeList.map((element) => ({
+                ...element,
+                IsActive: element.UserId === item.UserId,
+            }));
+
+            setEmployeeList(updatedEmpHost);
+        }
+    };
+
+    const handleVisitorSelect = (item) => {
+        if (item && item?.Status != 2) {
+            setSelectedData({
+                ...selectedData,
+                selectedVisitorId: item.VisitorDetailId,
+            });
+            setSelectedVisitor(item);
+            setVisitorNameList({
+                ...VisitorNameList,
+            });
+
+            const updatedVistEmp = VisitorNameList.map((element) => ({
+                ...element,
+                IsActive: element.VisitorDetailId === item.VisitorDetailId,
+                // IsActive: element.VisitorId === item.VisitorId,
+            }));
+
+            setVisitorNameList(updatedVistEmp);
+        } else if (item && item?.Status == 2) {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Warning Message",
+                detail: "Visitor is blacklisted.",
+            });
+            return;
+        }
+    };
+
+    const handleDriverSelect = (e, item) => {
+        if (item) {
+            OnChangeDriver("DriverId", {}, item.DriverId);
+        }
+    };
+
+    const handleWorkPermitSelect = (e, item) => {
+        if (item) {
+            setSelectedWP({
+                ...selectedWP,
+                ...item,
+            });
+        }
+    };
+    const handleVehicleSelect = (e, item) => {
+        if (item) {
+            setIsCurrentCreate(false);
+            setSelectedVeh({
+                ...selectedVeh,
+                vehicleNo: item.VehicleNo,
+                entryType: item.EntryType,
+                exitTime: item.ExitTime,
+                entryTime: item.EntryTime,
+                visitorEntryId: item.VisitorEntryId,
+            });
+            const updatedVisitVeh = VehicleList.map((element) => ({
+                ...element,
+                IsActive: element.VehicleNo === item.VehicleNo,
+            }));
+            visitorEntryFormik.setFieldValue("VisitorEntryId", item.VisitorEntryId);
+            setVehicleList(updatedVisitVeh);
+            OnChangeVehicle("VehicleName", {}, item.VehicleName, item.VehicleNo);
+            handleSelect("DriverId", {}, item.DriverId);
+        }
+    };
+    const handleBookedVisitor = (e, item, detail) => {
+        if (item) {
+            let filtEmp = EmployeeList.filter(
+                (emp) => emp.UserId == item.VisitedEmployeeId
+            );
+            let filtVis = updatedVisitorNameList.filter(
+                // (vis) => vis.VisitorCode == item.VisitorEntryCode
+                (emp) => emp.VisitorDetailId == item.VisitorId
+            );
+
+            // handleVisitorSelect(item);
+            handleVisitorSelect(filtVis[0]);
+            // handleVisitorSelect(VisitorNameList[0]);
+            handleEmployeeSelect(filtEmp[0]);
+
+            setSelectedData({
+                ...selectedData,
+                selectedVisitorId: item.VisitorDetailId,
+            });
+            setBookedVisitor(item);
+            let dataObj = {
+                data: item,
+            };
+            let DetailObj = {
+                VisitorEntryId: item?.VisitorEntryId,
+                VisitorEntryDetailId: item?.VisitorEntryDetailId
+                    ? item?.VisitorEntryDetailId
+                    : item?.VisitorEntryDetails[0]?.VisitorEntryDetailId,
+                CompanyId: +localStorage["CompanyId"],
+                PlantId: +localStorage["PlantId"],
+                RoleId: +localStorage["DefaultRoleId"],
+            };
+            const getDetail = dispatch(OnChangeEntryDetail(DetailObj));
+            getDetail.then((response) => {
+                handleSendPass(item, response, detail);
+            });
+        }
+    };
+
+    const handleSendPass = (item, response, detail) => {
+        let detailIds;
+        let entryIds;
+        let entryCodes;
+        let entryTypeIds;
+
+        if (!detail) {
+            // detailIds = item?.VisitorEntryDetailId;
+            detailIds =
+                response.payload.OnChangeEntryDetailList[0].VisitorEntryDetailId;
+            entryIds = item?.VisitorEntryId;
+            entryCodes = item?.VisitorEntryCode;
+            entryTypeIds = item?.VisitorTypeId;
+        } else {
+            detailIds = item?.VisitorEntryDetailId;
+            entryIds = item?.VisitorEntryId;
+            entryCodes = item?.VisitorEntryCode;
+            entryTypeIds = item?.VisitorTypeId;
+        }
+        let obj = {
+            VisitorEntryId: entryIds,
+            VisitorEntryCode: entryCodes,
+            DetailId: detailIds,
+            // DetailId: response.OnChangeEntryDetailList[0].VisitorEntryDetailId,
+            CompanyId: +localStorage["CompanyId"],
+            PlantId: +localStorage["PlantId"],
+            VisitorTypeId: item?.VisitorTypeId,
+        };
+        const workerList = dispatch(ShowPass(obj));
+        workerList
+            .then((res) => {
+                // setContWorker(res.payload.VisitorEntryDetail);
+                // setContHead(res.payload.VisitorEntryHeader);
+                if (res.payload.tranStatus.result == true) {
+                    let VisitorEntry = {
+                        VisitorEntryCode: res.payload.VisitorEntryHeader.VisitorEntryCode,
+                        VisitorTypeId: res.payload.VisitorEntryHeader.VisitorTypeId,
+                    };
+                    let visDtl = res.payload.VisitorEntryDetails;
+
+                    setContWorker(visDtl);
+                    setContHead(res.payload.VisitorEntryHeader);
+                    setupdatedVisitorNameList(res.payload.UpdatedVisitorNameList);
+                    setvisitorEntryDetailListNew(res.payload.VisitorEntryDetails);
+                    setupdatedBelongingList(res.payload.VisitorEntryBelongingDetail);
+                    handlePassPreview(
+                        res.payload.VisitorEntryHeader,
+                        res.payload.UpdatedVisitorNameList,
+                        res.payload.VisitorEntryBelongingDetail
+                    );
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        detail: "Error",
+                        summary: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((err) => { });
+    };
+
+    const handlePassPreview = (
+        item,
+        UpdatedVisitorNameLists,
+        VisitorEntryBelongingDetails
+    ) => {
+        let filtEmp = EmployeeList.filter(
+            (emp) => emp.UserId == item.VisitedEmployeeId
+        );
+        let filtVis;
+        if (UpdatedVisitorNameLists && UpdatedVisitorNameLists.length > 0) {
+            filtVis = UpdatedVisitorNameLists.filter(
+                (emp) => emp.VisitorDetailId == item.VisitorId
+            );
+        } else {
+            filtVis = updatedVisitorNameList.filter(
+                (emp) => emp.VisitorDetailId == item.VisitorId
+            );
+        }
+
+        handleVisitorSelect(filtVis[0]);
+        handleEmployeeSelect(filtEmp[0]);
+
+        setSelectedData({
+            ...selectedData,
+            selectedVisitorId: item.VisitorId,
+        });
+
+        setBookedVisitor(item);
+        let dataObj = {
+            data: {
+                ...item,
+                belongings: VisitorEntryBelongingDetails
+                    ? VisitorEntryBelongingDetails
+                    : updatedBelongingList,
+            },
+        };
+        setPassData(item);
+        setDialogVisible(true);
+    };
+    // const handleWorkerPass = (
+    //   e,
+    //   item,
+    //   contract,
+    //   belonging,
+    //   UpdatedVisitorNameList
+    // ) => {
+    //
+    //   if (item && contHead) {
+    //
+    //
+    //
+    //     let filtEmp = EmployeeList.filter(
+    //       (emp) =>
+    //         emp.UserId ==
+    //         (Object.keys(contHead).length > 0
+    //           ? contHead.VisitedEmployeeId
+    //           : contract.VisitedEmployeeId)
+    //     );
+    //     // let filtEmp = EmployeeList.filter((emp) =>
+    //     //   emp.UserId == contract.VisitedEmployeeId
+    //     // );
+    //
+    //
+    //     let filtVis =
+    //       UpdatedVisitorNameList && UpdatedVisitorNameList.length > 0
+    //         ? UpdatedVisitorNameList.filter((emp) =>
+    //           emp.VisitorId == contract
+    //             ? contract.VisitorId
+    //             : contHead.VisitorId
+    //         )
+    //         : updatedVisitorNameList.filter((emp) =>
+    //           emp.VisitorId == contract
+    //             ? contract.VisitorId
+    //             : contHead.VisitorId
+    //         );
+    //     handleVisitorSelect(filtVis[0]);
+    //     handleEmployeeSelect(filtEmp[0]);
+    //     setSelectedData({
+    //       ...selectedData,
+    //       selectedVisitorId: contract ? contract.VisitorId : contHead.VisitorId,
+    //     });
+    //     item = {
+    //       ...item,
+    //       ...contract,
+    //       head: { ...contHead },
+    //       Visitor: filtVis[0],
+    //       belongings: belonging || updatedBelongingList,
+    //       VisitorImageUrl: contract
+    //         ? contract.VisitorImageUrl
+    //         : contHead.VisitorImageUrl,
+    //       VisitorEntryCode: contract
+    //         ? contract.VisitorEntryCode
+    //         : contHead.VisitorEntryCode,
+    //       PersonName: item.FirstName + " " + item.LastName,
+    //       PersonToVisit: filtEmp && filtEmp[0]?.UserName,
+    //       VisitorEntryDate: contract
+    //         ? contract.VisitorEntryDate
+    //         : contHead.VisitorEntryDate,
+    //       AreaToVisitName: contract
+    //         ? contract.AreaToVisitName
+    //         : contHead.AreaToVisitName,
+    //       VisitedEmployeeId: contract
+    //         ? contract.VisitedEmployeeId
+    //         : contHead.VisitedEmployeeId,
+    //       VisitorTypeId: contract
+    //         ? contract.VisitorTypeId == 36
+    //           ? 50
+    //           : contract.VisitorTypeId
+    //         : contHead.VisitorTypeId == 36
+    //           ? 50
+    //           : contHead.VisitorTypeId,
+    //     };
+    //     setBookedVisitor(item);
+    //     let dataObj = {
+    //       data: item,
+    //     };
+    //
+    //     setPassData(dataObj.data);
+    //     // const getPassDetails = dispatch(sendPass(contHead));
+    //     // getPassDetails
+    //     //   .then((res) => {
+    //     //
+    //     //     setPassData({
+    //     //       ...res.payload.Result.VisitorEntryHeader,
+    //     //       ...res.payload.Result.VisitorEntryDetail,
+    //     //     });
+    //     //     setDialogVisible(true);
+    //     //   })
+    //     //   .catch((err) => {
+    //     //
+    //     //   });
+
+    //     // localStorage.setItem("clickedRowData", JSON.stringify(dataObj));
+    //     // setShowEntryDetail(true);
+    //   }
+    // };
+    // const handleSearchAction = (e) => {
+    //   if (e.target.id === "visitor_search") {
+    //     const searchValue = e.target.value.toLowerCase();
+    //     if (searchValue == "" || searchValue == undefined) {
+    //       setVisitorNameList(TempVisitorNameList);
+    //     } else {
+    //       const filteredList = VisitorNameList.filter((element) => {
+    //         const searchTxt = element.FirstName.toLowerCase().replace(" ", "");
+    //         return searchTxt.includes(searchValue);
+    //       });
+
+    //       setVisitorNameList(filteredList);
+    //     }
+    //   } else {
+    //     setVisitorNameList(TempVisitorNameList);
+    //   }
+    // };
+    const handleTabAction = (e) => {
+        if (e && e.hasOwnProperty("type")) {
+            e.stopPropagation();
+        }
+
+        if (e.target.id != "BACK") {
+            const clickedType = e.target.id;
+
+            setSelectedData({
+                ...selectedData,
+                selectedType: +e.target.id,
+            });
+
+            const updatedTabConfig = tabConfig.map((item) => ({
+                ...item,
+                active: item.type === +clickedType,
+            }));
+
+            setSelectedVisitor({});
+            setSelectedHost({});
+
+            onChangeVisitorType("VisitorTypeId", {}, +e.target.id);
+            onChangeVisitorTypeVM("VisitorTypeId", {}, +e.target.id);
+
+            setVisType(+e.target.id);
+            if (+e.target.id == 65) {
+                setSelectedInv(true);
+            }
+            // if (+clickedType == 65 || +clickedType == 66) {
+            // setSearchConfig({
+            //   isVisitor: false,
+            //   isContract: false,
+            //   isVehTrip: false,
+            //   isInvoice: false,
+            // });
+            // } else {
+            // setSearchConfig({
+            //   isVisitor: true,
+            //   isContract: false,
+            //   isVehTrip: false,
+            //   isInvoice: false,
+            // });
+            // }
+
+            setTabConfig(updatedTabConfig);
+            // dispatch(setActiveTab(updatedTabConfig));
+
+            handleClosePop();
+        } else if ((e.target.id = "BACK")) {
+            setShowEntryDetail(false);
+            setBookedVisitor({});
+            setVisitorEntryBooked(TempVisitorEntryBooked);
+        }
+    };
+
+    const handleCloseVehPop = () => {
+        setVehPopVisible(false);
+        setSelectedVehData({});
+    };
+    const handleClosePop = () => {
+        const updatedVistEmp = VisitorNameList.map((element) => ({
+            ...element,
+            IsActive: false,
+        }));
+        setVisitorNameList(updatedVistEmp);
+        const updatedEmpHost = EmployeeList.map((element) => ({
+            ...element,
+            IsActive: false,
+        }));
+        setEmployeeList(updatedEmpHost);
+        const updatedVeh = VehicleList.map((element) => ({
+            ...element,
+            IsActive: false,
+        }));
+        setVehicleList(updatedVeh);
+        // handleTabAction({
+        //   target: {
+        //     value: 35,
+        //     id: 35,
+        //   },
+        // });
+
+        setSelectedInv(false);
+        setVisible(false);
+        resetAllForm();
+        setSelectedEntryData({
+            ...selectedEntryData,
+            VehicleTypeId: visitorEntryFormik.values.VehicleTypeId,
+            VehicleNo: "",
+            DriverId: null,
+            PurposeOfVisit: null,
+            EntryType: 102,
+            NumberOfPassengers: "",
+            DriverName: null,
+            StartingKm: "",
+            EndingKm: "",
+            IsEwayBillNo: false,
+            IsEinvBillNo: false,
+            VisitorRemarks: "",
+            EntryTime: new Date(),
+            ExitTime: null,
+        });
+        setRefTableDisable(false);
+        setIsdisableSave(false);
+        setIsDisableClear(false);
+        setSwitchDisable(false);
+        setVehicleNoList([]);
+        setSelectedVeh({});
+        setIsCurrentCreate(true);
+        setCheckVehAction(true);
+        setUpdateCheckVeh(false);
+        visitorEntryFormik.resetForm();
+    };
+    const handleVisClosePop = () => {
+        setVisitorShow(false);
+        resetAllForm();
+        resetAllFormVM();
+    };
+    const handleWPClosePop = () => {
+        setWorkPermitShow(false);
+        setSelectedWP({});
+    };
+    const handleVehClosePop = () => {
+        setVehicleShow(false);
+    };
+    const handleEmpClosePop = () => {
+        setEmployeeShow(false);
+    };
+
+    const saveVisitorDetails = () => {
+        if (!isVisMaster == true) {
+            // visitorFormik.handleSubmit();
+
+            const validTrue = checkVisEntryValidation(visitorEntryFormik.values);
+            if (validTrue == true) {
+                setIsVisMaster(true);
+            }
+        } else {
+            localStorage.setItem(
+                "visMaster",
+                JSON.stringify(visitorEntryFormik.values)
+            );
+            // visitorEntryFormik.setFieldValue(
+            //   "VisitorId",
+            //   visitorFormik.values.FirstName + " " + visitorFormik.values.LastName
+            // );
+            setIsVisMaster(false);
+        }
+    };
+
+    const checkVisMasterValidation = (values) => {
+        const emailRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+        if (values.TitleId == "" || values.TitleId == null)
+            return toastValidation("Please Select Title.");
+        if (values.FirstName == "" || values.FirstName == null)
+            return toastValidation(
+                `Please Enter ${values.VisitorTypeId == 36 ? "Worker" : "Visitor"
+                } Name.`
+            );
+        // if (values.MailId == "" || values.MailId == null)
+        //   return toastValidation("Please enter Mail ID.");
+        if (
+            !emailRegExp.test(values.MailId) &&
+            values.MailId == "" &&
+            values.MailId == null
+        )
+            return toastValidation("Please Enter Valid Mail ID.");
+        if (values.MobileNo == "" || values.MobileNo == null)
+            return toastValidation("Please Enter Mobile No.");
+        if (values.MobileNo.length != 10)
+            return toastValidation("Please Enter Valid Mobile No.");
+        // if (values.Address == "" || values.Address == null)
+        // return toastValidation("Please Enter Address.");
+        // if (
+        //   values.DocumentUrl == "" ||
+        //   values.DocumentUrl == null ||
+        //   values.DocumentName == "" ||
+        //   values.DocumentName == null
+        // )
+        //   return toastValidation("Please Upload Image.");
+        return true;
+    };
+
+    const checkVisEntryValidation = (values) => {
+        if (values.PlantId == "" || values.PlantId == null)
+            return toastValidation("Please Select Plant");
+        if (!values.VisitedEmployeeId)
+            return toastValidation("Please Select Person To Visit");
+        if (!values.ValidFrom && values.VisitorTypeId != 36)
+            return toastValidation("Please Select Appointment Date");
+        if (!values.ValidTo && values.VisitorTypeId == 36)
+            return toastValidation("Please Select Valid To");
+        if (!photo && values.VisitorTypeId != 66) {
+            setIsdisableSave(false);
+            toast.current?.show({
+                severity: "warn",
+                detail: "Please Capture Image",
+                summary: "Warning Message",
+            });
+            return;
+        }
+        if (values.PurposeOfVisit == null || values.PurposeOfVisit == "") {
+            return toastValidation("Please Select Purpose Of Visit");
+        }
+        return true;
+    };
+
+    const saveVmaster = () => {
+        const checkVisValidations = checkVisMasterValidation(visitorFormik.values);
+        if (checkVisValidations == true) {
+            visitorFormik.handleSubmit();
+        }
+    };
+
+    const saveVisitor = () => {
+        const validTrue = checkVisEntryValidation(visitorEntryFormik.values);
+        if (validTrue == true) {
+            if (isCurrentCreate) {
+                const checkVisValidations = checkVisMasterValidation(
+                    visitorFormik.values
+                );
+                if (checkVisValidations == true) {
+                    visitorFormik.handleSubmit();
+                }
+            } else {
+                visitorEntryFormik.handleSubmit();
+            }
+        }
+    };
+
+    useEffect(() => {
+        if (isCurrentCreate) {
+            if (visitorEntryDetailList && visitorEntryDetailList.length > 0) {
+                visitorEntryFormik.handleSubmit();
+                setIsdisableSave(false);
+                setVisible(false);
+            }
+        }
+    }, [visitorEntryDetailList]);
+
+    const handleClosePassPrev = () => {
+        resetAllForm();
+        setDialogVisible(false);
+        setVisible(false);
+    };
+
+    // VISITOR MASTER
+    const visitorRef: any = useRef(null);
+    const visitorDetailRef: any = useRef(null);
+    const [imageUrlVM, setImageUrlVM] = useState(IMAGES.NO_IMG);
+    const [documentUrlVM, setDocumentUrlVM] = useState("");
+    const [documentUrlVisitor, setDocumentUrlVisitor] = useState("");
+    const [visitorDetailList, setVisitorDetailList] = useState([]);
+    const [photoVM, setPhotoVM] = useState<File | null>(null);
+    const [documentVM, setDocumentVM] = useState<File | null>(null);
+    const [visitordocument, setVisitorDocument] = useState<File | null>(null);
+    const [documentfiles, setDocumentfiles] = useState<File[] | null>([]);
+    const [documentfilesVis, setDocumentfilesVis] = useState<File[] | null>([]);
+    const [disableForm, setDisableForm] = useState(true);
+    const [tempStateList, setTempStateList] = useState([]);
+    const [tempCityList, setTempCityList] = useState([]);
+    const [IsdisableSaveVM, setIsdisableSaveVM] = useState(false);
+    const documentUploadRef = useRef<any>(null);
+    const documentVisitorUploadRef = useRef<any>(null);
+    const profUploadRef = useRef<any>(null);
+    const [rowIndex, setRowIndex] = useState(-1);
+    const [filters, setFilters] = useState({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    });
+    const [globalFilterValue, setGlobalFilterValue] = useState<string>("");
+    useEffect(() => {
+        pageLoadScript();
+    });
+    // useEffect(() => {
+    //   onChangeVisitorType("VisitorTypeId", {}, visType);
+    // }, [visType]);
+
+    const {
+        isCreateVM,
+        isViewVM,
+        createEditDataVM,
+        loadingVM,
+        errorVM,
+        tranStatusVM,
+        VisitorHeaderVM,
+        VisitorTypeListVM,
+        TitleListVM,
+        IdCardListVM,
+        StatusListVM,
+        CountryListVM,
+        StateListVM,
+        CityListVM,
+        DepartmentListVM,
+        VisitorDetailVM,
+        VisitorSearchListVM,
+        WorkSeverityListVM,
+    } = useSelector((state: any) => state.visitor);
+
+    const TableHeader = () => {
+        const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+            const value = e.target.value;
+            let _filters = { ...filters };
+            _filters["global"].value = value;
+            setFilters(_filters);
+            setGlobalFilterValue(value);
+        };
+        return (
+            <div className="flex justify-content-between">
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={globalFilterValue}
+                        onChange={onGlobalFilterChange}
+                        placeholder="Keyword Search"
+                    />
+                </span>
+            </div>
+        );
+    };
+
+    useEffect(() => {
+        if (!createVisEnt && VisitorHeaderVM && VisitorDetailVM) {
+            if (!createVisEnt) {
+                if (VisitorHeaderVM && VisitorHeaderVM.VisitorTypeId == 35) {
+                    setDisableForm(true);
+                } else {
+                    setDisableForm(false);
+                }
+            }
+            let List: any[] = [];
+            for (let i = 0; i < VisitorDetailVM.length; i++) {
+                const x = VisitorDetailVM[i];
+                let obj: any = {};
+                obj.VisitorDetailId = x.VisitorDetailId;
+                obj.VisitorDetailCode = x.VisitorDetailCode;
+                obj.VisitorId = x.VisitorId;
+                obj.TitleId = x.TitleId;
+                obj.FirstName = x.FirstName;
+                obj.LastName = x.LastName;
+                obj.DepartmentId = x.DepartmentId;
+                obj.Dob = new Date(x.Dob);
+                obj.MailId = x.MailId;
+                obj.MobileNo = x.MobileNo;
+                obj.TagNo = x.TagNo;
+                obj.VisitorCompany = x.VisitorCompany;
+                obj.DigitalSignName = x.DigitalSignName || "";
+                obj.DigitalSignUrl = x.DigitalSignUrl || "";
+                obj.SignedVersion = x.SignedVersion || 0;
+                obj.IsTermsAgreed = x.IsTermsAgreed || 0;
+                obj.IdCardType = x.IdCardType;
+                obj.IdCardNo = x.IdCardNo;
+                obj.DocumentName = x.DocumentName;
+                obj.DocumentUrl = x.DocumentName;
+                obj.Status = x.Status;
+                obj.ExpirryDate = x.ExpirryDate;
+                obj.WorkSeverity = x.WorkSeverity;
+                obj.VisitorName =
+                    // TitleList.find((f) => f.MetaSubId == obj.TitleId).MetaSubDescription +
+                    // ". " +
+                    x.FirstName + " " + x.LastName;
+                obj.DepartMentName = x.DepartmentId
+                    ? DepartmentList.find((f) => f.DepartmentId == x.DepartmentId)
+                        .DepartmentName
+                    : null;
+                obj.IdCardTypeName = IdCardListVM.find(
+                    (d) => d.MetaSubId == x.IdCardType
+                )?.MetaSubDescription;
+                obj.StatusName = StatusListVM.find(
+                    (d) => d.MetaSubId == x.Status
+                ).MetaSubDescription;
+                obj.WorkSeverityName = WorkSeverityListVM.find(
+                    (d) => d.MetaSubId == x.WorkSeverity
+                )?.MetaSubDescription;
+                const formattedDate = new Date(x.Dob).toLocaleDateString("en-GB", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                });
+                obj.ShowDate = formattedDate;
+                const formattedExDate = new Date(x.ExpirryDate).toLocaleDateString(
+                    "en-GB",
+                    {
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                    }
+                );
+                obj.ShowExpirryDate = formattedExDate;
+                List.push(obj);
+
+                // fetchBlobFromUrl(obj.DocumentUrl)
+                //   .then((blob) => {
+                //     const file = new File([blob], obj.DocumentName, {
+                //       type: "image/*",
+                //       lastModified: 1695716506050,
+                //     });
+                //     setDocumentfiles([...documentfiles, file]);
+                //   })
+                //   .catch((error) => {
+                //     console.error("Error fetching image:", error);
+                //   });
+            }
+
+            setVisitorDetailList(List);
+            setDocumentUrlVisitor(VisitorHeaderVM.VisitorDocumentUrl);
+            // fetchBlobFromUrl(VisitorHeaderVM.DocumentUrl)
+            //   .then((blob) => {
+            //     const file = new File([blob], VisitorHeaderVM.DocumentName, {
+            //       type: "image/*",
+            //       lastModified: 1695716506050,
+            //     });
+            //     setPhoto(file);
+            //     setImageUrl(VisitorHeaderVM.DocumentUrl);
+            //   })
+            //   .catch((error) => {
+            //     console.error("Error fetching image:", error);
+            //   });
+        } else {
+            loadVisCreateInit(0);
+        }
+    }, [createVisEnt, VisitorHeaderVM, VisitorDetailVM]);
+
+    const loadVisCreateInit = (visId) => {
+        const data = {
+            VisitorId: visId,
+            PlantId: +localStorage["PlantId"],
+            CompanyId: +localStorage["CompanyId"],
+            RoleId: +localStorage["DefaultRoleId"],
+        };
+        var result = dispatch(createInitVM(data));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result) {
+                    // if (
+                    //   res.payload.CountryList &&
+                    //   res.payload.CountryList.length &&
+                    //   res.payload.CountryList.length > 0
+                    // ) {
+                    //   Onchangecountry(
+                    //     "CountryId",
+                    //     {},
+                    //     res.payload.CountryList[0].CountryId
+                    //   );
+                    // }
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem.message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+
+    useEffect(() => {
+        setTempCityList(CityListVM);
+        setTempStateList(StateListVM);
+    }, [CityListVM, StateListVM]);
+
+    async function fetchBlobFromUrlVM(url: string): Promise<Blob> {
+        const response: any = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.statusText}`);
+        }
+        return await response.blob();
+    }
+
+    const visitorForm = {
+        VisitorId: VisitorHeaderVM != null ? VisitorHeaderVM.VisitorId : 0,
+        VisitorCode: VisitorHeaderVM != null ? VisitorHeaderVM.VisitorCode : "",
+        VisitorTypeId: VisitorHeaderVM != null ? VisitorHeaderVM.VisitorTypeId : 35,
+        CompanyId:
+            VisitorHeaderVM != null
+                ? VisitorHeaderVM.CompanyId
+                : localStorage["CompanyId"],
+        PlantId:
+            VisitorHeaderVM != null
+                ? VisitorHeaderVM.PlantId
+                : localStorage["PlantId"],
+        CountryId: VisitorHeaderVM != null ? VisitorHeaderVM.CountryId : null,
+        StateId: VisitorHeaderVM != null ? VisitorHeaderVM.StateId : null,
+        CityId: VisitorHeaderVM != null ? VisitorHeaderVM.CityId : null,
+        TitleId: VisitorHeaderVM != null ? VisitorHeaderVM.TitleId : 37,
+        FirstName: VisitorHeaderVM != null ? VisitorHeaderVM.FirstName : "",
+        LastName: VisitorHeaderVM != null ? VisitorHeaderVM.LastName : "",
+        Dob: VisitorHeaderVM != null ? new Date(VisitorHeaderVM.Dob) : new Date(),
+        VisitorCompany:
+            VisitorHeaderVM != null ? VisitorHeaderVM.VisitorCompany : "",
+        Address: VisitorHeaderVM != null ? VisitorHeaderVM.Address : "",
+        MailId: VisitorHeaderVM != null ? VisitorHeaderVM.MailId : "",
+        MobileNo: VisitorHeaderVM != null ? VisitorHeaderVM.MobileNo : "",
+        IdCardType: VisitorHeaderVM != null ? VisitorHeaderVM.IdCardType : 17,
+        IdCardNo: VisitorHeaderVM != null ? VisitorHeaderVM.IdCardNo : "",
+        DocumentName: VisitorHeaderVM != null ? VisitorHeaderVM.DocumentName : "",
+        DocumentUrl: VisitorHeaderVM != null ? VisitorHeaderVM.DocumentUrl : "",
+        VisitorDocumentName:
+            VisitorHeaderVM != null ? VisitorHeaderVM.VisitorDocumentName : "",
+        VisitorDocumentUrl:
+            VisitorHeaderVM != null ? VisitorHeaderVM.VisitorDocumentUrl : "",
+        Status: VisitorHeaderVM != null ? VisitorHeaderVM.Status : 1,
+        CreatedBy:
+            VisitorHeaderVM != null
+                ? VisitorHeaderVM.CreatedBy
+                : +localStorage["UserId"],
+        CreatedOn:
+            VisitorHeaderVM != null
+                ? new Date(VisitorHeaderVM.CreatedOn)
+                : new Date(),
+        ModifiedBy: VisitorHeaderVM != null ? +localStorage["UserId"] : null,
+        ModifiedOn: VisitorHeaderVM != null ? new Date() : null,
+    };
+
+    const visitorDetailForm = {
+        VisitorDetailId: 0,
+        VisitorDetailCode: "",
+        VisitorId: 0,
+        TitleId: 37,
+        FirstName: "",
+        LastName: "",
+        DepartmentId: null,
+        Dob: new Date(),
+        MailId: "",
+        MobileNo: "",
+        VisitorCompany: "",
+        TagNo: "",
+        DigitalSignName: "",
+        DigitalSignUrl: "",
+        SignedVersion: 0,
+        IsTermsAgreed: false,
+        IdCardType: 17,
+        IdCardNo: "",
+        DocumentName: "",
+        DocumentUrl: "",
+        Status: 1,
+        ExpirryDate: new Date(),
+        WorkSeverity: 96,
+    };
+
+    const visitorFormik: any = useFormik({
+        initialValues: visitorForm,
+        validationSchema: VisitorValidationSchema,
+        onSubmit: (values: any, { resetForm }) => {
+            values.VisitorTypeId = tabConfig.filter((t) => t.active == true)[0]?.type;
+
+            setIsdisableSave(true);
+            const formData: any = new FormData();
+            let VDList: any[] = [];
+            values.Dob = datepipes(new Date(values.Dob));
+            values.CreatedOn = datepipes(new Date(values.CreatedOn));
+            if (!createVisEnt) {
+                values.ModifiedOn = datepipes(new Date(values.ModifiedOn));
+            }
+            if (createVisEnt) {
+                // if (!visitordocument) {
+                //   setIsdisableSave(false);
+                //   toast.current?.show({
+                //     severity: "warn",
+                //     summary: "Warning Message",
+                //     detail: "Please Add Document.",
+                //   });
+                //   return;
+                // }
+            }
+
+            if (
+                (values.VisitorTypeId == 35 || values.VisitorTypeId == 36) &&
+                isCurrentCreate &&
+                createVisEnt
+            ) {
+                // Individual
+                let object: any = {};
+                object.VisitorDetailId = 0;
+                object.VisitorDetailCode = "";
+                object.VisitorId = 0;
+                object.TitleId = values.TitleId;
+                object.FirstName = values.FirstName;
+                object.LastName = values.LastName;
+                object.DepartmentId = null;
+                object.Dob = values.Dob;
+                object.MailId = values.MailId;
+                object.MobileNo = values.MobileNo;
+                object.TagNo = values.TagNo;
+                object.VisitorCompany = values.VisitorCompany;
+                object.DigitalSignName = values.DigitalSignName || "";
+                object.DigitalSignUrl = values.DigitalSignUrl || "";
+                object.SignedVersion = values.SignedVersion || 0;
+                object.IsTermsAgreed = values.IsTermsAgreed || 0;
+                object.IdCardType = values.IdCardType;
+                object.IdCardNo = values.IdCardNo;
+                object.DocumentName = values.DocumentName;
+                object.DocumentUrl = values.DocumentName;
+                object.Status = values.Status;
+                object.ExpirryDate = new Date();
+                object.WorkSeverity = 96;
+                VDList.push(object);
+            } else if (
+                (values.VisitorTypeId == 35 || values.VisitorTypeId == 36) &&
+                (!isCurrentCreate || !createVisEnt)
+            ) {
+                visitorDetailList.forEach((object) => {
+                    object.TitleId = values.TitleId;
+                    object.FirstName = values.FirstName;
+                    object.LastName = values.LastName;
+                    object.Dob = values.Dob;
+                    object.MailId = values.MailId;
+                    object.MobileNo = values.MobileNo;
+                    object.TagNo = values.TagNo;
+                    object.VisitorCompany = values.VisitorCompany;
+                    object.DigitalSignName = values.DigitalSignName || "";
+                    object.DigitalSignUrl = values.DigitalSignUrl || "";
+                    object.SignedVersion = values.SignedVersion || 0;
+                    object.IsTermsAgreed = values.IsTermsAgreed || 0;
+                    object.IdCardType = values.IdCardType;
+                    object.IdCardNo = values.IdCardNo;
+                });
+                VDList = visitorDetailList;
+            } else {
+                visitorDetailList.forEach((object) => {
+                    delete object.VisitorName;
+                    delete object.DepartMentName;
+                    delete object.IdCardTypeName;
+                    delete object.StatusName;
+                    delete object.ShowExpirryDate;
+                    delete object.WorkSeverityName;
+                    object.Dob = datepipes(new Date(object.Dob));
+                    object.ExpirryDate = datepipes(new Date(object.ExpirryDate));
+                });
+                VDList = visitorDetailList;
+            }
+
+            if (VDList.length == 0) {
+                // setIsdisableSave(false);
+                // toast.current?.show({
+                //   severity: "warn",
+                //   summary: "Warning Message",
+                //   detail: "Please Add Atleast One Worker Detail.",
+                // });
+                // return;
+            }
+            formData.append("webfile", photo);
+            formData.append("webfile1", visitordocument);
+            formData.append("digSign", null);
+
+            for (var x in documentfiles) {
+                var index = VDList.findIndex(
+                    (obj) => obj.DocumentName == documentfiles[x].name
+                );
+
+                if (index != -1) {
+                    formData.append("webfiles", documentfiles[x]);
+                }
+            }
+            for (var y in documentfilesVis) {
+                var index = VDList.findIndex(
+                    (obj) => obj.DocumentName == documentfilesVis[x].name
+                );
+
+                if (index != -1) {
+                    formData.append("webfile1", documentfilesVis[x]);
+                }
+            }
+            let obj = {
+                Visitor: values,
+                VisitorDetail: VDList,
+            };
+            let input: string = JSON.stringify(obj);
+            formData.append("input", input);
+            if (!createVisEnt) {
+                //
+
+                // if (
+                //   !VisitorHeaderVM.VisitorDocumentName ||
+                //   VisitorHeaderVM.VisitorDocumentName == ""
+                // ) {
+                //   toast.current?.show({
+                //     severity: "warn",
+                //     summary: "Warning Message",
+                //     detail: "Please Add Document.",
+                //   });
+                //   return;
+                // }
+                var updateres = dispatch(updateVM(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            setIsdisableSave(false);
+                            setVisitorShow(false);
+                            fetchAllData(0);
+
+                            // handleVisitorSelected(
+                            //   res.payload?.VisitorHeader?.VisitorDetails[0]?.VisitorDetailId,
+                            //   res.payload?.VisitorList
+                            // );
+                            toast.current?.show({
+                                severity: "success",
+                                summary: "Success Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                            setCreateVisEnt(true);
+                            resetAllFormVM();
+                        } else {
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "error",
+                                summary: "Error Message",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        setIsdisableSave(false);
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: JSON.stringify(error),
+                        });
+                    });
+            } else {
+                var updateres = dispatch(createVM(formData));
+                updateres
+                    .then((res) => {
+                        if (res.payload.tranStatus.result == true) {
+                            setIsdisableSave(false);
+                            setVisitorShow(false);
+                            handleVisitorSelected(
+                                res.payload?.VisitorHeader?.VisitorDetails[0]?.VisitorDetailId,
+                                // res.payload?.VisitorHeader?.VisitorDetailId,
+                                res.payload?.VisitorList
+                            );
+                            // resetAllFormVM()
+
+                            // fetchAllData(0);
+                            // toast.current?.show({
+                            //   severity: "success",
+                            //   summary: "Success Message",
+                            //   detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                            // });
+                        } else {
+                            setIsdisableSave(false);
+                            toast.current?.show({
+                                severity: "warn",
+                                summary: "Warning",
+                                detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                                life: 6000,
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        setIsdisableSave(false);
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error",
+                            detail: error,
+                        });
+                    });
+            }
+        },
+    });
+    const visitorDFormik: any = useFormik({
+        initialValues: visitorDetailForm,
+        validationSchema: VisitorDetailValidationSchema,
+        onSubmit: (values, { resetForm }) => {
+            // if (!document) {
+            //   toast.current?.show({
+            //     severity: "warn",
+            //     summary: "Warning Message",
+            //     detail: "Please Add Document.",
+            //   });
+            //   return;
+            // }
+            let obj: any = {};
+            obj.VisitorDetailId = values.VisitorDetailId;
+            obj.VisitorDetailCode = values.VisitorDetailCode;
+            obj.VisitorId = values.VisitorId;
+            obj.TitleId = values.TitleId;
+            obj.FirstName = values.FirstName.trim();
+            obj.LastName = values.LastName.trim();
+            obj.DepartmentId = values.DepartmentId;
+            obj.Dob = values.Dob;
+            obj.MailId = values.MailId;
+            obj.MobileNo = values.MobileNo;
+            obj.IdCardType = values.IdCardType;
+            obj.IdCardNo = values.IdCardNo;
+            obj.DocumentName = values.DocumentName || "";
+            obj.DocumentUrl = values.DocumentName || "";
+            obj.Status = values.Status;
+            obj.ExpirryDate = values.ExpirryDate;
+            obj.WorkSeverity = values.WorkSeverity;
+            obj.VisitorName =
+                TitleList.find((f) => f.MetaSubId == values.TitleId)
+                    .MetaSubDescription +
+                ". " +
+                obj.FirstName +
+                " " +
+                obj.LastName;
+            obj.DepartMentName = DepartmentList.find(
+                (f) => f.DepartmentId == values.DepartmentId
+            ).DepartmentName;
+            obj.IdCardTypeName = IdCardListVM.find(
+                (d) => d.MetaSubId == values.IdCardType
+            ).MetaSubDescription;
+            obj.StatusName = StatusListVM.find(
+                (d) => d.MetaSubId == values.Status
+            ).MetaSubDescription;
+            obj.WorkSeverityName = WorkSeverityListVM.find(
+                (d) => d.MetaSubId == values.WorkSeverity
+            ).MetaSubDescription;
+            const formattedDate = values.Dob.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            });
+            obj.ShowDate = formattedDate;
+            const formattedExDate = values.ExpirryDate.toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+            });
+            obj.ShowExpirryDate = formattedExDate;
+            if (rowIndex == -1) {
+                let isexistName =
+                    visitorDetailList.filter((f) => f.VisitorName == obj.VisitorName) ||
+                    [];
+                if (isexistName.length > 0 && obj.VisitorDetailId == 0) {
+                    toast.current?.show({
+                        severity: "warn",
+                        summary: "Warning Message",
+                        detail: "Worker Already Exists",
+                    });
+                    return;
+                }
+                let isexistMoNo =
+                    visitorDetailList.filter((f) => f.MobileNo == obj.MobileNo) || [];
+                if (isexistMoNo.length > 0 && obj.VisitorDetailId == 0) {
+                    toast.current?.show({
+                        severity: "warn",
+                        summary: "Warning Message",
+                        detail: "Mobile No Already Exists",
+                    });
+                    return;
+                }
+                if (obj.MailId != "") {
+                    let isexisMail =
+                        visitorDetailList.filter((f) => f.MailId == obj.MailId) || [];
+                    if (isexisMail.length > 0 && obj.VisitorDetailId == 0) {
+                        toast.current?.show({
+                            severity: "warn",
+                            summary: "Warning Message",
+                            detail: "Mail ID Already Exists",
+                        });
+                        return;
+                    }
+                }
+                setVisitorDetailList([...visitorDetailList, obj]);
+            } else {
+                let List: any[] = visitorDetailList;
+                List[rowIndex] = obj;
+                setVisitorDetailList(List);
+                setRowIndex(-1);
+            }
+            if (document) {
+                if (documentfiles.length > 0) {
+                    setDocumentfiles([...documentfiles, documentUp]);
+                } else {
+                    setDocumentfiles([documentUp]);
+                }
+            }
+            OnClear();
+        },
+    });
+    const resetAllFormVM = () => {
+        visitorFormik.resetForm();
+        visitorDFormik.resetForm();
+        setDocumentfiles(([] = []));
+        setDocument(null);
+        setPhoto(null);
+        setDisableForm(true);
+        setVisitorDetailList(([] = []));
+        setImageUrl(IMAGES.NO_IMG);
+        setDocumentUrl("");
+        setTempStateList([]);
+        setTempCityList([]);
+        // setIsBelongingDetailsShow(false);
+        // Onchangecountry("CountryId", {}, CountryListVM[0].CountryId);
+    };
+    const onRowSelect = (rowData) => {
+        setDocument(null);
+        visitorDFormik.setFieldValue("", rowData);
+        visitorDFormik.setFieldValue(
+            "VisitorDetailId",
+            rowData.data.VisitorDetailId
+        );
+        visitorDFormik.setFieldValue(
+            "VisitorDetailCode",
+            rowData.data.VisitorDetailCode
+        );
+        visitorDFormik.setFieldValue("VisitorId", rowData.data.VisitorId);
+        visitorDFormik.setFieldValue("TitleId", rowData.data.TitleId);
+        visitorDFormik.setFieldValue("FirstName", rowData.data.FirstName);
+        visitorDFormik.setFieldValue("LastName", rowData.data.LastName);
+        visitorDFormik.setFieldValue("DepartmentId", rowData.data.DepartmentId);
+        visitorDFormik.setFieldValue("Dob", rowData.data.Dob);
+        visitorDFormik.setFieldValue("MailId", rowData.data.MailId);
+        visitorDFormik.setFieldValue("MobileNo", rowData.data.MobileNo);
+        visitorDFormik.setFieldValue("IdCardType", rowData.data.IdCardType);
+        visitorDFormik.setFieldValue("IdCardNo", rowData.data.IdCardNo);
+        visitorDFormik.setFieldValue("DocumentName", rowData.data.DocumentName);
+        visitorDFormik.setFieldValue("DocumentUrl", rowData.data.DocumentUrl);
+        visitorDFormik.setFieldValue("Status", rowData.data.Status);
+        visitorDFormik.setFieldValue(
+            "ExpirryDate",
+            new Date(rowData.data.ExpirryDate)
+        );
+        visitorDFormik.setFieldValue("WorkSeverity", rowData.data.WorkSeverity);
+        let abc = documentfiles[rowData.index];
+
+        setDocumentUrl(rowData.data.DocumentUrl);
+        setDocument(abc);
+        setRowIndex(rowData.index);
+    };
+    const handleSelectVM = (name, other, value) => {
+        visitorFormik.setFieldValue(name, value);
+    };
+    const handleChangeVM = (event) => {
+        visitorFormik.setFieldValue(event.target.name, event.value);
+    };
+    const handleDChange = (event) => {
+        visitorDFormik.setFieldValue(event.target.name, event.value);
+    };
+    const handleDSelect = (name, other, value) => {
+        visitorDFormik.setFieldValue(name, value);
+    };
+    const handleOnChange = (name, formName, value) => {
+        visitorFormik.setFieldValue(
+            name ?? visitorFormik[formName][name],
+            visitorFormik,
+            value
+        );
+    };
+    const OnClear = () => {
+        visitorDFormik.resetForm();
+        setDocument(null);
+        setDocumentUrl("");
+    };
+    const onChangeVisitorTypeVM = (name, other, value) => {
+        visitorFormik.setFieldValue(name, value);
+        // if (value == 35) {
+        //   setDisableForm(true);
+        //   OnClear();
+        //   setVisitorDetailList([]);
+        //   setDocumentfiles([]);
+        // } else {
+        //   setDisableForm(false);
+        // }
+    };
+    const handleCloseImage = () => {
+        setImageUrl(IMAGES.NO_IMG);
+        setPhoto(null);
+        profUploadRef.current?.clear();
+        visitorFormik.setFieldValue("DocumentName", "");
+        visitorFormik.setFieldValue("DocumentUrl", "");
+    };
+    const Onchangecountry = (name, other, value) => {
+        setTempStateList([]);
+        setTempCityList([]);
+        visitorFormik.setFieldValue(name, value);
+        visitorFormik.setFieldValue("StateId", null);
+        let Obj = {
+            CountryId: value,
+        };
+        var result = dispatch(OnChangeCountryVM(Obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result) {
+                    setTempStateList(res.payload.StateList);
+                    if (
+                        res.payload.StateList &&
+                        res.payload.StateList.length &&
+                        res.payload.StateList.length > 0
+                    ) {
+                        Onchangestate("StateId", {}, res.payload.StateList[0].StateId);
+                    }
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem.message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+    const Onchangestate = (name, other, value) => {
+        setTempCityList([]);
+        visitorFormik.setFieldValue(name, value);
+        visitorFormik.setFieldValue("CityId", null);
+        let Obj = {
+            StateId: value,
+        };
+        var result = dispatch(OnChangeStateVM(Obj));
+        result
+            .then((res) => {
+                if (res.payload.tranStatus.result) {
+                    setTempCityList(res.payload.CityList);
+                    if (
+                        res.payload.CityList &&
+                        res.payload.CityList.length &&
+                        res.payload.CityList.length > 0
+                    ) {
+                        handleSelect("CityId", {}, res.payload.CityList[0].CityId);
+                    }
+                } else {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem.message,
+                    });
+                }
+            })
+            .catch((error) => {
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+    const onUploadVM = (e) => {
+        if (imageUrl != "") {
+            handleCloseImage();
+        }
+        if (
+            e.files[0].type != "image/jpeg" &&
+            e.files[0].type != "image/png" &&
+            e.files[0].type != "image/jpg"
+        ) {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Error Message",
+                detail: "Please Upload only Files with Format (Image/ JPEG, JPG, PNG)",
+            });
+            return;
+        }
+        if (e.files.length > 0) {
+            setPhoto(e.files[0]);
+            visitorFormik.setFieldValue("DocumentName", e.files[0].name);
+            visitorFormik.setFieldValue("DocumentUrl", e.files[0].name);
+            const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+            setImageUrl(uploadedImageUrl);
+        } else {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Error Message",
+                detail: "Please Upload only Files with Format (Image/ JPEG, JPG, PNG)",
+            });
+            return;
+        }
+    };
+    const isValidFileType = (file, allowedTypes) => {
+        const fileExtension = file.name
+            .slice(((file.name.lastIndexOf(".") - 1) >>> 0) + 2)
+            .toLowerCase();
+        const fileType = file.type.toLowerCase();
+
+        return (
+            allowedTypes.includes(fileExtension) || allowedTypes.includes(fileType)
+        );
+    };
+    const onUploadDocumentVisitor = (e) => {
+        if (documentVisitorUploadRef.current) {
+            deleteDocumentsVisitor();
+        }
+        const allowedTypes = [
+            "jpeg",
+            "jpg",
+            "png",
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel",
+        ];
+        if (e.files) {
+            if (!isValidFileType(e.files[0], allowedTypes)) {
+                toast.current?.show({
+                    severity: "warn",
+                    summary: "Error Message",
+                    detail:
+                        "Please Upload only Files with Format (Image/ JPEG, JPG, PNG & DOC/ WORD, EXCEL, PDF)",
+                });
+                documentVisitorUploadRef.current?.clear();
+                return;
+            }
+        }
+        if (e.files.length > 0) {
+            setVisitorDocument(e.files[0]);
+            visitorFormik.setFieldValue("VisitorDocumentName", e.files[0].name);
+            const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+
+            visitorFormik.setFieldValue("VisitorDocumentUrl", e.files[0].name);
+            setDocumentUrlVisitor(uploadedImageUrl);
+        } else {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Error Message",
+                detail:
+                    "Please Upload only Files with Format (Image/ JPEG, JPG, PNG & DOC/ WORD, EXCEL, PDF)",
+            });
+            return;
+        }
+    };
+    const onUploadDocumentVM = (e) => {
+        if (documentUploadRef.current) {
+            deleteDocuments();
+        }
+        const allowedTypes = [
+            "jpeg",
+            "jpg",
+            "png",
+            "pdf",
+            "doc",
+            "docx",
+            "xls",
+            "xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "application/vnd.ms-excel",
+        ];
+        if (e.files) {
+            if (!isValidFileType(e.files[0], allowedTypes)) {
+                toast.current?.show({
+                    severity: "warn",
+                    summary: "Error Message",
+                    detail:
+                        "Please Upload only Files with Format (Image/ JPEG, JPG, PNG & DOC/ WORD, EXCEL, PDF)",
+                });
+                documentUploadRef.current?.clear();
+                return;
+            }
+        }
+        if (e.files.length > 0) {
+            setDocument(e.files[0]);
+            visitorDFormik.setFieldValue("DocumentName", e.files[0].name);
+            const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+
+            visitorDFormik.setFieldValue("DocumentUrl", e.files[0].name);
+            setDocumentUrl(uploadedImageUrl);
+        } else {
+            toast.current?.show({
+                severity: "warn",
+                summary: "Error Message",
+                detail:
+                    "Please Upload only Files with Format (Image/ JPEG, JPG, PNG & DOC/ WORD, EXCEL, PDF)",
+            });
+            return;
+        }
+    };
+    const deleteDocumentsVM = () => {
+        documentUploadRef.current?.clear();
+        setDocumentUrl("");
+        setDocument(null);
+        visitorDFormik.setFieldValue("DocumentName", "");
+        visitorDFormik.setFieldValue("DocumentUrl", "");
+    };
+    const deleteDocumentsVisitor = () => {
+        documentVisitorUploadRef.current?.clear();
+        setDocumentUrlVisitor("");
+        setVisitorDocument(null);
+        visitorFormik.setFieldValue("VisitorDocumentName", "");
+        visitorFormik.setFieldValue("VisitorDocumentUrl", "");
+    };
+    const handleHyperlinkVM = () => {
+        if (documentUrl != "") {
+            window.open(documentUrl, "_blank");
+        }
+    };
+    const VisitorhandleHyperlink = () => {
+        if (documentUrlVisitor != "") {
+            window.open(documentUrlVisitor, "_blank");
+        }
+    };
+    const itemTemplateVM = () => {
+        return (
+            <div className="flex align-items-center flex-column">
+                <i
+                    className="pi pi-image mt-3 p-5"
+                    style={{
+                        fontSize: "5em",
+                        borderRadius: "50%",
+                        backgroundColor: "var(--surface-b)",
+                        color: "var(--surface-d)",
+                    }}
+                ></i>
+                <span
+                    style={{ fontSize: "1.2em", color: "var(--text-color-secondary)" }}
+                    className="my-5"
+                >
+                    Drag and Drop Image Here
+                </span>
+            </div>
+        );
+    };
+    // VISITOR MASTER
+
+    const handleVisitorSelected = (visitorId, updatedList) => {
+        setVisitorNameList(updatedList);
+
+        let selectedVis = updatedList
+            .filter((item) =>
+                item.VisitorDetails.some((i) => i.VisitorDetailId === visitorId)
+            )
+            .map((item) => ({
+                ...item,
+                VisitorDetails: item.VisitorDetails.filter(
+                    (i) => i.VisitorDetailId === visitorId
+                ),
+            }));
+
+        let selectedVisitorDetails = selectedVis.flatMap(
+            (item) => item.VisitorDetails
+        );
+
+        // let selectedVis = updatedList.filter(
+        //   (item) => item.VisitorDetails.filter(i=>i.VisitorDetailId === visitorId  )
+        // );
+        // let selectedVis = updatedList.filter(
+        //   (item) => item.VisitorDetails.VisitorDetailId === visitorId
+        // );
+
+        // setFindVis(selectedVis);
+        if (selectedVisitorDetails && selectedVisitorDetails.length > 0) {
+            onChangeVisitor(
+                "VisitorId",
+                {},
+                selectedVisitorDetails[0].VisitorDetailId,
+                updatedList
+            );
+        }
+    };
+
+    // Work Permit
+    const [WPworkPermitWorkers, setWPWorkPermitWorkers] = useState([]);
+
+    const [WPValidityDate, setWPValidityDate] = useState([]);
+    const [WPValidityMaxDate, setWPValidityMaxDate] = useState<any>(new Date());
+    const [WPValidityMinDate, setWPValidityMinDate] = useState<any>(new Date());
+
+    const cellEditor = (rowData, rowIndex) => {
+        if (rowIndex.field === "Validity")
+            return dateRangeEditor(rowData, rowIndex);
+    };
+
+    const handleDateChange = (event, rowData: any) => {
+        setWPValidityDate([event.value[0], event.value[1]]);
+        // setWPValidityMinDate(event.value[0])
+        // setWPValidityMaxDate(event.value[1])
+        setWPWorkPermitWorkers((prevState) =>
+            prevState.map((work) => {
+                if (rowData.WPWorkerDetailId === work.WPWorkerDetailId) {
+                    return {
+                        ...work,
+                        ValidFrom: event.value[0],
+                        ValidTo: event.value[1],
+                    };
+                } else {
+                    return work;
+                }
+            })
+        );
+        setSelectedWPWorkerDetails((prevState) =>
+            prevState.map((worker) => {
+                if (rowData.WPWorkerDetailId === worker.WPWorkerDetailId) {
+                    return {
+                        ...worker,
+                        ValidFrom: event.value[0],
+                        ValidTo: event.value[1],
+                    };
+                } else {
+                    return worker;
+                }
+            })
+        );
+    };
+
+    const dateRangeEditor = (rowData, rowIndex) => {
+        return (
+            <Calendar
+                className="w-full"
+                onChange={(event) => handleDateChange(event, rowData)}
+                minDate={WPValidityMinDate}
+                maxDate={WPValidityMaxDate}
+                name={""}
+                value={
+                    rowData?.ValidFrom || rowData?.ValidTo
+                        ? [rowData?.ValidFrom, rowData?.ValidTo]
+                        : null
+                }
+                disabled={false}
+                dateFormat={"dd/mm/yy"}
+                showIcon
+                showTime={true}
+                hourFormat="12"
+                timeOnly={false}
+                selectionMode={"range"}
+                readOnlyInput
+            />
+        );
+    };
+
+    const onCellEditComplete = (e: ColumnEvent) => {
+        let { rowData, newValue, field, originalEvent: event } = e;
+
+        switch (field) {
+            // case "quantity":
+            // case "price":
+            //   if (isPositiveInteger(newValue)) rowData[field] = newValue;
+            //   else event.preventDefault();
+            //   break;
+
+            default:
+                if (newValue && newValue.length > 0) rowData[field] = newValue;
+                else event.preventDefault();
+                break;
+        }
+    };
+
+    const onGlobalFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value;
+        let _filters = { ...filters };
+
+        // @ts-ignore
+        _filters["global"].value = value;
+
+        setFilters(_filters);
+        setGlobalFilterValue(value);
+    };
+    const renderHeader = () => {
+        return (
+            <div className="flex justify-content-end">
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <InputText
+                        value={globalFilterValue}
+                        onChange={onGlobalFilterChange}
+                        placeholder="Keyword Search"
+                    />
+                </span>
+            </div>
+        );
+    };
+    const WPheader = renderHeader();
+    const [WPfilters, setWPFilters] = useState({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    });
+
+    const WPactionBodyTemplate: any = (rowData, colItem) => {
+        return (
+            <div className="action-btn">
+                <React.Fragment>
+                    <Button
+                        label=""
+                        title="Edit"
+                        icon="pi pi-pencil"
+                        className="mr-2 p-1 p-button-success"
+                        disabled={isView}
+                    />
+                    <Button
+                        label=""
+                        severity="danger"
+                        icon="pi pi-trash"
+                        title="Delete"
+                        className="mr-2 p-1"
+                        disabled={isView}
+                    />
+                </React.Fragment>
+            </div>
+        );
+    };
+    const filesContent = (rowData) => {
+        return (
+            <div>
+                <div>
+                    {rowData.WorkerDocs &&
+                        rowData.WorkerDocs.map((item) => {
+                            return (
+                                <div className="mb-2">
+                                    <a
+                                        className="text-blue-600 underline"
+                                        target="_blank"
+                                        href={item.FileBlobUrl}
+                                    >
+                                        {item.FileName}
+                                    </a>
+                                </div>
+                            );
+                        })}
+                </div>
+            </div>
+        );
+    };
+
+    const setWorkPermit = (res) => {
+        setWPWorkPermitWorkers(res.payload.WorkPermitWorkerDetails);
+
+        // let workerDtl = JSON.parse(JSON.stringify(res.payload.WpWorkerDetail));
+        // const wpWorkerDocsTemp = [...res.payload.WpWorkerDocDetail];
+        // const promises = workerDtl.map(async (item) => {
+        //   item.WorkerPhoneNo = item.MobileNo;
+        //   item.WorkerMailID = item.MailId;
+        //   item.WorkerStatus = item.Status == 1 ? "Active" : "In Active";
+        //   item.WorkerDocs = [];
+
+        //   const docPromises = wpWorkerDocsTemp
+        //     .filter((element) => item.WPWorkerDetailId === element.WPWorkerDetailId)
+        //     .map(async (element) => {
+        //       const docDtl = { ...element };
+        //       docDtl.FileName = element.DocumentName;
+        //
+
+        //       const resFile = await urlToFile(element.DocumentFullUrl);
+        //
+
+        //       docDtl.file = resFile;
+        //       docDtl.FileBlobUrl = fileToBlobURL(resFile);
+        //       docDtl.WorkerDocRefNo = element.DocumentNo;
+        //       return docDtl;
+        //     });
+
+        //   item.WorkerDocs = await Promise.all(docPromises);
+        //   return item;
+        // });
+        // Promise.all(promises).then((updatedWorkerDtl) => {
+        //
+        //   const allWorkerDocs = updatedWorkerDtl.flatMap((item) =>
+        //     item.WorkerDocs.map((doc) => doc.file)
+        //   );
+        //
+        //
+        //
+
+        //   const documentMap = new Map();
+
+        //   // Populate document map
+        //   res.payload.WpWorkerDocDetail.forEach((doc) => {
+        //     const workerId = doc.WPWorkerDetailId;
+        //     if (!documentMap.has(workerId)) {
+        //       documentMap.set(workerId, []);
+        //     }
+        //     documentMap.get(workerId).push(doc);
+        //   });
+
+        //   const combinedList = res.payload.WpWorkerDetail.map((worker) => ({
+        //     ...worker,
+        //     WpWorkerDocs: documentMap.get(worker.WPWorkerDetailId) || [],
+        //   }));
+
+        // setWpWorkerDetails(combinedList);
+
+        // });
+    };
+
+    const saveWorkPermitVisitor = () => {
+        setIsdisableSave(true);
+        const formData: any = new FormData();
+        let VDList: any[] = [];
+
+        let visVal: any = {
+            VisitorId: 0,
+            VisitorCode: "",
+            VisitorTypeId: 117,
+            CompanyId:
+                selectedWPHeader != null
+                    ? selectedWPHeader.CompanyId
+                    : localStorage["CompanyId"],
+            PlantId:
+                selectedWPHeader != null
+                    ? selectedWPHeader.PlantId
+                    : localStorage["PlantId"],
+            CountryId: selectedWPHeader != null ? selectedWPHeader.CountryId : null,
+            StateId: selectedWPHeader != null ? selectedWPHeader.StateId : null,
+            CityId: selectedWPHeader != null ? selectedWPHeader.CityId : null,
+            TitleId: selectedWPHeader != null ? selectedWPHeader.TitleId : 37,
+            FirstName: selectedWPWorkerDetails[0].WorkerName,
+            LastName: "",
+            Dob: tLDS(new Date()),
+            VisitorCompany: "",
+            Address: "",
+            MailId: "",
+            MobileNo: "",
+            IdCardType: 17,
+            IdCardNo: "",
+            DocumentName: "",
+            DocumentUrl: "",
+            VisitorDocumentName: "",
+            VisitorDocumentUrl: "",
+            Status: selectedWPHeader != null ? selectedWPHeader.Status : 1,
+            CreatedBy:
+                selectedWPHeader != null
+                    ? selectedWPHeader.CreatedBy
+                    : +localStorage["UserId"],
+            CreatedOn:
+                selectedWPHeader != null
+                    ? new Date(selectedWPHeader.CreatedOn)
+                    : new Date(),
+            ModifiedBy: selectedWPHeader != null ? +localStorage["UserId"] : null,
+            ModifiedOn: selectedWPHeader != null ? new Date() : null,
+        };
+
+        if (createVisEnt) {
+            // if (!visitordocument) {
+            //   setIsdisableSave(false);
+            //   toast.current?.show({
+            //     severity: "warn",
+            //     summary: "Warning Message",
+            //     detail: "Please Add Document.",
+            //   });
+            //   return;
+            // }
+        }
+
+        // Individual
+        if (selectedWPWorkerDetails.length > 0) {
+            for (let i = 0; i < selectedWPWorkerDetails.length; i++) {
+                let object: any = {};
+                const x = selectedWPWorkerDetails[i];
+                object.VisitorDetailId = 0;
+                object.VisitorId = 0;
+                object.TitleId = 0;
+                object.FirstName = x.WorkerName;
+                object.LastName = "";
+                object.DepartmentId = null;
+                object.Dob = null;
+                object.MailId =
+                    x.WorkerMailID == null || x.WorkerMailID == undefined
+                        ? ""
+                        : x.WorkerMailID;
+                object.MobileNo = x.WorkerPhoneNo;
+                object.IdCardType = 0;
+                object.IdCardNo = 0;
+                object.DocumentName = "";
+                object.DocumentUrl = "";
+                object.Status = x.Status;
+                object.ExpirryDate = null;
+                object.WorkSeverity = null;
+                VDList.push(object);
+            }
+        }
+
+        if (VDList.length == 0) {
+            // setIsdisableSave(false);
+            // toast.current?.show({
+            //   severity: "warn",
+            //   summary: "Warning Message",
+            //   detail: "Please Add Atleast One Worker Detail.",
+            // });
+            // return;
+        }
+        formData.append("webfile", []);
+        formData.append("webfile1", []);
+
+        let obj = {
+            Visitor: visVal,
+            VisitorDetail: VDList,
+        };
+        let input: string = JSON.stringify(obj);
+        formData.append("input", input);
+
+        var updateres = dispatch(createVM(formData));
+        updateres
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setIsdisableSave(false);
+                    setVisitorShow(false);
+                    // handleVisitorSelected(
+                    //   res.payload?.VisitorHeader?.VisitorId,
+                    //   res.payload?.VisitorList
+                    // );
+                    saveWorkPermitVisitorEntry(res.payload?.VisitorHeader?.VisitorId);
+                    // fetchAllData(0);
+                    // toast.current?.show({
+                    //   severity: "success",
+                    //   summary: "Success Message",
+                    //   detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    // });
+                } else {
+                    setIsdisableSave(false);
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                setIsdisableSave(false);
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: error,
+                });
+            });
+    };
+
+    const saveWorkPermitVisitorEntry = (updatedVisId) => {
+        let workPermitExists = false;
+        if (selectedWPEntryDetails && selectedWPEntryDetails.length > 0) {
+            selectedWPEntryDetails.forEach((entry) => {
+                selectedWPWorkerDetails.forEach((worker) => {
+                    if (
+                        new Date(entry.ValidFrom) &&
+                        new Date(entry.ValidTo) &&
+                        (worker.ValidFrom || selectedWPHeader.ValidFrom) &&
+                        (worker.ValidTo || selectedWPHeader.ValidTo)
+                    ) {
+                        const entryValidFrom = new Date(entry.ValidFrom);
+                        const entryValidTo = new Date(entry.ValidTo);
+                        const workerValidFrom = worker.ValidFrom
+                            ? new Date(worker.ValidFrom)
+                            : new Date(selectedWPHeader.ValidFrom);
+                        const workerValidTo = worker.ValidTo
+                            ? new Date(worker.ValidTo)
+                            : new Date(selectedWPHeader.ValidTo);
+
+                        if (
+                            (entryValidFrom >= workerValidFrom &&
+                                entryValidFrom <= workerValidTo) ||
+                            (entryValidTo >= workerValidFrom && entryValidTo <= workerValidTo)
+                        ) {
+                            workPermitExists = true;
+                        }
+                    }
+                });
+            });
+            if (workPermitExists) {
+                workPermitExists = false;
+                setIsdisableSave(false);
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: "Worker Already Working in this Date.",
+                });
+                return;
+            }
+        }
+
+        const formData: any = new FormData();
+        let WorkPermitValues: any = {};
+        WorkPermitValues.CompanyId = +localStorage["CompanyId"];
+        WorkPermitValues.PlantId = +localStorage["PlantId"];
+        WorkPermitValues.GateId = +localStorage["GateId"] || null;
+        WorkPermitValues.VisitorTypeId = 117;
+        WorkPermitValues.VisitorId = updatedVisId;
+        WorkPermitValues.PersonName = selectedWPHeader.ContractorName;
+        WorkPermitValues.VisitedEmployeeId = selectedWPHeader.WorkOrganizer;
+        WorkPermitValues.VisitorEntryDate = tLDS(new Date());
+        WorkPermitValues.ValidFrom = selectedWPHeader.ValidFrom;
+        WorkPermitValues.ValidTo = selectedWPHeader.ValidTo;
+        WorkPermitValues.PoNumber = selectedWPHeader.PoNo;
+        WorkPermitValues.PurposeOfVisit = 118;
+        WorkPermitValues.RefNo = selectedWPHeader.WorkPermitCode;
+        // WorkPermitValues.IsAppointmentBooking = true;
+        WorkPermitValues.CreatedBy = +localStorage["UserId"];
+        WorkPermitValues.CreatedOn = tLDS(new Date());
+        WorkPermitValues.ModifiedBy = null;
+        WorkPermitValues.ModifiedOn = null;
+
+        let ListvisitorEntryDetailList = [];
+        if (selectedWPWorkerDetails.length > 0) {
+            for (let i = 0; i < selectedWPWorkerDetails.length; i++) {
+                const x = selectedWPWorkerDetails[i];
+                let vedObj: any = {};
+                vedObj.VisitorEntryDetailId = 0;
+                vedObj.VisitorEntryId = 0;
+                vedObj.VisitorEntryDetailCode = x.VisitorDetailCode;
+                vedObj.TitleId = null;
+                vedObj.FirstName = x.WorkerName;
+                vedObj.LastName = "";
+                vedObj.DepartmentId = null;
+                vedObj.Dob = null;
+                vedObj.MailId =
+                    x.WorkerMailID == null || x.WorkerMailID == undefined
+                        ? ""
+                        : x.WorkerMailID;
+                vedObj.MobileNo = x.WorkerPhoneNo;
+                vedObj.TagNo = x.TagNo;
+                vedObj.VisitorCompany = x.VisitorCompany;
+                vedObj.DigitalSignName = x.DigitalSignName || "";
+                vedObj.DigitalSignUrl = x.DigitalSignUrl || "";
+                vedObj.SignedVersion = x.SignedVersion || 0;
+                vedObj.IsTermsAgreed = x.IsTermsAgreed || 0;
+                vedObj.IdCardType = null;
+                vedObj.IdCardNo = "";
+                vedObj.DocumentName = "";
+                vedObj.DocumentUrl = "";
+                vedObj.Status = x.Status;
+                vedObj.ValidFrom = tLDS(x.ValidFrom || selectedWPHeader.ValidFrom);
+                vedObj.ValidTo = tLDS(x.ValidTo || selectedWPHeader.ValidTo);
+                ListvisitorEntryDetailList.push(vedObj);
+            }
+        }
+
+        let obj = {
+            VisitorEntry: WorkPermitValues,
+            VisitorEntryDetail: ListvisitorEntryDetailList ?? [],
+            VisitorEntryBelongingDetail: [],
+            VisitorEntryMaterialDetail: [],
+            VisitorEntryAtvDetail: [],
+        };
+        let input: string = JSON.stringify(obj);
+        formData.append("input", input);
+        formData.append("webfile", []);
+        formData.append("webfile1", []);
+        formData.append("webfiles", []);
+        formData.append("digSign", null);
+
+        var createres = dispatch(create(formData));
+        createres
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    setIsdisableSave(false);
+                    toast.current?.show({
+                        severity: "success",
+                        summary: "Success Message",
+                        detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                    setWorkPermitShow(false);
+                    setSelectedWP({});
+
+                    resetAllForm();
+                } else {
+                    handleTabAction({
+                        target: {
+                            value: 35,
+                            id: 35,
+                        },
+                    });
+                    setIsdisableSave(false);
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error",
+                        detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                    });
+                }
+            })
+            .catch((error) => {
+                setIsdisableSave(false);
+                handleTabAction({
+                    target: {
+                        value: 35,
+                        id: 35,
+                    },
+                });
+                toast.current?.show({
+                    severity: "error",
+                    summary: "Error",
+                    detail: JSON.stringify(error),
+                });
+            });
+    };
+
+    const saveWorkPermit = () => {
+        setIsdisableSave(true);
+        saveWorkPermitVisitor();
+    };
+
+    // Work Permit
+
+    // useEffect(() => {
+    //   if(visitorEntryFormik.values.VehicleNo != null || visitorEntryFormik.values.VehicleNo != ""
+    //     && VehicleNoList && VehicleNoList.length >0
+    //   ) {
+    //     if(VehicleNoList.filter(item => item.VehicleNo == visitorEntryFormik.values.VehicleNo)){
+    //       setIsCurrentCreate(true)
+    //     }
+    //   }
+    // },[visitorEntryFormik.values.VehicleNo])
+
+    useEffect(() => {
+        checkVehControl();
+
+        // if (visitorEntryFormik.values.EntryType == 102) {
+        //   // if (visitorEntryFormik.values?.IsEwayBillNo) {
+        //   //   setChangeField((prevState) => ({
+        //   //     ...prevState,
+        //   //     IsEwayBillNo: {
+        //   //       disable: true,
+        //   //       show: true,
+        //   //       required: false,
+        //   //     },
+        //   //   }));
+        //   // }
+        //   // else {
+        //   //   setChangeField((prevState) => ({
+        //   //     ...prevState,
+        //   //     IsEwayBillNo: {
+        //   //       disable: false,
+        //   //       show: true,
+        //   //       required: false,
+        //   //     },
+        //   //   }));
+        //   // }
+        //   // if (visitorEntryFormik.values?.IsEinvBillNo) {
+        //   //   setChangeField((prevState) => ({
+        //   //     ...prevState,
+        //   //     IsEinvBillNo: {
+        //   //       disable: true,
+        //   //       show: true,
+        //   //       required: false,
+        //   //     },
+        //   //   }));
+        //   // }
+        //   // else {
+        //   //   setChangeField((prevState) => ({
+        //   //     ...prevState,
+        //   //     IsEinvBillNo: {
+        //   //       disable: false,
+        //   //       show: true,
+        //   //       required: false,
+        //   //     },
+        //   //   }));
+        //   // }
+        // }
+    }, [selectedEntryData]);
+
+    // const checkControl = () => {
+    //   if (visitorEntryFormik.values.VehicleTypeId == 4) {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       VehicleNo: {
+    //         disable: false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       DriverName: {
+    //         disable: false,
+    //         show: true,
+    //       },
+    //       StartingKm: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEwayBillNo: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEinvBillNo: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   } else if (visitorEntryFormik.values.VehicleTypeId == 3) {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: true,
+    //         show: true,
+    //       },
+    //       VehicleNo: {
+    //         disable: false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable: true,
+    //         show: true,
+    //       },
+    //       DriverName: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       StartingKm: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEWayExists: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEInvoiceExists: {
+    //         disable: false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   } else {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: true,
+    //         show: true,
+    //       },
+    //       VehicleNo: {
+    //         disable: false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable: false,
+    //         show: true,
+    //       },
+    //       DriverName: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       StartingKm: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEWayExists: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEInvoiceExists: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable: false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   }
+    // };
+
+    const handlePrint = () => {
+        var divContents = document.getElementById("work_permit_print").innerHTML;
+        var a = window.open("", "", "height=1000, width=1000");
+
+        a.document.write("<html>");
+        a.document.write('<body style="padding:10px 20px;margin: 0px auto">');
+        a.document.write(divContents);
+        a.document.write(
+            `</body>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+        * {
+          font-family: 'Open Sans', sans-serif;
+          font-weight: normal;
+          font-size: 11px;
+          margin: 0px;
+        }
+        .p-checkbox-box .p-highlight{
+        display: none;
+        }
+        .p-hidden-accessible{border:0;clip:rect(0 0 0 0);height:1px;margin:-1px;overflow:hidden;padding:0;position:absolute;width:1px}
+        .no-print { display: none; }
+        h4{font-weight: 700;}
+        .text-center { text-align: center; }
+        .border-1 { border-width: 1px !important; border-style: solid; }
+        table { border-collapse: collapse; vertical-align: top; width: 100%; }
+        .p-2 { padding: 0.5rem !important; }
+        .pl-2 { padding-left: 0.5rem !important; }
+        .pr-2 { padding-right: 0.5rem !important; }
+        .gap-2 { gap: 0.5rem !important; }
+        .flex { display: flex !important; }
+        .col-12 { flex: 0 0 auto; padding: 0.5rem; width: 100%; }
+        .font-bold { font-weight: 700 !important; }
+        .border-bottom-1 { border-bottom-width: 1px !important; border-bottom-style: solid; }
+        .text-2xl { font-size: 1.5rem !important; }
+        .justify-content-center { justify-content: center !important; }
+        .align-items-center { align-items: center !important; }
+  
+        /* Media query for print */
+        @media print {
+          body {
+            margin: 0;  /* Remove default print margins */
+          }
+          @page {
+            margin: 0;  /* Remove default page margins */
+          }
+        }
+      </style>
+      </html>`
+        );
+
+        a.document.close();
+        a.print();
+    };
+
+    const changeStage = (type) => {
+        setPageType(type);
+    };
+
+    // VEHICLE TYPE
+    const onCheckboxChange = (e, clr) => {
+        visitorEntryFormik.setFieldValue(e?.target?.name, e?.checked);
+        if (clr) {
+            setVisitorEntryRefDetailList([
+                {
+                    VisitorEntryRefDetailId: 0,
+                    VisitorEntryId: 0,
+                    RefTypeId: null,
+                    RefValue: "",
+                    adisable: false,
+                    cdisable: true,
+                    show: true,
+                    ddisable: false,
+                    idisable: false,
+                },
+            ]);
+        } else {
+            if (e?.checked) {
+                let tempRefLst = tempRefTypeList.filter(
+                    (item) => item.MetaSubId == e?.target?.id
+                );
+                setRefTypeList((prevList) => [...prevList, ...tempRefLst]);
+                const updatedVisitorDetails = VisitorEntryRefDetailList.map((item) => {
+                    if (!item.RefTypeId) {
+                        return {
+                            ...item,
+                            RefTypeId: e?.target?.id,
+                        };
+                    }
+                    return item;
+                });
+                setVisitorEntryRefDetailList(updatedVisitorDetails);
+            } else {
+                setRefTypeList((prevList) =>
+                    prevList.filter((item) => item.MetaSubId !== e?.target?.id)
+                );
+                const updatedVisitorDetails = VisitorEntryRefDetailList.filter(
+                    (item) => item.RefTypeId !== e?.target?.id
+                );
+
+                // setVisitorEntryRefDetailList(updatedVisitorDetails);
+                if (updatedVisitorDetails.length > 0) {
+                    setVisitorEntryRefDetailList(updatedVisitorDetails);
+                } else {
+                    const clearedData = VisitorEntryRefDetailList.map((item) =>
+                        item.RefTypeId === e?.target?.id
+                            ? { ...item, RefValue: "", RefTypeId: null }
+                            : item
+                    );
+                    setVisitorEntryRefDetailList(clearedData);
+                }
+            }
+            // setVisitorEntryRefDetailList([
+            //   {
+            //     VisitorEntryRefDetailId: 0,
+            //     VisitorEntryId: 0,
+            //     RefTypeId: null,
+            //     RefValue: "",
+            //     adisable: false,
+            //     cdisable: false,
+            //     show: true,
+            //     ddisable: false,
+            //     idisable: false,
+            //   },
+            // ]);
+        }
+        // let tempRefLst = tempRefTypeList.filter(
+        //   (item) => item.MetaSubId == e?.target?.id
+        // );
+        // if (e?.checked) {
+        //   setRefTypeList((prevList) => {
+        //     const uniqueMetaSubIds = new Set(prevList.map((item) => item.MetaSubId));
+        //     return [
+        //       ...prevList,
+        //       ...tempRefLst.filter((item) => !uniqueMetaSubIds.has(item.MetaSubId)),
+        //     ];
+        //   });
+        // } else {
+
+        //   setRefTypeList((prevList) => {
+        //     const uniqueMetaSubIds = new Set(prevList.map((item) => item.MetaSubId));
+        //     return [
+        //       ...prevList,
+        //       ...tempRefLst.filter((item) => !uniqueMetaSubIds.has(item.MetaSubId)),
+        //     ];
+        //   });
+        //   setVisitorEntryRefDetailList([
+        //     {
+        //       VisitorEntryRefDetailId: 0,
+        //       VisitorEntryId: 0,
+        //       RefTypeId: null,
+        //       RefValue: "",
+        //       adisable: false,
+        //       cdisable: false,
+        //       show: true,
+        //       ddisable: false,
+        //       idisable: false,
+        //     },
+        //   ]);
+        // }
+    };
+    const onEnterVehNo = (name, other, e, value) => {
+        //
+        // visitorEntryFormik.setFieldValue(name, e?.target?.value);
+        // if(e.keyCode == 8){
+        //   OnChangeVehNo(name, other, e)
+        // }
+    };
+
+    const OnChangeExistVehNo = (name, other, value) => {
+        if (value?.hasOwnProperty("entryType") && value?.entryType == 103) {
+            visitorEntryFormik.setFieldValue(name, value?.vehicleNo);
+        } else {
+            visitorEntryFormik.setFieldValue(
+                name,
+                value?.vehicleNo ? value?.vehicleNo : value
+            );
+        }
+        if (value != "") {
+            // if (!value) {
+            //   // Clear all fields if the value is cleared
+            //   resetAllForm();
+            //   return;
+            // }
+            // if (typeof value == "string") {
+            // } else {
+            // let visType = visitorEntryFormik.values.visType;
+            // if (!visType) {
+            //   toast.current?.show({
+            //     severity: "warn",
+            //     summary: "Warning Message",
+            //     detail: "Please Select Visitor Entry Type.",
+            //   });
+            //   return;
+            // }
+            let obj = {
+                VehicleNo: value?.vehicleNo || value,
+                VisitorEntryId:
+                    value?.VisitorEntryId && value?.entryType == 103
+                        ? value?.VisitorEntryId
+                        : visitorEntryFormik?.values?.VisitorEntryId,
+            };
+            var result = dispatch(OnChangeExistVehicleNo(obj));
+            result
+                .then((res) => {
+                    if (res.payload.tranStatus.result) {
+                        if (
+                            res.payload.VisitorEntryHeader &&
+                            Object.keys(res.payload.VisitorEntryHeader).length &&
+                            Object.keys(res.payload.VisitorEntryHeader).length > 0
+                        ) {
+                            if (res?.payload.VisitorEntryHeader?.EntryType == 103) {
+                                setSelectedEntryData({
+                                    ...res.payload.VisitorEntryHeader,
+                                    EntryType: res?.payload.VisitorEntryHeader?.EntryType,
+                                });
+                                visitorEntryFormik.setFieldValue(
+                                    "VehicleTypeId",
+                                    res?.payload.VisitorEntryHeader?.VehicleTypeId
+                                );
+                                setSelectedVehType(
+                                    res?.payload.VisitorEntryHeader?.VehicleTypeId
+                                );
+                                setIsCurrentCreate(false);
+                                setVehDataForm(res);
+                                disableVehDataForm();
+                            } else if (res?.payload.VisitorEntryHeader?.EntryType == 102) {
+                                setSelectedEntryData({
+                                    ...res.payload.VisitorEntryHeader,
+                                    EntryType: res?.payload.VisitorEntryHeader?.EntryType,
+                                });
+                                visitorEntryFormik.setFieldValue(
+                                    "VehicleTypeId",
+                                    res?.payload.VisitorEntryHeader?.VehicleTypeId
+                                );
+                                setSelectedVehType(
+                                    res?.payload.VisitorEntryHeader?.VehicleTypeId
+                                );
+                                setIsCurrentCreate(false);
+                                setVehDataForm(res);
+                                disableVehDataForm();
+                            }
+                        } else {
+                            resetOnlyForm();
+                            visitorEntryFormik.setFieldValue(name, value);
+                            visitorEntryFormik.setFieldValue(
+                                "VehicleTypeId",
+                                value?.VehicleTypeId
+                            );
+                            setSelectedVehType(value?.VehicleTypeId);
+                            setCheckVehAction(true);
+                        }
+                    }
+                })
+                .catch((error) => {
+                    // toast.current?.show({
+                    //   severity: "error",
+                    //   summary: "Error Message",
+                    //   detail: JSON.stringify(error),
+                    // });
+                });
+            // }
+        }
+    };
+
+    const OnChangeVehNo = (name, other, value) => {
+        visitorEntryFormik.setFieldValue(name, value);
+        if (value != "") {
+            // if (!value) {
+            //   // Clear all fields if the value is cleared
+            //   resetAllForm();
+            //   return;
+            // }
+            // if (typeof value == "string") {
+            // } else {
+            // let visType = visitorEntryFormik.values.visType;
+            // if (!visType) {
+            //   toast.current?.show({
+            //     severity: "warn",
+            //     summary: "Warning Message",
+            //     detail: "Please Select Visitor Entry Type.",
+            //   });
+            //   return;
+            // }
+            let obj = {
+                VehicleNo: value?.VehicleNo || value,
+                VisitorEntryId: value?.VisitorEntryId
+                    ? value?.VisitorEntryId
+                    : visitorEntryFormik?.values?.VisitorEntryId,
+                // EntryType: visitorEntryFormik?.values?.EntryType
+            };
+            var result = dispatch(OnChangeVehicleNo(obj));
+            result
+                .then((res) => {
+                    if (res.payload.tranStatus.result) {
+                        if (
+                            res.payload.VisitorEntryHeader &&
+                            Object.keys(res.payload.VisitorEntryHeader).length &&
+                            Object.keys(res.payload.VisitorEntryHeader).length > 0
+                        ) {
+                            setSelectedEntryData({
+                                ...res.payload.VisitorEntryHeader,
+                                EntryType: 102,
+                            });
+                            visitorEntryFormik.setFieldValue(
+                                "VehicleTypeId",
+                                res?.payload.VisitorEntryHeader?.VehicleTypeId
+                            );
+                            setSelectedVehType(
+                                res?.payload.VisitorEntryHeader?.VehicleTypeId
+                            );
+                            if (res?.payload.VisitorEntryHeader?.VisitorEntryId == null) {
+                                visitorEntryFormik.setFieldValue(
+                                    "VehicleName",
+                                    res?.payload.VisitorEntryHeader?.VehicleName
+                                );
+                                visitorEntryFormik.setFieldValue(
+                                    "VehicleModel",
+                                    res?.payload.VisitorEntryHeader?.VehicleModel
+                                );
+                                visitorEntryFormik.setFieldValue(
+                                    "VehicleNo",
+                                    res?.payload.VisitorEntryHeader?.VehicleNo
+                                );
+
+                                handleSelect(
+                                    "DriverId",
+                                    {},
+                                    +res?.payload.VisitorEntryHeader?.DriverId
+                                );
+                                setCheckVehAction(true);
+                            } else if (res?.payload.VisitorEntryHeader?.EntryType == 102) {
+                                if (res?.payload.VisitorEntryHeader?.VisitorEntryId > 0) {
+                                    setCheckVehAction(false);
+                                }
+                                toast.current?.show({
+                                    severity: "success",
+                                    summary: "Data Found Successfully",
+                                    detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                                });
+                                setIsCurrentCreate(true);
+                                setVehDataForm(res);
+                                visitorEntryFormik.setFieldValue("EntryType", 103);
+
+                                // disableVehDataForm();
+                                setSelectedEntryData({
+                                    ...res?.payload.VisitorEntryHeader,
+                                    VehicleTypeId:
+                                        value?.VehicleTypeId ||
+                                        res?.payload.VisitorEntryHeader?.VehicleTypeId,
+                                });
+
+                                enableVehDataForm();
+                            } else if (res?.payload.VisitorEntryHeader?.EntryType == 103) {
+                                if (res?.payload.VisitorEntryHeader?.VisitorEntryId > 0) {
+                                    setCheckVehAction(false);
+                                }
+                                toast.current?.show({
+                                    severity: "success",
+                                    summary: "Data Found Successfully",
+                                    detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                                });
+                                setIsCurrentCreate(false);
+                                setVehDataForm(res);
+                                visitorEntryFormik.setFieldValue("EntryType", 102);
+                                setSelectedEntryData(res?.payload.VisitorEntryHeader);
+
+                                enableVehDataForm();
+                            } else if (
+                                res?.payload.VisitorEntryHeader?.EntryType == 103 &&
+                                res?.payload.VisitorEntryHeader?.EntryTime != null &&
+                                res?.payload.VisitorEntryHeader?.ExitTime != null &&
+                                !isCurrentCreate
+                            ) {
+                                setIsCurrentCreate(false);
+                                setVehDataForm(res);
+                                visitorEntryFormik.setFieldValue(
+                                    "EntryType",
+                                    res?.payload.VisitorEntryHeader?.EntryType
+                                );
+                                setSelectedEntryData({
+                                    ...selectedEntryData,
+                                    VehicleTypeId: value?.VehicleTypeId,
+                                });
+                                disableVehDataForm();
+                            }
+                        } else {
+                            resetOnlyForm();
+                            visitorEntryFormik.setFieldValue(name, value);
+                            visitorEntryFormik.setFieldValue(
+                                "VehicleTypeId",
+                                value?.VehicleTypeId
+                            );
+                            setSelectedVehType(value?.VehicleTypeId);
+                            setCheckVehAction(true);
+                            setSelectedEntryData({
+                                ...selectedEntryData,
+                                VehicleTypeId: value?.VehicleTypeId,
+                            });
+                        }
+                    }
+                })
+                .catch((error) => {
+                    // toast.current?.show({
+                    //   severity: "error",
+                    //   summary: "Error Message",
+                    //   detail: JSON.stringify(error),
+                    // });
+                });
+            // }
+        }
+    };
+
+    useEffect(() => {
+        if (
+            !isCurrentCreate &&
+            tabConfig.filter((t) => t.active == true)[0]?.type == 66 &&
+            visitorEntryFormik?.values?.EntryType == 103
+        ) {
+            disableVehDataForm();
+        }
+    }, [isCurrentCreate]);
+
+    const setVehDataForm = (res) => {
+        visitorEntryFormik.setFieldValue(
+            "VehicleTypeId",
+            res?.payload.VisitorEntryHeader?.VehicleTypeId
+        );
+        setSelectedVehType(res?.payload.VisitorEntryHeader?.VehicleTypeId);
+        visitorEntryFormik.setFieldValue(
+            "VisitorEntryId",
+            res?.payload.VisitorEntryHeader?.VisitorEntryId
+        );
+        visitorEntryFormik.setFieldValue("VisitorTypeId", 66);
+        visitorEntryFormik.setFieldValue(
+            "VisitorEntryCode",
+            res?.payload.VisitorEntryHeader?.VisitorEntryCode
+        );
+        visitorEntryFormik.setFieldValue(
+            "VehicleModel",
+            res?.payload.VisitorEntryHeader?.VehicleModel
+        );
+        visitorEntryFormik.setFieldValue(
+            "VisitorEntryDate",
+            new Date(res?.payload.VisitorEntryHeader?.VisitorEntryDate)
+        );
+        visitorEntryFormik.setFieldValue(
+            "VisitorRemarks",
+            res?.payload.VisitorEntryHeader?.VisitorRemarks
+        );
+        if (res?.payload.VisitorEntryHeader?.EntryTime != null) {
+            visitorEntryFormik.setFieldValue(
+                "EntryTime",
+                new Date(res?.payload.VisitorEntryHeader?.EntryTime)
+            );
+        } else if (res?.payload.VisitorEntryHeader?.EntryTime == null) {
+            visitorEntryFormik.setFieldValue("EntryTime", new Date());
+        }
+        if (res?.payload.VisitorEntryHeader?.ExitTime != null) {
+            visitorEntryFormik.setFieldValue(
+                "ExitTime",
+                new Date(res?.payload.VisitorEntryHeader?.ExitTime)
+            );
+        } else if (res?.payload.VisitorEntryHeader?.ExitTime == null) {
+            visitorEntryFormik.setFieldValue("ExitTime", new Date());
+        }
+        visitorEntryFormik.setFieldValue(
+            "StartingKm",
+            res?.payload.VisitorEntryHeader?.StartingKm
+        );
+        visitorEntryFormik.setFieldValue(
+            "EndingKm",
+            res?.payload.VisitorEntryHeader?.EndingKm
+        );
+        visitorEntryFormik.setFieldValue(
+            "NumberOfPassengers",
+            res?.payload.VisitorEntryHeader?.NumberOfPassengers
+        );
+        visitorEntryFormik.setFieldValue(
+            "IsEwayBillNo",
+            res?.payload.VisitorEntryHeader?.IsEwayBillNo == 1 ? true : false
+        );
+        visitorEntryFormik.setFieldValue(
+            "IsEinvBillNo",
+            res?.payload.VisitorEntryHeader?.IsEinvBillNo == 1 ? true : false
+        );
+        visitorEntryFormik.setFieldValue(
+            "Status",
+            res?.payload.VisitorEntryHeader?.Status
+        );
+        if (res?.payload.VisitorEntryHeader?.DriverName != "") {
+            visitorEntryFormik.setFieldValue(
+                "DriverName",
+                res?.payload.VisitorEntryHeader?.DriverName
+            );
+        }
+
+        handleSelect("DriverId", {}, +res?.payload.VisitorEntryHeader?.DriverId);
+        handleSelect(
+            "PurposeOfVisit",
+            {},
+            res?.payload.VisitorEntryHeader?.PurposeOfVisit
+        );
+        if (res.payload.VisitorEntryDetails.length > 0) {
+            const combinedRefList = res.payload.VisitorEntryDetails.flatMap(
+                (element) =>
+                    res.payload.RefList.filter(
+                        (item) =>
+                            item.MetaSubId === element.RefTypeId &&
+                            (res.payload.VisitorEntryHeader.IsEinvBillNo === 1 ||
+                                res.payload.VisitorEntryHeader.IsEinvBillNo === true ||
+                                res.payload.VisitorEntryHeader.IsEwayBillNo === 1 ||
+                                res.payload.VisitorEntryHeader.IsEwayBillNo === true)
+                    )
+            );
+            setRefTypeList(combinedRefList);
+        }
+        setVehicleHead(res.payload.VisitorEntryHeader);
+        if (res.payload.VisitorEntryDetails.length > 0) {
+            const updatedVisitorDetails = res.payload.VisitorEntryDetails.map(
+                (item) => ({
+                    ...item,
+                    disable: true,
+                    show: true,
+                    adisable: res.payload.VisitorEntryDetails.length <= 1 ? false : true,
+                    cdisable: true,
+                    ddisable:
+                        res?.payload.VisitorEntryHeader?.IsEinvBillNo == 1
+                            ? true
+                            : false || res?.payload.VisitorEntryHeader?.IsEwayBillNo == 1
+                                ? true
+                                : false,
+                    idisable:
+                        res?.payload.VisitorEntryHeader?.IsEinvBillNo == 1
+                            ? true
+                            : false || res?.payload.VisitorEntryHeader?.IsEwayBillNo == 1
+                                ? true
+                                : false,
+                })
+            );
+
+            setVisitorEntryRefDetailList(updatedVisitorDetails);
+        } else {
+            setVisitorEntryRefDetailList([
+                {
+                    VisitorEntryRefDetailId: 0,
+                    VisitorEntryId: 0,
+                    RefTypeId: null,
+                    RefValue: "",
+                    adisable: false,
+                    cdisable: false,
+                    show: true,
+                    ddisable: false,
+                    idisable: false,
+                },
+            ]);
+        }
+        if (res?.payload.VisitorEntryHeader?.IsEwayBillNo == 1) {
+            setChangeField((prevState) => ({
+                ...prevState,
+                IsEwayBillNo: {
+                    disable: true,
+                    show: true,
+                    required: false,
+                },
+            }));
+        } else {
+            setChangeField((prevState) => ({
+                ...prevState,
+                IsEwayBillNo: {
+                    disable: false,
+                    show: true,
+                    required: false,
+                },
+            }));
+        }
+
+        if (res?.payload.VisitorEntryHeader?.IsEinvBillNo == 1) {
+            setChangeField((prevState) => ({
+                ...prevState,
+                IsEinvBillNo: {
+                    disable: true,
+                    show: true,
+                    required: false,
+                },
+            }));
+        } else {
+            setChangeField((prevState) => ({
+                ...prevState,
+                IsEwayBillNo: {
+                    disable: false,
+                    show: true,
+                    required: false,
+                },
+            }));
+        }
+    };
+
+    const disableVehDataForm = () => {
+        setChangeField((prevState) => ({
+            ...prevState,
+            VehicleTypeId: {
+                disable: true,
+                show: true,
+                disablec: true,
+            },
+            VehicleName: {
+                disable: true,
+                show: false,
+            },
+            VehicleNo: {
+                disable: true,
+                show: true,
+            },
+            DriverId: {
+                disable: true,
+                show: false,
+            },
+            DriverName: {
+                disable: true,
+                show: true,
+            },
+            StartingKm: {
+                disable: true,
+                show: false,
+                required: false,
+            },
+            EndingKm: {
+                disable: true,
+                show: false,
+                required: false,
+            },
+            IsEinvBillNo: {
+                disable: true,
+                show: true,
+                required: false,
+            },
+            IsEwayBillNo: {
+                disable: true,
+                show: true,
+                required: false,
+            },
+            PurposeOfVisit: {
+                disable: true,
+                show: true,
+                required: true,
+            },
+            NumberOfPassengers: {
+                disable: true,
+                show: true,
+                required: true,
+            },
+            VisitorRemarks: {
+                disable: true,
+                show: true,
+                required: false,
+            },
+        }));
+        // checkVehControl()
+        setRefTableDisable(true);
+        setIsdisableSave(true);
+        setIsDisableClear(true);
+        setSwitchDisable(true);
+    };
+    const enableVehDataForm = () => {
+        checkVehControl();
+        setRefTableDisable(false);
+        setIsdisableSave(false);
+        setIsDisableClear(false);
+        setSwitchDisable(false);
+    };
+    const FilterVehNoCleared = () => {
+        // resetAllVehForm();
+    };
+
+    const FilterDriver = (e) => {
+        visitorEntryFormik.setFieldValue("DriverName", e.query);
+        // let visType = visitorEntryFormik.values.visType;
+        // if (!visType) {
+        //   toast.current?.show({
+        //     severity: "warn",
+        //     summary: "Warning Message",
+        //     detail: "Please Select Visitor Entry Type.",
+        //   });
+        //   return;
+        // }
+        if (e.query && e.query != "" && e.query != null) {
+            let obj = {
+                text: e.query,
+                EntryType: visType,
+                PlantId: +localStorage["PlantId"],
+                CompanyId: +localStorage["CompanyId"],
+                RoleId: +localStorage["DefaultRoleId"],
+            };
+            var result = dispatch(FilterDrive(obj));
+            result
+                .then((res) => {
+                    if (res.payload.tranStatus.result) {
+                        setDriverList(res.payload.DriverList);
+                    } else {
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error Message",
+                            detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error Message",
+                        detail: JSON.stringify(error),
+                    });
+                });
+        }
+    };
+
+    const FilterVehNo = (e) => {
+        visitorEntryFormik.setFieldValue("VehicleNo", e.query);
+        // let visType = visitorEntryFormik.values.visType;
+        // if (!visType) {
+        //   toast.current?.show({
+        //     severity: "warn",
+        //     summary: "Warning Message",
+        //     detail: "Please Select Visitor Entry Type.",
+        //   });
+        //   return;
+        // }
+        if (e.query && e.query != "" && e.query != null) {
+            let obj = {
+                text: e.query,
+                EntryType: visType,
+                PlantId: +localStorage["PlantId"],
+                CompanyId: +localStorage["CompanyId"],
+                RoleId: +localStorage["DefaultRoleId"],
+            };
+            var result = dispatch(FilterVehicleNo(obj));
+            result
+                .then((res) => {
+                    if (res.payload.tranStatus.result) {
+                        setVehicleNoList(res.payload.VehicleNoList);
+                    } else {
+                        toast.current?.show({
+                            severity: "error",
+                            summary: "Error Message",
+                            detail: res.payload.tranStatus.lstErrorItem[0].Message,
+                        });
+                    }
+                })
+                .catch((error) => {
+                    toast.current?.show({
+                        severity: "error",
+                        summary: "Error Message",
+                        detail: JSON.stringify(error),
+                    });
+                });
+        }
+    };
+
+    // useEffect(() => {
+    //   checkVehControl();
+    //   if(visitorEntryFormik.values.EntryType == 102){
+    //     // if (visitorEntryFormik.values?.IsEwayBillNo) {
+    //     //   visitorEntryFormik.setFieldValue(
+    //     //     "IsEwayBillNo",
+    //     //     visitorEntryFormik.values?.IsEwayBillNo
+    //     //   );
+
+    //     //   setChangeField((prevState) => ({
+    //     //     ...prevState,
+    //     //     IsEwayBillNo: {
+    //     //       disable: true,
+    //     //       show: true,
+    //     //       required: false,
+    //     //     },
+    //     //   }));
+    //     // }
+    //     // else {
+    //     //   visitorEntryFormik.setFieldValue(
+    //     //     "IsEwayBillNo",
+    //     //     visitorEntryFormik.values?.IsEwayBillNo
+    //     //   );
+    //     //   setChangeField((prevState) => ({
+    //     //     ...prevState,
+    //     //     IsEwayBillNo: {
+    //     //       disable: false,
+    //     //       show: true,
+    //     //       required: false,
+    //     //     },
+    //     //   }));
+    //     // }
+    //     // if (visitorEntryFormik.values?.IsEinvBillNo) {
+    //     //   visitorEntryFormik.setFieldValue(
+    //     //     "IsEinvBillNo",
+    //     //     visitorEntryFormik.values?.IsEinvBillNo
+    //     //   );
+    //     //   setChangeField((prevState) => ({
+    //     //     ...prevState,
+    //     //     IsEinvBillNo: {
+    //     //       disable: true,
+    //     //       show: true,
+    //     //       required: false,
+    //     //     },
+    //     //   }));
+    //     // }
+    //     // else {
+    //     //   visitorEntryFormik.setFieldValue(
+    //     //     "IsEinvBillNo",
+    //     //     visitorEntryFormik.values?.IsEinvBillNo
+    //     //   );
+    //     //   setChangeField((prevState) => ({
+    //     //     ...prevState,
+    //     //     IsEinvBillNo: {
+    //     //       disable: false,
+    //     //       show: true,
+    //     //       required: false,
+    //     //     },
+    //     //   }));
+    //     // }
+    //   }
+    //   else if(visitorEntryFormik.values.EntryType == 103){
+    //     // visitorEntryFormik.setFieldValue(
+    //     //   "IsEinvBillNo",
+    //     //   visitorEntryFormik.values?.IsEinvBillNo
+    //     // );
+    //     // visitorEntryFormik.setFieldValue(
+    //     //   "IsEwayBillNo",
+    //     //   visitorEntryFormik.values?.IsEwayBillNo
+    //     // );
+    //     // setChangeField((prevState) => ({
+    //     //   ...prevState,
+    //     //   IsEinvBillNo: {
+    //     //     disable: true,
+    //     //     show: true,
+    //     //     required: false,
+    //     //   },
+    //     //   IsEwayBillNo: {
+    //     //     disable: true,
+    //     //     show: true,
+    //     //     required: false,
+    //     //   },
+    //     // }));
+    //   }
+    // }, [visitorEntryFormik.values.VehicleTypeId]);
+
+    useEffect(() => { });
+
+    const validateVehicleNumber = (number) => {
+        const regex = /^[A-Z]{2}[0-9]{2}[A-Z]{1,2}[0-9]{4}$/i;
+        return regex.test(number);
+    };
+
+    const handleInputChange = (e) => {
+        const input = e.target.value.toUpperCase();
+        visitorEntryFormik.setFieldValue("VehicleNo", input);
+    };
+
+    const checkVehControl = () => {
+        let formVals = selectedEntryData;
+        if (formVals?.EntryType == 102) {
+            if (formVals.VehicleTypeId == 28) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: true,
+                        show: true,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.VehicleNo != null &&
+                                formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.DriverId != null &&
+                                formVals?.DriverId != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverName: {
+                        disable:
+                            formVals?.DriverName != null && formVals?.DriverName != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable:
+                            formVals?.StartingKm != null && formVals?.StartingKm != ""
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable:
+                            formVals?.EndingKm != null && formVals?.EndingKm != ""
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 || formVals?.IsEwayBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 || formVals?.IsEinvBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: false,
+                        show: true,
+                        disablec:
+                            formVals?.VehicleTypeId != null &&
+                                formVals?.VehicleTypeId != "" &&
+                                !isCurrentCreate
+                                ? true
+                                : false,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            formVals?.NumberOfPassengers != null &&
+                                formVals?.NumberOfPassengers != ""
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals?.VehicleTypeId == 128) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: false,
+                        show: false,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.VehicleNo != null &&
+                                formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.DriverId != null &&
+                                formVals?.DriverId != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverName: {
+                        disable:
+                            formVals?.DriverName != null && formVals?.DriverName != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable:
+                            formVals?.StartingKm != null && formVals?.StartingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable:
+                            formVals?.EndingKm != null && formVals?.EndingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 || formVals?.IsEwayBillNo == true
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 || formVals?.IsEinvBillNo == true
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: false,
+                        show: true,
+                        disablec:
+                            formVals?.VehicleTypeId != null &&
+                                formVals?.VehicleTypeId != "" &&
+                                !isCurrentCreate
+                                ? true
+                                : false,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec: false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            formVals?.NumberOfPassengers != null &&
+                                formVals?.NumberOfPassengers != ""
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals?.VehicleTypeId == 129) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: false,
+                        show: false,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.VehicleNo != null &&
+                                formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.DriverId != null &&
+                                formVals?.DriverId != ""
+                                ? true
+                                : false,
+                        show: false,
+                    },
+                    DriverName: {
+                        disable:
+                            formVals?.DriverName != null && formVals?.DriverName != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable:
+                            formVals?.StartingKm != null && formVals?.StartingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable:
+                            formVals?.EndingKm != null && formVals?.EndingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 ||
+                                (formVals?.IsEwayBillNo == true &&
+                                    formVals?.EntryTime != null &&
+                                    formVals?.ExitTime != null)
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 ||
+                                (formVals?.IsEinvBillNo == true &&
+                                    formVals?.EntryTime != null &&
+                                    formVals?.ExitTime != null)
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: false,
+                        show: true,
+                        disablec:
+                            formVals?.VehicleTypeId != null &&
+                                formVals?.VehicleTypeId != "" &&
+                                !isCurrentCreate
+                                ? true
+                                : false,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec: false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            formVals?.NumberOfPassengers != null &&
+                                formVals?.NumberOfPassengers != ""
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals.VehicleTypeId == 29) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable:
+                            formVals?.VehicleName != null && formVals?.VehicleName != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.VehicleNo != null &&
+                                formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.DriverId != null &&
+                                formVals?.DriverId != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverName: {
+                        disable:
+                            formVals?.VisitorEntryId != 0 &&
+                                formVals?.DriverName != null &&
+                                formVals?.DriverName != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable:
+                            formVals?.StartingKm != null && formVals?.StartingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable:
+                            formVals?.EndingKm != null && formVals?.EndingKm != ""
+                                ? true
+                                : false,
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 || formVals?.IsEwayBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 || formVals?.IsEinvBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable:
+                            formVals?.VehicleTypeId != null && formVals?.VehicleTypeId != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VehicleTypeId != null &&
+                                formVals?.VehicleTypeId != "" &&
+                                !isCurrentCreate
+                                ? true
+                                : false,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec: false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null &&
+                                formVals?.VisitorRemarks != "" &&
+                                formVals?.EntryTime != null &&
+                                formVals?.ExitTime != null
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null &&
+                                formVals?.VisitorRemarks != "" &&
+                                formVals?.EntryTime != null &&
+                                formVals?.ExitTime != null
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            formVals?.NumberOfPassengers != null &&
+                                formVals?.NumberOfPassengers != "" &&
+                                formVals?.EntryTime != null &&
+                                formVals?.ExitTime != null
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            }
+        } else if (formVals?.EntryType == 103) {
+            if (formVals.VehicleTypeId == 28) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: true,
+                        show: true,
+                    },
+                    VehicleNo: {
+                        disable:
+                            (formVals?.EntryTime != null && formVals?.ExitTime != null) ||
+                                (formVals?.VehicleNo != null && formVals?.VehicleNo != "")
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable: true,
+                        show: true,
+                    },
+                    DriverName: {
+                        disable: true,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable: true,
+                        show: true,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable: true,
+                        show: true,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 || formVals?.IsEwayBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 || formVals?.IsEinvBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: true,
+                        show: true,
+                        disablec: true,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            (formVals?.EntryTime != null && formVals?.ExitTime != null) ||
+                                (formVals?.PurposeOfVisit != null &&
+                                    formVals?.PurposeOfVisit != "")
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            (formVals?.EntryTime != null && formVals?.ExitTime != null) ||
+                                (formVals?.PurposeOfVisit != null &&
+                                    formVals?.PurposeOfVisit != "")
+                                ? true
+                                : false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            (formVals?.EntryTime != null && formVals?.ExitTime != null) ||
+                                (formVals?.VisitorRemarks != null &&
+                                    formVals?.VisitorRemarks != "")
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            (formVals?.EntryTime != null && formVals?.ExitTime != null) ||
+                                (formVals?.NumberOfPassengers != null &&
+                                    formVals?.NumberOfPassengers != "")
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals.VehicleTypeId == 29) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: true,
+                        show: true,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VehicleNo != null && formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+                    DriverId: {
+                        disable: true,
+                        show: true,
+                    },
+                    DriverName: {
+                        disable: true,
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable: true,
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable: true,
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 || formVals?.IsEwayBillNo == true
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 || formVals?.IsEinvBillNo == true
+                                ? true
+                                : false,
+
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: true,
+                        show: true,
+                        disablec: true,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable:
+                            formVals?.NumberOfPassengers != null &&
+                                formVals?.NumberOfPassengers != "" &&
+                                formVals?.EntryTime != null &&
+                                formVals?.ExitTime != null
+                                ? true
+                                : false,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals.VehicleTypeId == 128) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: false,
+                        show: false,
+                    },
+                    VehicleNo: {
+                        disable:
+                            formVals?.VehicleNo != null && formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        disablec:
+                            formVals?.VehicleNo != null && formVals?.VehicleNo != ""
+                                ? true
+                                : false,
+                        show: true,
+                    },
+
+                    DriverId: {
+                        disable: true,
+
+                        show: true,
+                    },
+                    DriverName: {
+                        disable: true,
+
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable: true,
+
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable: true,
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable: true,
+                        show: false,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable: true,
+
+                        show: false,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: false,
+                        show: true,
+                        disablec: true,
+                    },
+                    PurposeOfVisit: {
+                        disable:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+
+                        show: true,
+                        disablec:
+                            formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+                                ? true
+                                : false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+
+                        show: true,
+                        disablec:
+                            formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+                                ? true
+                                : false,
+                    },
+                    NumberOfPassengers: {
+                        disable: true,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            } else if (formVals.VehicleTypeId == 129) {
+                setChangeField((prevState) => ({
+                    ...prevState,
+                    VehicleName: {
+                        disable: false,
+                        show: false,
+                    },
+                    VehicleNo: {
+                        disable: true,
+
+                        show: true,
+                    },
+                    DriverId: {
+                        disable: true,
+
+                        show: false,
+                    },
+                    DriverName: {
+                        disable: true,
+
+                        show: true,
+                    },
+                    StartingKm: {
+                        disable: true,
+
+                        show: false,
+                        required: false,
+                    },
+                    EndingKm: {
+                        disable: true,
+
+                        show: false,
+                        required: false,
+                    },
+                    IsEwayBillNo: {
+                        disable:
+                            formVals?.IsEwayBillNo == 1 ||
+                                (formVals?.IsEwayBillNo == true &&
+                                    formVals?.EntryTime != null &&
+                                    formVals?.ExitTime != null)
+                                ? true
+                                : false,
+
+                        show: true,
+                        required: false,
+                    },
+                    IsEinvBillNo: {
+                        disable:
+                            formVals?.IsEinvBillNo == 1 ||
+                                (formVals?.IsEinvBillNo == true &&
+                                    formVals?.EntryTime != null &&
+                                    formVals?.ExitTime != null)
+                                ? true
+                                : false,
+
+                        show: true,
+                        required: false,
+                    },
+                    VehicleTypeId: {
+                        disable: false,
+                        show: true,
+                        disablec: true,
+                    },
+                    PurposeOfVisit: {
+                        disable: true,
+
+                        show: true,
+                        disablec: false,
+                        required: true,
+                    },
+                    VisitorRemarks: {
+                        disable: true,
+
+                        show: true,
+                        disablec: true,
+                    },
+                    NumberOfPassengers: {
+                        disable: true,
+                        show: true,
+                        required: false,
+                    },
+                }));
+            }
+        }
+    };
+
+    // const checkVehControl = () => {
+    //   let formVals = visitorEntryFormik.values;
+    //   if (visitorEntryFormik.values.VehicleTypeId == 129) {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       VehicleNo: {
+    //         disable:
+    //           formVals?.VisitorEntryId != 0 &&
+    //           formVals?.VehicleNo != null &&
+    //           formVals?.VehicleNo != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable:
+    //           (formVals?.VisitorEntryId != 0 &&
+    //             formVals?.DriverId != null &&
+    //             formVals?.DriverId != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: false,
+    //       },
+    //       DriverName: {
+    //         disable:
+    //           formVals?.DriverName != null && formVals?.DriverName != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       StartingKm: {
+    //         disable:
+    //           formVals?.StartingKm != null && formVals?.StartingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable:
+    //           formVals?.EndingKm != null && formVals?.EndingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEwayBillNo: {
+    //         disable:
+    //           ((formVals?.IsEwayBillNo == 1 ||
+    //             formVals?.IsEwayBillNo == true) &&
+    //             formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEinvBillNo: {
+    //         disable:
+    //           ((formVals?.IsEinvBillNo == 1 ||
+    //           formVals?.IsEinvBillNo == true) &&
+    //           formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VehicleTypeId != null &&
+    //           formVals?.VehicleTypeId != "" &&
+    //           !isCurrentCreate
+    //             ? true
+    //             : false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable:
+    //           formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec: false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable:
+    //           formVals?.NumberOfPassengers != null &&
+    //           formVals?.NumberOfPassengers != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   } else if (visitorEntryFormik.values.VehicleTypeId == 128) {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: true,
+    //         show: true,
+    //       },
+    //       VehicleNo: {
+    //         disable:
+    //           formVals?.VisitorEntryId != 0 &&
+    //           formVals?.VehicleNo != null &&
+    //           formVals?.VehicleNo != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable:
+    //           (formVals?.VisitorEntryId != 0 &&
+    //             formVals?.DriverId != null &&
+    //             formVals?.DriverId != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverName: {
+    //         disable:
+    //           formVals?.DriverName != null && formVals?.DriverName != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //       },
+    //       StartingKm: {
+    //         disable:
+    //           formVals?.StartingKm != null && formVals?.StartingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable:
+    //           formVals?.EndingKm != null && formVals?.EndingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEwayBillNo: {
+    //         disable:
+    //           ((formVals?.IsEwayBillNo == 1 ||
+    //             formVals?.IsEwayBillNo == true) &&
+    //             formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEinvBillNo: {
+    //         disable:
+    //         ((formVals?.IsEinvBillNo == 1 ||
+    //           formVals?.IsEinvBillNo == true) &&
+    //           formVals?.EntryType == 102)
+
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec: false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable:
+    //           formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+    //             ? true
+    //             : false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable:
+    //           formVals?.NumberOfPassengers != null &&
+    //           formVals?.NumberOfPassengers != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   } else if (visitorEntryFormik.values.VehicleTypeId == 29) {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable:
+    //           formVals?.VehicleName != null && formVals?.VehicleName != ""
+    //             ? false
+    //             : true,
+    //         show: true,
+    //       },
+    //       VehicleNo: {
+    //         disable:
+    //           formVals?.VisitorEntryId != 0 &&
+    //           formVals?.VehicleNo != null &&
+    //           formVals?.VehicleNo != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable:
+    //           (formVals?.VisitorEntryId != 0 &&
+    //             formVals?.DriverId != null &&
+    //             formVals?.DriverId != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverName: {
+    //         disable: false,
+    //         show: false,
+    //       },
+    //       StartingKm: {
+    //         disable:
+    //           formVals?.StartingKm != null && formVals?.StartingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable:
+    //           formVals?.EndingKm != null && formVals?.EndingKm != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //         required: false,
+    //       },
+    //       IsEwayBillNo: {
+    //         disable:
+
+    //           ((formVals?.IsEwayBillNo == 1 ||
+    //             formVals?.IsEwayBillNo == true) &&
+    //             formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEinvBillNo: {
+    //         disable:
+
+    //           ((formVals?.IsEinvBillNo == 1 ||
+    //           formVals?.IsEinvBillNo == true) &&
+    //           formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable:
+    //           formVals?.VehicleTypeId != null && formVals?.VehicleTypeId != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VehicleTypeId != null &&
+    //           formVals?.VehicleTypeId != "" &&
+    //           !isCurrentCreate
+    //             ? true
+    //             : false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable:
+    //           formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec: false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable:
+    //           formVals?.NumberOfPassengers != null &&
+    //           formVals?.NumberOfPassengers != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   } else {
+    //     setChangeField((prevState) => ({
+    //       ...prevState,
+    //       VehicleName: {
+    //         disable: true,
+    //         show: true,
+    //       },
+    //       VehicleNo: {
+    //         disable:
+    //           formVals?.VisitorEntryId != 0 &&
+    //           formVals?.VehicleNo != null &&
+    //           formVals?.VehicleNo != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverId: {
+    //         disable:
+    //           (formVals?.VisitorEntryId != 0 &&
+    //             formVals?.DriverId != null &&
+    //             formVals?.DriverId != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //       },
+    //       DriverName: {
+    //         disable:
+    //           formVals?.DriverName != null && formVals?.DriverName != ""
+    //             ? true
+    //             : false,
+    //         show: false,
+    //       },
+    //       StartingKm: {
+    //         disable:
+    //           (formVals?.StartingKm != null && formVals?.StartingKm != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       EndingKm: {
+    //         disable:
+    //           (formVals?.EndingKm != null && formVals?.EndingKm != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEwayBillNo: {
+    //         disable:
+
+    //           ((formVals?.IsEwayBillNo == 1 ||
+    //             formVals?.IsEwayBillNo == true) &&
+    //             formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       IsEinvBillNo: {
+    //         disable:
+
+    //           ((formVals?.IsEinvBillNo == 1 ||
+    //             formVals?.IsEinvBillNo == true) &&
+    //             formVals?.EntryType == 102)
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //       VehicleTypeId: {
+    //         disable: false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VehicleTypeId != null &&
+    //           formVals?.VehicleTypeId != "" &&
+    //           !isCurrentCreate
+    //             ? true
+    //             : false,
+    //       },
+    //       PurposeOfVisit: {
+    //         disable:
+    //           (formVals?.PurposeOfVisit != null &&
+    //             formVals?.PurposeOfVisit != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.PurposeOfVisit != null && formVals?.PurposeOfVisit != ""
+    //             ? true
+    //             : false,
+    //         required: true,
+    //       },
+    //       VisitorRemarks: {
+    //         disable:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         disablec:
+    //           formVals?.VisitorRemarks != null && formVals?.VisitorRemarks != ""
+    //             ? true
+    //             : false,
+    //       },
+    //       NumberOfPassengers: {
+    //         disable:
+    //           (formVals?.NumberOfPassengers != null &&
+    //             formVals?.NumberOfPassengers != "") ||
+    //           formVals?.EntryType == 103
+    //             ? true
+    //             : false,
+    //         show: true,
+    //         required: false,
+    //       },
+    //     }));
+    //   }
+    // };
+
+    const clearForm = () => {
+        visitorEntryFormik.setFieldValue("VehicleNo", "");
+        visitorEntryFormik.setFieldValue("VisitorEntryId", 0);
+        visitorEntryFormik.setFieldValue("EntryType", 102);
+        resetOnlyForm();
+    };
+
+    const resetOnlyForm = () => {
+        visitorEntryFormik.setFieldValue("VisitorTypeId", 66);
+        visitorEntryFormik.setFieldValue("DriverId", null);
+        visitorEntryFormik.setFieldValue("DriverName", "");
+        // visitorEntryFormik.setFieldValue("VisitorEntryId", 0);
+        // visitorEntryFormik.setFieldValue("VisitorEntryCode", "");
+        visitorEntryFormik.setFieldValue("VisitorEntryDate", new Date());
+        visitorEntryFormik.setFieldValue("EntryTime", new Date());
+        visitorEntryFormik.setFieldValue("ExitTime", null);
+        visitorEntryFormik.setFieldValue("IsEwayBillNo", false);
+        visitorEntryFormik.setFieldValue("IsEinvBillNo", false);
+        visitorEntryFormik.setFieldValue("StartingKm", 0.0);
+        visitorEntryFormik.setFieldValue("EndingKm", 0.0);
+        visitorEntryFormik.setFieldValue("VehicleName", "");
+        visitorEntryFormik.setFieldValue("Status", 1);
+        visitorEntryFormik.setFieldValue("NumberOfPassengers", "");
+        visitorEntryFormik.setFieldValue("VisitorRemarks", "");
+        handleSelect("PurposeOfVisit", {}, null);
+        let obj: any = {};
+        obj.VisitorEntryRefDetailId = 0;
+        obj.VisitorEntryId = 0;
+        obj.RefTypeId = "";
+        obj.RefValue = "";
+        obj.show = true;
+        obj.adisable = false;
+        obj.cdisable = false;
+        obj.ddisable = false;
+        obj.idisable = false;
+        setVisitorEntryRefDetailList([obj]);
+        setSelectedEntryData({
+            ...selectedEntryData,
+            VehicleTypeId: visitorEntryFormik.values.VehicleTypeId,
+            VehicleNo: "",
+            DriverId: null,
+            PurposeOfVisit: null,
+            EntryType: 102,
+            NumberOfPassengers: "",
+            DriverName: null,
+            StartingKm: "",
+            EndingKm: "",
+            IsEwayBillNo: false,
+            IsEinvBillNo: false,
+            VisitorRemarks: "",
+            EntryTime: new Date(),
+            ExitTime: null,
+        });
+
+        setRefTypeList([]);
+        setCheckVehAction(true);
+        setIsCurrentCreate(true);
+    };
+
+    const resetAllVehForm = () => {
+        visitorEntryFormik.resetForm();
+        visitorEntryFormik.setFieldValue("VisitorTypeId", 66);
+        onChangeVisitorType("VisitorTypeId", {}, 66);
+        let obj: any = {};
+        obj.VisitorEntryRefDetailId = 0;
+        obj.VisitorEntryId = 0;
+        obj.RefTypeId = null;
+        obj.RefValue = "";
+        obj.show = true;
+        obj.adisable = false;
+        obj.cdisable = false;
+        obj.ddisable = false;
+        obj.idisable = false;
+        setVisitorEntryRefDetailList([obj]);
+        setRefTypeList([]);
+        setIsdisableSave(false);
+        setPhoto(null);
+        setImageUrl(IMAGES.NO_IMG);
+        CreatePageOnLoad(0);
+        setSearchTerm("");
+        // setVisible(false);
+        onChangeVehicleType(
+            {
+                target: {
+                    name: "VehicleTypeId",
+                },
+                value: 28,
+            },
+            {
+                type: 1,
+            }
+        );
+        visitorEntryFormik?.setFieldValue("EntryType", 102);
+        onCheckboxChange(
+            {
+                target: {
+                    name: "IsEwayBillNo",
+                },
+                checked: false,
+            },
+            {
+                clr: true,
+            }
+        );
+        setChangeField((prevState) => ({
+            ...prevState,
+            IsEwayBillNo: {
+                disable: false,
+                show: true,
+                required: false,
+            },
+        }));
+        onCheckboxChange(
+            {
+                target: {
+                    name: "IsEinvBillNo",
+                },
+                checked: false,
+            },
+            {
+                clr: true,
+            }
+        );
+        setChangeField((prevState) => ({
+            ...prevState,
+            IsEinvBillNo: {
+                disable: false,
+                show: true,
+                required: false,
+            },
+        }));
+        setUpdateCheckVeh(false);
+        setSelectedEntryData({
+            ...selectedEntryData,
+            VehicleTypeId: visitorEntryFormik.values.VehicleTypeId,
+            VehicleNo: "",
+            DriverId: null,
+            PurposeOfVisit: null,
+            EntryType: 102,
+            NumberOfPassengers: "",
+            DriverName: null,
+            StartingKm: "",
+            EndingKm: "",
+            IsEwayBillNo: false,
+            IsEinvBillNo: false,
+            VisitorRemarks: "",
+            EntryTime: new Date(),
+            ExitTime: null,
+        });
+        // setVisitorEntryMaterialDetailList([]);
+        // setVisitorEntryPovDetail([]);
+        // setDocument(null);
+        // setDocumentUrl("");
+        // setPartyNameList([]);
+        // setSelectedHost({});
+        // setSelectedVisitor({});
+        // setSelectedVeh({});
+        // setCheckedVehicle(false);
+    };
+    const handleVehPrint = () => {
+        // window.print();
+
+        var divContents = document.getElementById("qr_preview").innerHTML;
+        var a = window.open("", "", "height=1000, width=1000");
+        a.document.write("<html><head><title>QR Code Preview</title></head>");
+        a.document.write(
+            `<body style="margin: 0; padding: 0;">
+        ${divContents}
+      </body>
+      <style>
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,700;1,700&display=swap');
+        * { font-family: 'Open Sans', sans-serif; }
+        .no-print { display: none; }
+        .qr_code {
+          margin: auto;
+          margin-top: 15px;
+          text-align: center;
+          border: 2px solid #000000;
+          padding: 10px;
+          border-radius: 10px;
+          width: 260px;
+        }
+          .text-gray-600 {color: #6c757d !important;}
+        .text-center { text-align: center; }
+        .text-5xl {
+          font-size: 2.5rem !important;
+          text-align: center;
+          font-family: 'Open Sans', sans-serif;
+          font-weight: 700;
+        }
+        .text-3xl {
+          font-size: 1.75rem !important;
+        }
+        .text-bluegray-700 { color: #576375 !important; }
+        h2 { font-size: 16px; }
+        table td { font-weight: 100; }
+        @media print {
+          @page {
+            margin: 0; /* Remove default page margins */
+          }
+          body {
+            margin: 0; /* Remove default body margins */
+          }
+        }
+      </style>`
+        );
+        a.document.close();
+        a.print();
+    };
+    // VEHICLE TYPE
+
+    // useEffect(() => {
+    //   if (
+    //     visitorFormik.values.MobileNo != "" &&
+    //     visitorFormik.values.MobileNo != null &&
+    //     visitorFormik.values.MobileNo.length == 10
+    //   ) {
+    //     loadMobileNo();
+    //   } else {
+    //     loadVisData({
+    //       PersonName: "",
+    //       VisitorCompany: "",
+    //       MailId: "",
+    //       IdCardType: null,
+    //       IdCardNo: "",
+    //       TagNo: "",
+    //     });
+    //   }
+    // }, [visitorFormik.values.MobileNo]);
+
+    const loadMobileNo = () => {
+        if (
+            visitorFormik.values.MobileNo == "" ||
+            visitorFormik.values.MobileNo == null
+        ) {
+            return toastValidation("Please Enter WhatsApp Mobile No.");
+        }
+        if (visitorFormik.values.MobileNo.length != 10) {
+            return toastValidation("Please Enter Valid WhatsApp Mobile No.");
+        }
+        let mobNo = {
+            MobileNo: visitorFormik.values.MobileNo,
+            PlantId: visitorFormik.values.PlantId,
+            CompanyId: visitorFormik.values.CompanyId,
+            RoleId: +localStorage["DefaultRoleId"]
+        };
+        var updateres = dispatch(OnEnterMobileNo(mobNo));
+        updateres
+            .then((res) => {
+                if (res.payload.tranStatus.result == true) {
+                    if (
+                        res.payload.VisitorEntryHeader != "" &&
+                        res.payload.VisitorEntryHeader != null
+                    ) {
+                        let vData = res.payload.VisitorEntryHeader;
+                        loadVisData(vData);
+                    }
+                    // else {
+                    //   loadVisData({
+                    //     PersonName: "",
+                    //     VisitorCompany: "",
+                    //     MailId: "",
+                    //     IdCardType: null,
+                    //     IdCardNo: "",
+                    //     TagNo: "",
+                    //   });
+                    // }
+                }
+            })
+            .catch((err) => { });
+    };
+
+    const loadVisData = (vData) => {
+        visitorFormik.setFieldValue("FirstName", vData.PersonName);
+        visitorFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
+        visitorFormik.setFieldValue("CountryCode", vData.MobileNo);
+        visitorFormik.setFieldValue("MailId", vData.MailId);
+        visitorFormik.setFieldValue("IdProofType", vData.IdCardType);
+        visitorFormik.setFieldValue("IdProofNo", vData.IdCardNo);
+        visitorFormik.setFieldValue("TagNo", vData.TagNo);
+
+        visitorEntryFormik.setFieldValue("FirstName", vData.PersonName);
+        visitorEntryFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
+        visitorEntryFormik.setFieldValue("MailId", vData.MailId);
+        visitorEntryFormik.setFieldValue("CountryCode", vData.MobileNo);
+        visitorEntryFormik.setFieldValue("IdProofType", vData.IdCardType);
+        visitorEntryFormik.setFieldValue("IdProofNo", vData.IdCardNo);
+        visitorEntryFormik.setFieldValue("TagNo", vData.TagNo);
+    };
+
+    const handleMobKeyPress = (event) => {
+        visitorFormik.setFieldValue("MobileNo", event?.target?.value);
+        setCurrMobNo(event?.target?.value);
+    };
+
+    const handleMobBack = (event) => {
+        if (event?.keyCode == 8 && visitorFormik.values.MobileNo.length <= 1) {
+            loadVisData({
+                PersonName: "",
+                VisitorCompany: "",
+                MailId: "",
+                MobileNo: "",
+                IdCardType: null,
+                IdCardNo: "",
+                TagNo: "",
+            });
+        }
+    };
+
+    useEffect(() => {
+        if (
+            currMobNo != "" &&
+            currMobNo != null &&
+            currMobNo.length == 10 &&
+            createVisEnt
+        ) {
+            loadMobileNo();
+        }
+    }, [currMobNo]);
+
+    return (
+        <>
+            <div>
+                <div className="page-container">
+                    <div className="inner-page-container visitor-info">
+                        <div className="card flex justify-content-center">
+                            <Sidebar
+                                visible={visible}
+                                onHide={() => handleClosePop()}
+                                className="preview-container"
+                                fullScreen
+                            >
+                                <CVisitorEntryCreator
+                                    tabConfig={tabConfig}
+                                    isCreate={isCreate}
+                                    isView={isView}
+                                    loading={loading}
+                                    visitorEntryFormik={visitorEntryFormik}
+                                    selectedData={selectedData}
+                                    setShowEntryDetail={setShowEntryDetail}
+                                    setVisible={setVisible}
+                                    setVisitorNameList={setVisitorNameList}
+                                    VisitorNameList={VisitorNameList}
+                                    visitorEntryDetailList={visitorEntryDetailList}
+                                    setvisitorEntryDetailList={setvisitorEntryDetailList}
+                                    setVisitorEntryBelongingDetailList={
+                                        setVisitorEntryBelongingDetailList
+                                    }
+                                    setList={setList}
+                                    visitorEntryForm
+                                    VisitorEntryValidationSchema
+                                    onUpload={onUpload}
+                                    itemTemplate={itemTemplate}
+                                    imageUrl={imageUrl}
+                                    IsPreBookingList={IsPreBookingList}
+                                    VisitorTypeList={VisitorTypeList}
+                                    onChangeVisitorType={onChangeVisitorType}
+                                    handleSelect={handleSelect}
+                                    autoCompleteRef={autoCompleteRef}
+                                    OnSelectVisitorCode={OnSelectVisitorCode}
+                                    onChangeMatType={onChangeMatType}
+                                    filteritemType={filteritemType}
+                                    handleIsPreBook={handleIsPreBook}
+                                    VECodeDisable={VECodeDisable}
+                                    EmployeeList={EmployeeList}
+                                    onChangeVisitor={onChangeVisitor}
+                                    ProofList={ProofList}
+                                    ValidFromDisable={ValidFromDisable}
+                                    ValidToDisable={ValidToDisable}
+                                    onChageFromDate={onChageFromDate}
+                                    TominDate={TominDate}
+                                    CheckboxDisable={CheckboxDisable}
+                                    onClickIsExistingVehicle={onClickIsExistingVehicle}
+                                    HideVehicleDD={HideVehicleDD}
+                                    HideDriverDD={HideDriverDD}
+                                    onUploadDocument={onUploadDocument}
+                                    documentUrl={documentUrl}
+                                    onClickIsExistingDriver={onClickIsExistingDriver}
+                                    OnChangePartyTypes={OnChangePartyTypes}
+                                    PartyTypeList={PartyTypeList}
+                                    PartyNameList={PartyNameList}
+                                    AreaList={AreaList}
+                                    RouteList={RouteList}
+                                    onClickIsAppointmentBooking={onClickIsAppointmentBooking}
+                                    DriverList={DriverList}
+                                    VehicleList={VehicleList}
+                                    IsDeliveryChallan={IsDeliveryChallan}
+                                    IsInvoiceBased={IsInvoiceBased}
+                                    IsVehicleTripBased={IsVehicleTripBased}
+                                    IsPartyDisable={IsPartyDisable}
+                                    IsVehicleDetailsDisable={IsVehicleDetailsDisable}
+                                    ShowVisitorContranctor={ShowVisitorContranctor}
+                                    IsMaterialDetailsShow={IsMaterialDetailsShow}
+                                    InvoiceNumberDisable={InvoiceNumberDisable}
+                                    DcNumberDisable={DcNumberDisable}
+                                    PoNumberDisable={PoNumberDisable}
+                                    ContainerNumberDisable={ContainerNumberDisable}
+                                    StatusList={StatusList}
+                                    ChallanTypeList={DtoChallanTypeList}
+                                    OnChangeVehicle={OnChangeVehicle}
+                                    onChageToDate={onChageToDate}
+                                    deleteDocuments={deleteDocuments}
+                                    handleHyperlink={handleHyperlink}
+                                    cameraOff={cameraOff}
+                                    setCameraOff={setCameraOff}
+                                    handleChange={handleChange}
+                                    handleRouteSelect={handleRouteSelect}
+                                    initFldDisable={initFldDisable}
+                                    CreatePageOnLoadCVisitorEntry={CreatePageOnLoadCVisitorEntry}
+                                    resetAllForm={resetAllForm}
+                                    IsWorkerDetailsShow={IsWorkerDetailsShow}
+                                    IsBelongingDetailsShow={IsBelongingDetailsShow}
+                                    VisitorEntryBelongingDetailList={
+                                        VisitorEntryBelongingDetailList
+                                    }
+                                    VisitorEntryMaterialDetailList={
+                                        VisitorEntryMaterialDetailList
+                                    }
+                                    setVisitorEntryMaterialDetailList={
+                                        setVisitorEntryMaterialDetailList
+                                    }
+                                    MaterialList={MaterialList}
+                                    PurposeList={PurposeList}
+                                    IsdisableSave={IsdisableSave}
+                                    toast={toast}
+                                    handlePoVSelect={handlePoVSelect}
+                                    checkedVehicle={checkedVehicle}
+                                    setCheckedVehicle={setCheckedVehicle}
+                                    vehicleDetails={vehicleDetails}
+                                    setVisitorShow={setVisitorShow}
+                                    fetchAllData={fetchAllData}
+                                    VisType={visType}
+                                    isViewVM={isViewVM}
+                                    isCreateVM={isCreateVM}
+                                    VisitorTypeListVM={VisitorTypeListVM}
+                                    handleSelectVM={handleSelectVM}
+                                    TitleListVM={TitleListVM}
+                                    CountryListVM={CountryListVM}
+                                    OnchangecountryVM={Onchangecountry}
+                                    StateListVM={StateListVM}
+                                    OnchangestateVM={Onchangestate}
+                                    CityListVM={CityListVM}
+                                    IdCardListVM={IdCardListVM}
+                                    StatusListVM={StatusListVM}
+                                    onUploadVM={onUploadVM}
+                                    itemTemplateVM={itemTemplateVM}
+                                    imageUrlVM={imageUrlVM}
+                                    handleOnChangeVM={handleOnChange}
+                                    visitorFormVM={visitorForm}
+                                    visitorRefVM={visitorRef}
+                                    visitorFormikVM={visitorFormik}
+                                    onChangeVisitorTypeVM={onChangeVisitorTypeVM}
+                                    tempStateListVM={tempStateList}
+                                    tempCityListVM={tempCityList}
+                                    handleCloseImageVM={handleCloseImage}
+                                    handleChangeVM={handleChangeVM}
+                                    profUploadRefVM={profUploadRef}
+                                    VisitorhandleHyperlinkVM={VisitorhandleHyperlink}
+                                    onUploadDocumentVisitorVM={onUploadDocumentVisitor}
+                                    deleteDocumentsVisitorVM={deleteDocumentsVisitor}
+                                    documentUrlVisitorVM={documentUrlVisitor}
+                                    documentVisitorUploadRefVM={documentVisitorUploadRef}
+                                    visitorDetailListVM={visitorDetailList}
+                                    filtersVM={filters}
+                                    TableHeaderVM={TableHeader}
+                                    DepartmentListVM={DepartmentListVM}
+                                    OnClearVM={OnClear}
+                                    visitorDetailFormVM={visitorDetailForm}
+                                    visitorDetailRefVM={visitorDetailRef}
+                                    setVisitorDetailListVM={setVisitorDetailList}
+                                    documentUrlVM={documentUrlVM}
+                                    onUploadDocumentVM={onUploadDocumentVM}
+                                    disableFormVM={disableForm}
+                                    onRowSelectVM={onRowSelect}
+                                    toastVM={toast}
+                                    deleteDocumentsVM={deleteDocumentsVM}
+                                    handleHyperlinkVM={handleHyperlinkVM}
+                                    handleDChangeVM={handleDChange}
+                                    documentUploadRefVM={documentUploadRef}
+                                    WorkSeverityListVM={WorkSeverityListVM}
+                                    loadingVM={loadingVM}
+                                    handleDSelectVM={handleDSelect}
+                                    visitorDFormikVM={visitorDFormik}
+                                    saveVisitor={saveVisitor}
+                                    setCreateVisEnt={setCreateVisEnt}
+                                    createVisEnt={createVisEnt}
+                                    isCurrentCreate={isCurrentCreate}
+                                    onChangeVehicleType={onChangeVehicleType}
+                                    // checkControl={checkControl}
+                                    changeField={changeField}
+                                    onCheckboxChange={onCheckboxChange}
+                                    VisitorEntryRefDetailList={VisitorEntryRefDetailList}
+                                    setVisitorEntryRefDetailList={setVisitorEntryRefDetailList}
+                                    VehicleNoList={VehicleNoList}
+                                    RefTypeList={RefTypeList}
+                                    setRefTypeList={setRefTypeList}
+                                    checkVehAction={checkVehAction}
+                                    resetAllVehForm={resetAllVehForm}
+                                    clearForm={clearForm}
+                                    VehicleTypeList={VehicleTypeList}
+                                    OnChangeVehNo={OnChangeVehNo}
+                                    OnChangeDriver={OnChangeDriver}
+                                    FilterVehNo={FilterVehNo}
+                                    FilterDriver={FilterDriver}
+                                    FilterVehNoCleared={FilterVehNoCleared}
+                                    onEnterVehNo={onEnterVehNo}
+                                    refTableDisable={refTableDisable}
+                                    IsDisableClear={IsDisableClear}
+                                    switchDisable={switchDisable}
+                                    handleInputChange={handleInputChange}
+                                    changeEntryType={changeEntryType}
+                                    handleMobKeyPress={handleMobKeyPress}
+                                    handleMobBack={handleMobBack}
+                                />
+                            </Sidebar>
+                            <Dialog
+                                visible={visitorShow}
+                                onHide={() => handleVisClosePop()}
+                                className="preview-container"
+                                style={{
+                                    width: "50%",
+                                    minHeight: "55vh",
+                                    position: "relative",
+                                }}
+                            // style={{
+                            //   width: "70vw",
+                            //   minWidth: "70vw",
+                            //   maxWidth: "70vw",
+                            //   height: "50vh",
+                            //   minHeight: "50vh",
+                            //   maxHeight: "50vh",
+                            //   top: "45%",
+                            //   left: "50%",
+                            //   transform: "translate(-50%, -50%)",
+                            //   borderRadius: 10,
+                            // }}
+                            >
+                                <CVisitorCreator
+                                    setVisitorShow={setVisitorShow}
+                                    fetchAllData={fetchAllData}
+                                    visType={visType}
+                                    isViewVM={isViewVM}
+                                    isCreateVM={isCreateVM}
+                                    VisitorTypeListVM={VisitorTypeListVM}
+                                    handleSelectVM={handleSelectVM}
+                                    TitleListVM={TitleListVM}
+                                    CountryListVM={CountryListVM}
+                                    StateListVM={StateListVM}
+                                    CityListVM={CityListVM}
+                                    IdCardListVM={IdCardListVM}
+                                    StatusListVM={StatusListVM}
+                                    onUploadVM={onUploadVM}
+                                    itemTemplateVM={itemTemplateVM}
+                                    imageUrlVM={imageUrlVM}
+                                    OnchangecountryVM={Onchangecountry}
+                                    OnchangestateVM={Onchangestate}
+                                    handleOnChangeVM={handleOnChange}
+                                    visitorFormVM={visitorForm}
+                                    visitorRefVM={visitorRef}
+                                    visitorFormikVM={visitorFormik}
+                                    onChangeVisitorTypeVM={onChangeVisitorType}
+                                    tempStateListVM={tempStateList}
+                                    tempCityListVM={tempCityList}
+                                    handleCloseImageVM={handleCloseImage}
+                                    handleChangeVM={handleChange}
+                                    profUploadRefVM={profUploadRef}
+                                    VisitorhandleHyperlinkVM={VisitorhandleHyperlink}
+                                    onUploadDocumentVisitorVM={onUploadDocumentVisitor}
+                                    deleteDocumentsVisitorVM={deleteDocumentsVisitor}
+                                    documentUrlVisitorVM={documentUrlVisitor}
+                                    documentVisitorUploadRefVM={documentVisitorUploadRef}
+                                    visitorDetailListVM={visitorDetailList}
+                                    filtersVM={filters}
+                                    TableHeaderVM={TableHeader}
+                                    DepartmentListVM={DepartmentList}
+                                    OnClearVM={OnClear}
+                                    visitorDetailFormVM={visitorDetailForm}
+                                    visitorDetailRefVM={visitorDetailRef}
+                                    setVisitorDetailListVM={setVisitorDetailList}
+                                    documentUrlVM={documentUrl}
+                                    onUploadDocumentVM={onUploadDocument}
+                                    disableFormVM={disableForm}
+                                    onRowSelectVM={onRowSelect}
+                                    toastVM={toast}
+                                    deleteDocumentsVM={deleteDocuments}
+                                    handleHyperlinkVM={handleHyperlink}
+                                    handleDChangeVM={handleDChange}
+                                    documentUploadRefVM={documentUploadRef}
+                                    // WorkSeverityListVM={WorkSeverityList}
+                                    loadingVM={loading}
+                                    handleDSelectVM={handleDSelect}
+                                    visitorDFormikVM={visitorDFormik}
+                                    createVisEnt={createVisEnt}
+                                    resetAllVehForm={resetAllVehForm}
+                                    IsBelongingDetailsShow={IsBelongingDetailsShow}
+                                    VisitorEntryBelongingDetailList={
+                                        VisitorEntryBelongingDetailList
+                                    }
+                                    setVisitorEntryBelongingDetailList={
+                                        setVisitorEntryBelongingDetailList
+                                    }
+                                    toast={toast}
+                                    handleMobKeyPress={handleMobKeyPress}
+                                    handleMobBack={handleMobBack}
+                                    saveVmaster={saveVmaster}
+                                />
+                            </Dialog>
+                            <Sidebar
+                                visible={WorkPermitShow}
+                                onHide={() => handleWPClosePop()}
+                                pt={{
+                                    header: {
+                                        style: {
+                                            backgroundColor: "#f0f0f0",
+                                            overflow: "hidden",
+                                            borderTopLeftRadius: "5px",
+                                            borderTopRightRadius: "5px",
+                                            padding: "6px",
+                                        },
+                                    },
+                                }}
+                                className="preview-container bg-white"
+                                // style={{
+                                //   width: "70vw",
+                                //   minWidth: "70vw",
+                                //   maxWidth: "70vw",
+                                //   // height: "50vh",
+                                //   // minHeight: "50vh",
+                                //   maxHeight: "550px",
+                                //   top: "50%",
+                                //   left: "50%",
+                                //   transform: "translate(-50%, -50%)",
+                                //   borderRadius: 10,
+                                // }}
+                                fullScreen
+                            >
+                                {pageType == "s1" ? (
+                                    <WorkPermitForm
+                                        isVisMaster={isVisMaster}
+                                        setIsVisMaster={setIsVisMaster}
+                                        visitorEntryFormik={visitorEntryFormik}
+                                        VisitorNameList={VisitorNameList}
+                                        handleVisitorSelected={handleVisitorSelected}
+                                        isViewVM={isViewVM}
+                                        isCreateVM={isCreateVM}
+                                        VisitorTypeListVM={VisitorTypeListVM}
+                                        handleSelectVM={handleSelectVM}
+                                        TitleListVM={TitleListVM}
+                                        CountryListVM={CountryListVM}
+                                        Onchangecountry={Onchangecountry}
+                                        StateListVM={StateListVM}
+                                        Onchangestate={Onchangestate}
+                                        CityListVM={CityListVM}
+                                        IdCardListVM={IdCardListVM}
+                                        StatusListVM={StatusListVM}
+                                        onUploadVM={onUploadVM}
+                                        itemTemplateVM={itemTemplateVM}
+                                        imageUrlVM={imageUrlVM}
+                                        handleOnChange={handleOnChange}
+                                        visitorForm={visitorForm}
+                                        visitorRef={visitorRef}
+                                        visitorFormik={visitorFormik}
+                                        onChangeVisitorTypeVM={onChangeVisitorTypeVM}
+                                        tempStateList={tempStateList}
+                                        tempCityList={tempCityList}
+                                        handleCloseImage={handleCloseImage}
+                                        handleChangeVM={handleChangeVM}
+                                        profUploadRef={profUploadRef}
+                                        VisitorhandleHyperlink={VisitorhandleHyperlink}
+                                        onUploadDocumentVisitor={onUploadDocumentVisitor}
+                                        deleteDocumentsVisitor={deleteDocumentsVisitor}
+                                        documentUrlVisitor={documentUrlVisitor}
+                                        documentVisitorUploadRef={documentVisitorUploadRef}
+                                        toast={toast}
+                                        setVisitorEntryBelongingDetailList={
+                                            setVisitorEntryBelongingDetailList
+                                        }
+                                        VisitorEntryBelongingDetailList={
+                                            VisitorEntryBelongingDetailList
+                                        }
+                                        pageType={pageType}
+                                        cameraOff={cameraOff}
+                                        setCameraOff={setCameraOff}
+                                        phonenumber={phonenumber}
+                                    />
+                                ) : (
+                                    <WorkPermitPrint />
+                                )}
+
+                                {/* <CWorkPermitCreator
+                  WPheader={WPheader}
+                  WPfilters={WPfilters}
+                  WPfilesContent={filesContent}
+                  WPactionBodyTemplate={WPactionBodyTemplate}
+                  WPworkPermitWorkers={WPworkPermitWorkers}
+                  WPcellEditor={cellEditor}
+                  WPonCellEditComplete={onCellEditComplete}
+                /> */}
+                                <div className="text-center mb-2">
+                                    {/* <Button
+                    label="Save"
+                    title="Save"
+                    icon="pi pi-save"
+                    className="text-center"
+                    onClick={() => saveWorkPermit()}
+                    disabled={IsdisableSave}
+                  />
+                  <Button
+                    label="Cancel"
+                    severity="danger"
+                    icon="pi pi-trash"
+                    title="Clear"
+                    className="text-center"
+                  /> */}
+                                    {pageType == "s2" ? (
+                                        <Button
+                                            label="Prev"
+                                            title="Prev"
+                                            icon="pi pi-arrow-left"
+                                            className="text-center"
+                                            onClick={() => changeStage("s1")}
+                                            disabled={IsdisableSave}
+                                        />
+                                    ) : null}
+                                    {pageType == "s1" ? (
+                                        <>
+                                            <Button
+                                                label="Send for Approval"
+                                                title="Send for Approval"
+                                                icon="pi pi-save"
+                                                className="text-center"
+                                                onClick={() => changeStage("s2")}
+                                                disabled={IsdisableSave}
+                                            />
+                                            <Button
+                                                label="Next"
+                                                title="Next"
+                                                icon="pi pi-arrow-right"
+                                                className="text-center"
+                                                onClick={() => changeStage("s2")}
+                                                disabled={IsdisableSave}
+                                            />
+                                        </>
+                                    ) : null}
+                                    {pageType == "s2" ? (
+                                        <>
+                                            <Button
+                                                label="Save"
+                                                title="Save"
+                                                icon="pi pi-save"
+                                                className="text-center"
+                                                onClick={() => { }}
+                                                disabled={IsdisableSave}
+                                            />
+                                            <Button
+                                                label="Print"
+                                                title="Print"
+                                                icon="pi pi-save"
+                                                className="text-center"
+                                                onClick={() => handlePrint()}
+                                                disabled={IsdisableSave}
+                                            />
+                                        </>
+                                    ) : null}
+                                </div>
+                            </Sidebar>
+                            {/* 
+          <Sidebar
+            visible={vehicleShow}
+            onHide={() => handleVehClosePop()}
+            className="preview-container"
+            fullScreen
+          >
+            <CVehicleCreator
+              setVehicleShow={setVehicleShow}
+              fetchAllData={fetchAllData}
+            />
+          </Sidebar>
+          <Sidebar
+            visible={employeeShow}
+            onHide={() => handleEmpClosePop()}
+            className="preview-container"
+            fullScreen
+          >
+            <CEmployeeCreator
+              setEmployeeShow={setEmployeeShow}
+              fetchAllData={fetchAllData}
+            />
+          </Sidebar> */}
+                        </div>
+                        <>
+                            <div className="grid">
+                                <div className="col-12 preview-left">
+                                    <div className="form-container scroll-y">
+                                        <div className="normal-table visitor-table">
+                                            <table>
+                                                <tbody>
+                                                    <tr>
+                                                        <td style={{ width: "50%" }} className="text-right">
+                                                            Pre-Appointment?
+                                                        </td>
+                                                        <td>
+                                                            <InputSwitch
+                                                                checked={checked}
+                                                                onChange={(e) => setChecked(e.value)}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {!checked && (
+                                            <div className="flex justify-content-center flex-wrap visitor-type">
+                                                {tabConfig &&
+                                                    tabConfig.map((visitorLink: any) => (
+                                                        <div
+                                                            id={visitorLink.type}
+                                                            key={visitorLink.id}
+                                                            className={`${visitorLink.disable
+                                                                    ? "opacity-70 pointer-events-none"
+                                                                    : ""
+                                                                }
+                          ${visitorLink.active ? "select white" : "white"}`}
+                                                            onClick={handleTabAction}
+                                                        >
+                                                            <div
+                                                                id={visitorLink.type}
+                                                                style={{
+                                                                    userSelect: "none",
+                                                                }}
+                                                            >
+                                                                <img
+                                                                    id={visitorLink.type}
+                                                                    src={visitorLink.visitorTypeImg}
+                                                                    alt={visitorLink.visitorTypeTxt}
+                                                                />
+                                                                <h5 id={visitorLink.type}>
+                                                                    {visitorLink.visitorTypeTxt}
+                                                                </h5>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                            </div>
+                                        )}
+
+                                        {/* Appointment Container  */}
+                                        {showEntryDetail ? (
+                                            <>
+                                                {/* <CVistorDetail
+                      tabConfig={tabConfig}
+                      itemTemplate={itemTemplate}
+                      sHost={selectedHost}
+                      sVisit={selectedVisitor}
+                      passData={passData}
+                      handleToastNotify={handleToastNotify}
+                    /> */}
+                                            </>
+                                        ) : (
+                                            <div className="appointment-container">
+                                                <SearchContainer
+                                                    checked={checked}
+                                                    selectedData={selectedData}
+                                                    setVisible={setVisible}
+                                                    VisitorNameList={VisitorNameList}
+                                                    VisitorEmployeeList={EmployeeList}
+                                                    VisitorEntryBooked={VisitorEntryBooked}
+                                                    VehicleList={VehicleList}
+                                                    handleSearchAction={handleSearchAction}
+                                                    setSelectedVisitor={setSelectedVisitor}
+                                                    setSelectedHost={setSelectedHost}
+                                                    selectedHost={selectedHost}
+                                                    handleEmployeeSelect={handleEmployeeSelect}
+                                                    handleVisitorSelect={handleVisitorSelect}
+                                                    handleBookedVisitor={handleBookedVisitor}
+                                                    handleVehicleSelect={handleVehicleSelect}
+                                                    isIndCon={isIndCon}
+                                                    visitorShow={visitorShow}
+                                                    setVisitorShow={setVisitorShow}
+                                                    setVehicleShow={setVehicleShow}
+                                                    setEmployeeShow={setEmployeeShow}
+                                                    toast={toast}
+                                                    editData={editData}
+                                                    searchTerm={searchTerm}
+                                                    handleSelectedPop={handleSelectedPop}
+                                                    handleEditData={handleEditData}
+                                                    handleWorkPermitSelect={handleWorkPermitSelect}
+                                                    WorkPermitList={WorkPermitList}
+                                                    setCheckedVehicle={setCheckedVehicle}
+                                                    handleVehEntryCreate={handleVehEntryCreate}
+                                                    resetAllVehForm={resetAllVehForm}
+                                                    openPrint={handleVehPassPrevPrint}
+                                                />
+                                                <ContDetail
+                                                    dialogVisible={dialogVisible}
+                                                    setDialogVisible={setDialogVisible}
+                                                    setVisible={setVisible}
+                                                    contWorker={contWorker}
+                                                    handlePassPreview={handleBookedVisitor}
+                                                    passData={passData}
+                                                    selectedHost={selectedHost}
+                                                    selectedVisitor={selectedVisitor}
+                                                    tabConfig={tabConfig}
+                                                    itemTemplate={itemTemplate}
+                                                    toast={toast}
+                                                    handleClosePassPrev={handleClosePassPrev}
+                                                    setpassVisible={setpassVisible}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </>
+                    </div>
+                </div>
+            </div>
+            <QRPop
+                visible={vehPopVisible}
+                handleClosePop={handleCloseVehPop}
+                qrValue={selectedVehData?.data?.VehicleNo}
+                qrTxt={"Vehicle Entry"}
+                handlePrint={handleVehPrint}
+                componentRef={componentRef}
+                selectedData={selectedVehData}
+            />
+            {loading ? <AppProgressSpinner /> : null}
+            <ConfirmDialog
+                pt={{
+                    headerIcons: {
+                        hidden: true,
+                        className: "d-none",
+                    },
+                }}
+            />
+
+            <AppAlert toast={toast} />
+        </>
+    );
+};
+
+export default CVisitorManagement;

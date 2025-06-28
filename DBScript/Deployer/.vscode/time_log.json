@@ -1,0 +1,38 @@
+{
+  "Deployer": {
+    "SP_DBScript.bat": [
+      {
+        "date": "2025-01-22T04:56:36.904Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-01-22T04:56:40.301Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-01-22T04:56:48.678Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 8
+      },
+      {
+        "date": "2025-01-22T04:57:39.245Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 51
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+// {
+//   "version": "2.0.0",
+//   "tasks": [
+//     {
+//       "label": "dotnet-watch",
+//       "command": "dotnet",
+//       "type": "shell",
+//       "args": [
+//         "watch",
+//         "--project",
+//         "VisitorManagementMySQL",
+//         "run"
+//       ],
+//       "isBackground": true,
+//       "problemMatcher": [],
+//       "presentation": {
+//         "reveal": "always",
+//         "panel": "dedicated",
+//         "clear": true
+//       },
+//       "group": {
+//         "kind": "build",
+//         "isDefault": true
+//       },
+//       "options": {
+//         "env": {
+//           "ASPNETCORE_ENVIRONMENT": "Development"
+//         }
+//       }
+//     }
+//   ]
+// }
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "watch",
+      "command": "dotnet",
+      "type": "process",
+      "isBackground": true,
+      "linux": {
+        "options": {
+          "env": {
+            "DOTNET_USE_POLLING_FILE_WATCHER": "true"
+          }
+        }
+      },
+      "args": [
+        "watch",
+        "run",
+        "${workspaceFolder}/VisitorManagementMySQL.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$tsc-watch"
+    }
+  ]
+}

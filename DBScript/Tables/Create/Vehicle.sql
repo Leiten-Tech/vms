@@ -1,0 +1,28 @@
+
+DROP TABLE IF EXISTS `vehicle`;
+CREATE TABLE IF NOT EXISTS `vehicle` (
+  `Vehicle_Id` BIGINT NOT NULL AUTO_INCREMENT,
+  `Vehicle_Code` VARCHAR(50) NOT NULL,
+  `Vehicle_Name` VARCHAR(100) NULL DEFAULT NULL,
+  `Company_Id` BIGINT NOT NULL,
+  `Plant_Id` BIGINT NOT NULL,
+  `Vehicle_Type` INT NOT NULL,
+  `Vehicle_No` VARCHAR(25) NOT NULL,
+  `Driver_Id` BIGINT NULL DEFAULT NULL,
+  `Supplier_Id` BIGINT NULL DEFAULT NULL,
+  `Supplier_Mobile_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Address` VARCHAR(300) NULL DEFAULT NULL,
+  `Vehicle_Model` VARCHAR(10) NOT NULL,
+  `Vehicle_Fc_Date` DATETIME(6) NULL DEFAULT NULL,
+  `Service_Date` DATETIME(6) NULL DEFAULT NULL,
+  `Vehicle_Token`LONGTEXT NULL DEFAULT NULL,
+  `Status` INT NOT NULL,
+  `Created_By` INT NOT NULL,
+  `Created_On` DATETIME(6) NOT NULL,
+  `Modified_By` INT NULL DEFAULT NULL,
+  `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  `Remarks` VARCHAR(500) NULL DEFAULT NULL,
+  PRIMARY KEY (`Vehicle_Id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

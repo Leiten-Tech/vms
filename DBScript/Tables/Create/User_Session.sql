@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS `User_Session` (
+  `User_Session_Id` BIGINT NOT NULL AUTO_INCREMENT,
+  `Session_Id` LONGTEXT NOT NULL,
+  `Logged_User` BIGINT NOT NULL,
+  `Logged_Role` INT NOT NULL,
+  `Logged_In_On` DATETIME(6) NOT NULL,
+  `Logged_Out_On` DATETIME(6) NULL DEFAULT NULL,
+  `Session_Status` INT NOT NULL,
+  `Company_Id` BIGINT NULL DEFAULT NULL,
+  `Gate_Id` BIGINT NULL DEFAULT NULL,
+  `Plant_Id` BIGINT NULL DEFAULT NULL,
+  PRIMARY KEY (`User_Session_Id`))
+ENGINE = InnoDB
+AUTO_INCREMENT = 391481
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;

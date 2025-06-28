@@ -1,0 +1,38 @@
+CREATE TABLE IF NOT EXISTS `Supplier` (
+  `Company_Id` BIGINT NOT NULL,
+  `Plant_Id` BIGINT NOT NULL,
+  `Supplier_Id` BIGINT AUTO_INCREMENT NOT NULL,
+  `Supplier_Type_Id` BIGINT NOT NULL,
+  `Supplier_Category_Id` INT NOT NULL,
+  `Supplier_Code` VARCHAR(20) NOT NULL,
+  `Supplier_Name` VARCHAR(255) NOT NULL,
+  `Series_Id` INT NULL DEFAULT NULL,
+  `Supplier_Pan_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Tin_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Ecc_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Vat_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Gst_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Cst_No` VARCHAR(20) NULL DEFAULT NULL,
+  `Supplier_Area_Code` VARCHAR(10) NULL DEFAULT NULL,
+  `Supplier_Is_Local` BOOL NULL DEFAULT NULL,
+  `Supplier_Image_Name` LONGTEXT NULL DEFAULT NULL,
+  `Supplier_Image_Url` LONGTEXT NULL DEFAULT NULL,
+  `Supplier_Mobile_No` VARCHAR(20) NOT NULL,
+  `Supplier_Mail_Id` VARCHAR(100) NOT NULL,
+  `Supplier_Mobile_No2` VARCHAR(50) NULL DEFAULT NULL,
+  `Supplier_Mail_Id2` VARCHAR(50) NULL DEFAULT NULL,
+  `Country_Id` BIGINT NULL DEFAULT NULL,
+  `State_Id` BIGINT NULL DEFAULT NULL,
+  `City_Id` BIGINT NULL DEFAULT NULL,
+  `Address` VARCHAR(500) NULL DEFAULT NULL,
+  `Status` INT NULL DEFAULT NULL,
+  `Created_By` INT NOT NULL,
+  `Created_On` DATETIME(6) NOT NULL,
+  `Modified_By` INT NULL DEFAULT NULL,
+  `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  PRIMARY KEY (`Supplier_Id`))
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
+
