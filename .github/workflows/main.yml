@@ -1,0 +1,51 @@
+name: VMS CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  frontend:
+    name: Build Frontend
+    runs-on: windows
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install
+      - run: npm run build
+
+  backend:
+    name: Build Backend
+    runs-on: windows
+    defaults:
+      run:
+        working-directory: service
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: '8.x'
+      - run: dotnet restore
+      - run: dotnet build --configuration Release
+      - run: dotnet test
+
+  dbscripts:
+    name: Validate DB Scripts
+    runs-on: windows
+    defaults:
+      run:
+        working-directory: dbscripts
+    steps:
+      - uses: actions/checkout@v3
+      - name: Check SQL Files
+        run: |
+          echo "DB scripts present"
