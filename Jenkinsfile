@@ -32,7 +32,16 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                bat """robocopy "${WORKSPACE}\\${REACT_DIR}\\${BUILD_DIR}" "${DEPLOY_DIR}" /E /MIR"""
+                bat """
+                    robocopy "${WORKSPACE}\\${REACT_DIR}\\${BUILD_DIR}" "${DEPLOY_DIR}" /E /MIR
+                    exit 0
+                """
+            }
+        }
+
+        stage('Restart IIS') {
+            steps {
+                bat 'iisreset'
             }
         }
     }
@@ -40,6 +49,9 @@ pipeline {
     post {
         always {
             echo 'Build pipeline completed.'
+        }
+        failure {
+            echo 'Build pipeline failed.'
         }
     }
 }
