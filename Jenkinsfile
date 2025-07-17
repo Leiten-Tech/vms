@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         REACT_DIR = 'ReactJS'
-        BUILD_DIR = 'build'
+        BUILD_DIR = 'dist'
         DEPLOY_DIR = 'C:\\IIS\\VMS_Development\\Web'
     }
 
