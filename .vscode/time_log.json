@@ -16,6 +16,14 @@
           "email": "arjayabalan09@gmail.com"
         },
         "timeSpent": 1
+      },
+      {
+        "date": "2025-07-17T10:30:24.518Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 28
       }
     ],
     "WhatsAppIntegration\\.gitignore": [
