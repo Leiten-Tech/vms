@@ -43,7 +43,7 @@ BEGIN
     FROM Approval_Detail a
     WHERE a.Level_Id = levelid
       AND a.Document_No = documentno
-      -- AND a.Status = 74
+       AND a.Status = 74
     ORDER BY IFNULL(a.Modified_On, a.Created_On) DESC
     LIMIT 1;
 
@@ -152,9 +152,10 @@ BEGIN
 					wpad.Digital_Sign_Url = u.Digital_Sign_Name,
 					wpad.Modified_On = NOW(),
 					wpad.Modified_By = approverid,
-					wpad.Status = 75
+					wpad.Status = 75,
+                    wpad.Level_Id = levelid
 				WHERE wp.Work_Permit_Id = wpad.Work_Permit_Id
-				  AND (wpad.Primary_User_Id or wpad.Secondary_User_Id = approverid) and wpad.Level_Id = levelid;
+				  AND (wpad.Primary_User_Id or wpad.Secondary_User_Id = approverid) ;-- and wpad.Level_Id = levelid;
               end if;
               
             IF NEXTSTAGECOUNT != 0 THEN

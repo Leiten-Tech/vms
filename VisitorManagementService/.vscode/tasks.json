@@ -37,7 +37,6 @@
       "label": "watch",
       "command": "dotnet",
       "type": "process",
-      "isBackground": true,
       "linux": {
         "options": {
           "env": {
@@ -52,7 +51,7 @@
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary"
       ],
-      "problemMatcher": "$tsc-watch"
+      "problemMatcher": "$msCompile"
     }
   ]
 }

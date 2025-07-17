@@ -122,6 +122,12 @@ const FormFields = (props) => {
     dropdownAc,
     onBlur,
     autoFocus,
+    onInput,
+    forceSelection,
+    autoCompleteRef,
+    addBtnEve,
+    addBtnClass,
+    readOnly,
     ...rest
   } = props;
   const isMobile = window.innerWidth <= 768;
@@ -608,6 +614,7 @@ const FormFields = (props) => {
                         value={item.MetaSubId}
                         checked={formik.values[name] === item.MetaSubId}
                         onChange={handleChange}
+                        disabled={disable}
                       />
                       <label htmlFor={item.MetaSubCode} className="ml-2">
                         {item.MetaSubDescription}
@@ -733,10 +740,14 @@ const FormFields = (props) => {
                   backgroundColor: disable ? "#c8c8c8" : "",
                 }}
               />
-              <label htmlFor={name} className="ml-2" style={{
-                opacity: disable ? 0.5 : 1,
-                color: disable ? "#1b1b1b" : "",
-              }}>
+              <label
+                htmlFor={name}
+                className="ml-2"
+                style={{
+                  opacity: disable ? 0.5 : 1,
+                  color: disable ? "#1b1b1b" : "",
+                }}
+              >
                 {label}
               </label>
             </div>
@@ -840,6 +851,132 @@ const FormFields = (props) => {
       );
       break;
 
+    case "autocomplete":
+      return (
+        <>
+          <div
+            style={
+              show
+                ? null
+                : {
+                    display: "none",
+                  }
+            }
+            className={fldStyle}
+            key={name}
+          >
+            <label className="form-label">
+              {label}
+              {required ? <span className="hlt-txt">*</span> : null}
+            </label>
+
+            <AutoComplete
+              id={optionLabel}
+              name={optionLabel}
+              value={formik.values[name]}
+              suggestions={autoSuggestions}
+              field={autoCompleteLbl}
+              className="w-full"
+              completeMethod={autoSearch}
+              disabled={disable}
+              onSelect={handleChange}
+              maxLength={maxLength}
+              placeholder={placeHolder}
+              onKeyDown={onkeyDown}
+              onBlur={onBlur}
+              dropdown={dropdownAc}
+              autoFocus={autoFocus}
+              onInput={onInput}
+              forceSelection={forceSelection}
+            />
+            <small className="p-error text-sm">
+              {
+                (formName && formName.length > 0
+                  ? formik.touched &&
+                    formik.touched[formName] &&
+                    formik.touched[formName][name]
+                  : formik.touched && formik.touched[name]) &&
+                  (formName && formName.length > 0
+                    ? formik.errors &&
+                      formik.errors[formName] &&
+                      formik.errors[formName][name]
+                    : formik.errors && formik.errors[name])
+                // (formName && formName.length > 0 ? (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[formName][name] : null) : (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[name] : null))
+              }
+            </small>
+          </div>
+        </>
+      );
+    case "autocomplete_btn":
+      return (
+        <>
+          <div
+            style={
+              show
+                ? null
+                : {
+                    display: "none",
+                  }
+            }
+            className={fldStyle}
+            key={name}
+          >
+            <label className="form-label">
+              {label}
+              {required ? <span className="hlt-txt">*</span> : null}
+            </label>
+            <div className="p-inputgroup flex-1">
+              <AutoComplete
+                id={optionLabel}
+                name={optionLabel}
+                value={formik.values[name]}
+                suggestions={autoSuggestions}
+                field={autoCompleteLbl}
+                className="w-full"
+                completeMethod={autoSearch}
+                disabled={disable}
+                onSelect={handleChange}
+                maxLength={maxLength}
+                placeholder={placeHolder}
+                onKeyDown={onkeyDown}
+                onBlur={onBlur}
+                dropdown={dropdownAc}
+                autoFocus={autoFocus}
+                onInput={onInput}
+                forceSelection={forceSelection}
+                readOnly={readOnly}
+                inputRef={autoCompleteRef}
+              />
+              <Button
+                title="Enable/ Disable Scan"
+                name={addBtnClass ? "ScanEnabled" : "ScanDisabled"}
+                icon="pi pi-qrcode"
+                className={`${
+                  addBtnClass ? "p-button-success" : "p-button-secondary"
+                }`}
+                onClick={() => addBtnEve(addBtnClass)}
+              />
+            </div>
+
+            <small className="p-error text-sm">
+              {
+                (formName && formName.length > 0
+                  ? formik.touched &&
+                    formik.touched[formName] &&
+                    formik.touched[formName][name]
+                  : formik.touched && formik.touched[name]) &&
+                  (formName && formName.length > 0
+                    ? formik.errors &&
+                      formik.errors[formName] &&
+                      formik.errors[formName][name]
+                    : formik.errors && formik.errors[name])
+                // (formName && formName.length > 0 ? (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[formName][name] : null) : (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[name] : null))
+              }
+            </small>
+          </div>
+        </>
+      );
+
     // case "toggle":
     //   return (
     //     <>
@@ -930,61 +1067,6 @@ const FormFields = (props) => {
     //       )}
     //     </>
     //   );
-
-    case "autocomplete":
-      return (
-        <>
-          <div
-            style={
-              show
-                ? null
-                : {
-                    display: "none",
-                  }
-            }
-            className={fldStyle}
-            key={name}
-          >
-            <label className="form-label">
-              {label}
-              {required ? <span className="hlt-txt">*</span> : null}
-            </label>
-
-            <AutoComplete
-              id={optionLabel}
-              name={optionLabel}
-              value={formik.values[name]}
-              suggestions={autoSuggestions}
-              field={autoCompleteLbl}
-              className="w-full"
-              completeMethod={autoSearch}
-              disabled={disable}
-              onSelect={handleChange}
-              maxLength={maxLength}
-              placeholder={placeHolder}
-              onKeyDown={onkeyDown}
-              onBlur={onBlur}
-              dropdown={dropdownAc}
-              autoFocus={autoFocus}
-            />
-            <small className="p-error text-sm">
-              {
-                (formName && formName.length > 0
-                  ? formik.touched &&
-                    formik.touched[formName] &&
-                    formik.touched[formName][name]
-                  : formik.touched && formik.touched[name]) &&
-                  (formName && formName.length > 0
-                    ? formik.errors &&
-                      formik.errors[formName] &&
-                      formik.errors[formName][name]
-                    : formik.errors && formik.errors[name])
-                // (formName && formName.length > 0 ? (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[formName][name] : null) : (formik.errors && Object.keys(formik.errors).length > 0 ? formik.errors[name] : null))
-              }
-            </small>
-          </div>
-        </>
-      );
 
     default:
       return (

@@ -926,7 +926,7 @@ const Dashboard = () => {
       if (toDate > sevenDayBefore) {
         toast.current?.show({
           severity: "warn",
-          summary: "warn",
+          summary: "Warning Message",
           detail: "Please Select Date between 7 days",
         });
         return;
@@ -1134,10 +1134,10 @@ const Dashboard = () => {
                   <div className="widget-hdr">
                     <div className="sub-title">
                       <div className="grid">
-                        <div className="col-6">
+                        <div className="col-8">
                           <h2>Visitor Wise Check IN/Out Details (In No's)</h2>
                         </div>
-                        <div className="col-6 text-end">
+                        <div className="col-4 text-end">
                           <div className="widget-filter">
                             <div className="filter-container inline-block">
                               <Button
@@ -1188,12 +1188,12 @@ const Dashboard = () => {
                   <div className="widget-hdr">
                     <div className="sub-title">
                       <div className="grid">
-                        <div className="col-6">
+                        <div className="col-8">
                           <h2>
                             Visitor Details Purpose of Visit Wise(In No's)
                           </h2>
                         </div>
-                        <div className="col-6 text-end">
+                        <div className="col-4 text-end">
                           <div className="widget-filter">
                             <div className="filter-container inline-block">
                               <Button

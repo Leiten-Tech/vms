@@ -43,7 +43,6 @@ import { AppProgressSpinner } from "@/components/UtilityComp";
 import { WorkPermitPrint } from "@/pages/VisitorManagement/WorkPermit/cWorkPermitCreator";
 import { TabView, TabPanel } from "primereact/tabview";
 import { WorkerDetails } from "@/components/Common/WorkerDetails";
-import { CVistorDetail } from "@/pages/VisitorManagement/VisitorManage/cVisitorManagement";
 import ReactToPrint from "react-to-print";
 import WPPrintPass, { WpPassContent } from "@/components/WPPrintPass";
 

@@ -535,6 +535,19 @@ export const PageRoutes = [
       },
     ],
   },
+    {
+    path: "/home",
+    Component: Pages.AdminPage,
+    Private: true,
+    Layout: Layouts.HomeLayout,
+    modules: [
+      {
+        path: "/MailReschedule",
+        Component: Pages.MailReschedule,
+        exact: true,
+      },
+    ],
+  },
   {
     path: "/home",
     Component: Pages.AdminPage,
@@ -665,6 +678,21 @@ export const PageRoutes = [
       },
     ],
   },
+
+  {
+    path: "/home",
+    Component: Pages.AdminPage,
+    Private: true,
+    Layout: Layouts.HomeLayout,
+    modules: [
+      {
+        path: "/vVisitorDashboard",
+        Component: Pages.VisitorDashboard,
+        exact: true,
+      },
+    ],
+  },
+  
   {
     path: "/home",
     Component: Pages.AdminPage,

@@ -1,0 +1,101 @@
+@model List<dynamic>
+    @{
+    var generatedDate = DateTime.Now.ToString("yyyy-MM-dd");
+    var generatedTime = DateTime.Now.ToString("HH:mm:ss");
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Visitor Check-in/Check-out Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #444;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #d3d3d3;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        td:empty::after {
+            content: "-";
+            color: #999;
+        }
+    </style>
+</head>
+<body>
+    <h2>Visitor Check-in / Check-out Report</h2>
+    <div class="header">
+        Generated Date: @generatedDate
+    </div>
+
+
+    <table>
+        <thead>
+            <tr>
+                <th>Plant Name</th>
+                <th>Visitor Entry Code</th>
+                <th>Visitor Type</th>
+                <th>Visitor Name</th>
+                <th>Mobile No</th>
+                <th>Visitor Company</th>
+                <th>Date</th>
+                <th>Purpose Of Visit</th>
+                <th>Checked In</th>
+                <th>Checked Out</th>
+                <th>Stay Time</th>
+                <th>Checked In By</th>
+                <th>Checked Out By</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var row in Model)
+            {
+                var data = (IDictionary<string, object>)row;
+                <tr>
+                    <td>@(data.ContainsKey("PlantName") ? data["PlantName"] : "")</td>
+                    <td>@(data.ContainsKey("VisitorEntryCode") ? data["VisitorEntryCode"] : "")</td>
+                    <td>@(data.ContainsKey("VisitorTypeName") ? data["VisitorTypeName"] : "")</td>
+                    <td>@(data.ContainsKey("VisitorName") ? data["VisitorName"] : "")</td>
+                    <td>@(data.ContainsKey("MobileNo") ? data["MobileNo"] : "")</td>
+                    <td>@(data.ContainsKey("VisitorCompany") ? data["VisitorCompany"] : "")</td>
+                    <td>@(data.ContainsKey("VisitorEntryDate") ? data["VisitorEntryDate"] : "")</td>
+                    <td>@(data.ContainsKey("PurposeOfVisitName") ? data["PurposeOfVisitName"] : "")</td>
+                    <td>@(data.ContainsKey("CheckedIn") ? data["CheckedIn"] : "")</td>
+                    <td>@(data.ContainsKey("CheckedOut") ? data["CheckedOut"] : "")</td>
+                    <td>@(data.ContainsKey("StayTime") ? data["StayTime"] : "")</td>
+                    <td>@(data.ContainsKey("CheckedInBy") ? data["CheckedInBy"] : "")</td>
+                    <td>@(data.ContainsKey("CheckedOutBy") ? data["CheckedOutBy"] : "")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <div class="footer">
+        Generated Time: @generatedTime
+    </div>
+</body>
+</html>

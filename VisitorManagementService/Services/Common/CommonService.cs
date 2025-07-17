@@ -149,6 +149,7 @@ namespace VisitorManagementMySQL.Services.Common
                             visitor.InchargeMobile,
                             visitor.InchargeName,
                             visitor.NotificationId,
+                            visitor.NotificationType
                         })
                         .Select(group => new
                         {
@@ -157,6 +158,7 @@ namespace VisitorManagementMySQL.Services.Common
                             InchargeName = group.Key.InchargeName,
                             NotificationId = group.Key.NotificationId,
                             Visitors = group.ToList(),
+                            NotificationType = group.Key.NotificationType,
                         })
                         .ToList();
                     var companyId = (long)NotifyData[0].CompanyId;
@@ -206,100 +208,203 @@ namespace VisitorManagementMySQL.Services.Common
 
                     foreach (var group in groupedVisitors)
                     {
-                        StringBuilder visitorListBuilder = new StringBuilder();
-                        visitorListBuilder.AppendLine(
-                            "<p>The following visitors have not checked out and are still within the company premises:</p>"
-                        );
-                        visitorListBuilder.AppendLine("<ul>");
 
-                        // Iterate through each visitor in the group
-                        foreach (var entry in group.Visitors)
+                        if (group.NotificationType == 146)
                         {
+                            StringBuilder visitorListBuilder = new StringBuilder();
                             visitorListBuilder.AppendLine(
-                                $"<li>{entry.VisitorName}, Gate: {entry.GateName}, Plant: {entry.PlantName}, Mobile: {entry.MobileNo}</li>"
+                                "<p>The following visitors have not checked out and are still within the company premises:</p>"
                             );
-                        }
+                            visitorListBuilder.AppendLine("<ul>");
 
-                        visitorListBuilder.AppendLine("</ul>");
-                        visitorListBuilder.AppendLine(
-                            "<p>Please ensure they check out at the earliest opportunity.</p>"
-                        );
-                        visitorListBuilder.AppendLine("");
-
-                        // Embed the visitor list into the MailText template
-                        MailText = MailText
-                            .Replace("[Content]", visitorListBuilder.ToString())
-                            .Replace("[PersonName]", group.InchargeName)
-                            .Replace("{{siteURL}}", _mailSettings.Website)
-                            .Replace("{{serviceURL}}", _mailSettings.Service)
-                            .Replace("{{Logo}}", BrandLogo)
-                            .Replace("{{BrandLogoBig}}", BrandLogoBig);
-
-                        // Set up the email object with the in-charge's email
-                        object emailObj = new
-                        {
-                            FromID = "reply-no@visitorManagement.com",
-                            ToID = group.InchargeMail,
-                            Subject = $"Alert: Visitors Pending Checkout",
-                            Template = MailText,
-                        };
-
-                        // Fetch company details (if needed for email sending)
-
-                        Company company = dbContext
-                            .Companies.Where(x => x.CompanyId == companyId)
-                            .SingleOrDefault();
-
-                        JObject convertObj = (JObject)JToken.FromObject(emailObj);
-
-                        // WhatsApp
-                        dynamic jsonObject = new JObject();
-                        jsonObject.type = "text";
-
-                        dynamic text = new JObject();
-                        jsonObject.to_contact = "91" + Convert.ToString(group.InchargeMobile);
-
-                        StringBuilder messageBuilder = new StringBuilder();
-                        messageBuilder.AppendLine(
-                            "Attention: The following visitors have not checked out and are still within the company premises:"
-                        );
-
-                        foreach (var item in NotifyData)
-                        {
-                            messageBuilder.AppendLine(
-                                $"- {item.VisitorName}, Gate: {item.GateName}, Plant: {item.PlantName}, Mobile: {item.MobileNo}"
-                            );
-                        }
-
-                        string whatsappMessage = messageBuilder.ToString();
-                        // foreach (var item in NotifyData)
-                        // {
-                        //     text.body =
-                        //         $"Dear {Convert.ToString(item.FirstName)},We regret to inform you that your  gate pass request has been rejected.";
-                        // }
-                        text.body = whatsappMessage;
-                        jsonObject.text = text;
-                        string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObject);
-
-                        var mail = mailService.SendApprovalReqEmail(
-                            convertObj,
-                            (long)companyId,
-                            company
-                        );
-                        var whatsapp = whatsAppService.SendApprovalReqWhatsApp(jsonString);
-
-                        foreach (var entry in group.Visitors)
-                        {
-                            int nId = (int)group.NotificationId;
-                            var existingNotification =
-                                await dbContext.Notifications.FirstOrDefaultAsync(n =>
-                                    n.NotificationId == nId
-                                );
-                            if (existingNotification != null)
+                            // Iterate through each visitor in the group
+                            foreach (var entry in group.Visitors)
                             {
-                                existingNotification.NotificationSent = true;
-                                dbContext.Notifications.Update(existingNotification);
-                                await dbContext.SaveChangesAsync();
+                                visitorListBuilder.AppendLine(
+                                    $"<li>{entry.VisitorName}, Gate: {entry.GateName}, Plant: {entry.PlantName}, Mobile: {entry.MobileNo}</li>"
+                                );
+                            }
+
+                            visitorListBuilder.AppendLine("</ul>");
+                            visitorListBuilder.AppendLine(
+                                "<p>Please ensure they check out at the earliest opportunity.</p>"
+                            );
+                            visitorListBuilder.AppendLine("");
+
+                            // Embed the visitor list into the MailText template
+                            MailText = MailText
+                                .Replace("[Content]", visitorListBuilder.ToString())
+                                .Replace("[PersonName]", group.InchargeName)
+                                .Replace("{{siteURL}}", _mailSettings.Website)
+                                .Replace("{{serviceURL}}", _mailSettings.Service)
+                                .Replace("{{Logo}}", BrandLogo)
+                                .Replace("{{BrandLogoBig}}", BrandLogoBig);
+
+                            // Set up the email object with the in-charge's email
+                            object emailObj = new
+                            {
+                                FromID = "reply-no@visitorManagement.com",
+                                ToID = group.InchargeMail,
+                                Subject = $"Alert: Visitors Pending Checkout",
+                                Template = MailText,
+                            };
+
+                            // Fetch company details (if needed for email sending)
+
+                            Company company = dbContext
+                                .Companies.Where(x => x.CompanyId == companyId)
+                                .SingleOrDefault();
+
+                            JObject convertObj = (JObject)JToken.FromObject(emailObj);
+
+                            // WhatsApp
+                            dynamic jsonObject = new JObject();
+                            jsonObject.type = "text";
+
+                            dynamic text = new JObject();
+                            jsonObject.to_contact = "91" + Convert.ToString(group.InchargeMobile);
+
+                            StringBuilder messageBuilder = new StringBuilder();
+                            messageBuilder.AppendLine(
+                                "Attention: The following visitors have not checked out and are still within the company premises:"
+                            );
+
+                            foreach (var item in NotifyData)
+                            {
+                                messageBuilder.AppendLine(
+                                    $"- {item.VisitorName}, Gate: {item.GateName}, Plant: {item.PlantName}, Mobile: {item.MobileNo}"
+                                );
+                            }
+
+                            string whatsappMessage = messageBuilder.ToString();
+                            // foreach (var item in NotifyData)
+                            // {
+                            //     text.body =
+                            //         $"Dear {Convert.ToString(item.FirstName)},We regret to inform you that your  gate pass request has been rejected.";
+                            // }
+                            text.body = whatsappMessage;
+                            jsonObject.text = text;
+                            string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObject);
+
+                            var mail = mailService.SendApprovalReqEmail(
+                                convertObj,
+                                (long)companyId,
+                                company
+                            );
+                            var whatsapp = whatsAppService.SendApprovalReqWhatsApp(jsonString);
+
+                            foreach (var entry in group.Visitors)
+                            {
+                                int nId = (int)group.NotificationId;
+                                var existingNotification =
+                                    await dbContext.Notifications.FirstOrDefaultAsync(n =>
+                                        n.NotificationId == nId
+                                    );
+                                if (existingNotification != null)
+                                {
+                                    existingNotification.NotificationSent = true;
+                                    dbContext.Notifications.Update(existingNotification);
+                                    await dbContext.SaveChangesAsync();
+                                }
+                            }
+                        }
+                        else if (group.NotificationType == 147)
+                        {
+                            StringBuilder visitorListBuilder = new StringBuilder();
+                            visitorListBuilder.AppendLine(
+                                "<p>The following visitors visit have ended but they are still within the company premises:</p>"
+                            );
+                            visitorListBuilder.AppendLine("<ul>");
+
+                            // Iterate through each visitor in the group
+                            foreach (var entry in group.Visitors)
+                            {
+                                visitorListBuilder.AppendLine(
+                                    $"<li>{entry.VisitorName}, Plant: {entry.PlantName}, Mobile: {entry.MobileNo} Department Name: {entry.DepartmentName}</li>"
+                                );
+                            }
+
+                            visitorListBuilder.AppendLine("</ul>");
+                            visitorListBuilder.AppendLine(
+                                "<p>Please ensure they check out at the earliest opportunity.</p>"
+                            );
+                            visitorListBuilder.AppendLine("");
+
+                            // Embed the visitor list into the MailText template
+                            MailText = MailText
+                                .Replace("[Content]", visitorListBuilder.ToString())
+                                .Replace("[PersonName]", group.InchargeName)
+                                .Replace("{{siteURL}}", _mailSettings.Website)
+                                .Replace("{{serviceURL}}", _mailSettings.Service)
+                                .Replace("{{Logo}}", BrandLogo)
+                                .Replace("{{BrandLogoBig}}", BrandLogoBig);
+
+                            // Set up the email object with the in-charge's email
+                            object emailObj = new
+                            {
+                                FromID = "reply-no@visitorManagement.com",
+                                ToID = group.InchargeMail,
+                                Subject = $"Alert: Visitors Have Not Checked Out Post Visit End",
+                                Template = MailText,
+                            };
+
+                            // Fetch company details (if needed for email sending)
+
+                            Company company = dbContext
+                                .Companies.Where(x => x.CompanyId == companyId)
+                                .SingleOrDefault();
+
+                            JObject convertObj = (JObject)JToken.FromObject(emailObj);
+
+                            // WhatsApp
+                            dynamic jsonObject = new JObject();
+                            jsonObject.type = "text";
+
+                            dynamic text = new JObject();
+                            jsonObject.to_contact = "91" + Convert.ToString(group.InchargeMobile);
+
+                            StringBuilder messageBuilder = new StringBuilder();
+                            messageBuilder.AppendLine(
+                                "Attention: The following visitors visits have ended but they are still within the company premises:"
+                            );
+
+                            foreach (var item in NotifyData)
+                            {
+                                messageBuilder.AppendLine(
+                                    $"- {item.VisitorName}, Plant: {item.PlantName}, Mobile: {item.MobileNo}"
+                                );
+                            }
+
+                            string whatsappMessage = messageBuilder.ToString();
+                            // foreach (var item in NotifyData)
+                            // {
+                            //     text.body =
+                            //         $"Dear {Convert.ToString(item.FirstName)},We regret to inform you that your  gate pass request has been rejected.";
+                            // }
+                            text.body = whatsappMessage;
+                            jsonObject.text = text;
+                            string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(jsonObject);
+
+                            var mail = mailService.SendApprovalReqEmail(
+                                convertObj,
+                                (long)companyId,
+                                company
+                            );
+                            var whatsapp = whatsAppService.SendApprovalReqWhatsApp(jsonString);
+
+                            foreach (var entry in group.Visitors)
+                            {
+                                int nId = (int)group.NotificationId;
+                                var existingNotification =
+                                    await dbContext.Notifications.FirstOrDefaultAsync(n =>
+                                        n.NotificationId == nId
+                                    );
+                                if (existingNotification != null)
+                                {
+                                    existingNotification.NotificationSent = true;
+                                    dbContext.Notifications.Update(existingNotification);
+                                    await dbContext.SaveChangesAsync();
+                                }
                             }
                         }
                         dto.tranStatus.result = true;

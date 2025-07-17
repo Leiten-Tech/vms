@@ -7,6 +7,11 @@ namespace VisitorManagementMySQL.Models
 {
     public partial class Plant
     {
+        public Plant()
+        {
+            PlantNotificationDetails = new HashSet<PlantNotificationDetail>();
+        }
+
         public long PlantId { get; set; }
         public string PlantCode { get; set; }
         public string PlantName { get; set; }
@@ -25,5 +30,14 @@ namespace VisitorManagementMySQL.Models
         public string UrlToken { get; set; }
         public string CheckToken { get; set; }
         public bool? IsAutomaticApprove { get; set; }
+        public decimal? AlertAfterMins { get; set; }
+        public bool? IsNotification { get; set; }
+        public decimal? ReportTimer { get; set; }
+        public string ToMail { get; set; }
+        public string CcMail { get; set; }
+        public bool? IsDocMandatory { get; set; }
+        public bool? IsFileMandatory { get; set; }
+
+        public virtual ICollection<PlantNotificationDetail> PlantNotificationDetails { get; set; }
     }
 }

@@ -24,6 +24,7 @@ CREATE TABLE IF NOT EXISTS `Visitor_Entry_Detail` (
   `Is_Edited_Image` TINYINT(1) NULL DEFAULT NULL,
   `Valid_From` DATETIME(6) NULL DEFAULT NULL,
   `Valid_To` DATETIME(6) NULL DEFAULT NULL,
+  `Aadhar_No` BIGINT DEFAULT NULL,
   PRIMARY KEY (`Visitor_Entry_Detail_Id`),
   INDEX `fk_Visitor_Entry_Detail_Visitor_Entry_Id` (`Visitor_Entry_Id` ASC) ,
   CONSTRAINT `fk_Visitor_Entry_Detail_Visitor_Entry_Id`

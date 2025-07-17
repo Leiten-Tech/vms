@@ -26,6 +26,7 @@ CREATE TABLE IF NOT EXISTS `Visitor` (
   `Created_On` DATETIME(6) NOT NULL,
   `Modified_By` INT NULL DEFAULT NULL,
   `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  `Aadhar_No` bigint ,
   PRIMARY KEY (`Visitor_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

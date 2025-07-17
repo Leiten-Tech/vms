@@ -45,6 +45,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
             JObject custom = JObject.Parse(customString);
             string ApproveToken = custom["ApproveToken"].ToObject<string>();
             string RejectToken = custom["RejectToken"].ToObject<string>();
+            // string ReScheduleToken = custom["ReScheduleToken"].ToObject<string>();
             string buttonClick = obj["payload"]["message"]["button"]["text"].ToObject<string>();
             try
             {
@@ -70,6 +71,24 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                         "" + ""
                     );
                 }
+                // else if (buttonClick == "ReSchedule")
+                // {
+                //     decryptData = await approvalWorkflow.GenerateMailToken(
+                //         "DECRYPT",
+                //         ApproveToken,
+                //         "",
+                //         "" + ""
+                //     );
+                // }
+                // else if (buttonClick == "End Meeting")
+                // {
+                //     decryptData = await approvalWorkflow.GenerateMailToken(
+                //         "DECRYPT",
+                //         ApproveToken,
+                //         "",
+                //         "" + ""
+                //     );
+                // }
                 var decryptSplit = decryptData.Split("_");
                 var approvalReq = dbContext
                     .Approvals.Where(a => a.DocumentNo == decryptSplit[0])
@@ -77,7 +96,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                 // ApprovalRequest request = JsonConvert.DeserializeObject<ApprovalRequest>(decryptData);
                 string FromContact = "917358112529";
                 DateTime MessageTime = DateTime.Now;
-                string Template = "ntn_approval";
+                string Template = "approval_template_vms"; // Updated template name
                 long messageType = 104;
                 string EntryRefCode = decryptSplit[0];
                 string ToContact = obj["payload"]["contacts"][0]["to"].ToObject<string>();
@@ -102,7 +121,9 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                 dbContext.WhatsAppLogs.Add(whatsAppLog);
                 dbContext.SaveChanges();
 
-                var approvalHeader = dbContext
+          
+
+           var approvalHeader = dbContext
                     .Approvals.Where(x => x.DocumentNo == approvalReq.DocumentNo)
                     .SingleOrDefault();
                 var VisEntry = dbContext
@@ -115,25 +136,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                 int reqStatus = int.Parse(decryptSplit[5]);
                 if (approvalHeader.Status == 74)
                 {
-                    // approvalHeader.Status = reqStatus;
-                    // approvalHeader.ModifiedBy = int.Parse(decryptSplit[4]);
-                    // approvalHeader.ModifiedOn = DateTime.Now;
-                    // var approvalDetail = dbContext
-                    //     .ApprovalDetails.Where(x => x.ApprovalId == approvalHeader.ApprovalId)
-                    //     .ToList();
-                    // // var approvalDetailForRemove = dbContext.ApprovalDetails.Where(x => x.ApprovalId == approvalHeader.ApprovalId).ToList();
-                    // // dbContext.ApprovalDetails.RemoveRange(approvalDetailForRemove);
-                    // foreach (var item in approvalDetail)
-                    // {
-                    //     item.Status = reqStatus;
-                    //     item.ModifiedBy = int.Parse(decryptSplit[4]);
-                    //     item.ModifiedOn = DateTime.Now;
-                    //     item.IsViewed = true;
-                    //     item.Remarks1 = "";
-                    //     // item.Remarks1 = request.remarks1;
-                    // }
-                    // approvalHeader.ApprovalDetails = approvalDetail;
-                    // dbContext.Approvals.Update(approvalHeader);
+                    
 
                     long? companyid = int.Parse(decryptSplit[1]);
                     long? plantid = int.Parse(decryptSplit[2]);
@@ -141,9 +144,20 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                     string? documentno = approvalReq.DocumentNo;
                     int? status = reqStatus;
                     long? approverid = int.Parse(decryptSplit[4]);
-                    long? documentdetailid = null;
+                    long? documentdetailid = int.Parse(decryptSplit[3]);
                     long? userid = int.Parse(decryptSplit[4]);
 
+
+                    User userData = new User();
+                    if( approverid == 0){
+
+                    var visitorData = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == documentno);
+                     userData = visitorData != null
+                        ? dbContext.Users.FirstOrDefault(x => x.UserId == visitorData.VisitedEmployeeId)
+                        : null;
+                    }
+
+                        
                     ApprovalRequest approvalRequest = new ApprovalRequest
                     {
                         companyid = long.Parse(decryptSplit[1]),
@@ -158,7 +172,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                         remarks1 = "",
                         remarks2 = "",
                         status = reqStatus,
-                        approverid = long.Parse(decryptSplit[4]),
+                        approverid = userData.UserId,
                         levelid = int.Parse(decryptSplit[7]),
                         alternateuser = null,
                         parentid = null,
@@ -174,6 +188,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                     };
                     await approvalWorkflow.ApprovalWorkFlowUpdate(jObject);
 
+     
                     dto.tranStatus.result = true;
                 }
             }

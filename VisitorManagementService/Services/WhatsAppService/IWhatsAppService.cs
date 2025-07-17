@@ -22,7 +22,9 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
             dynamic visComp,
             dynamic VisitedEmp,
             Task<string> approveLink,
-            Task<string> rejectLink
+            Task<string> rejectLink,
+            // Task<string> rescheduleLink,
+            string levelParam
         );
     }
 }

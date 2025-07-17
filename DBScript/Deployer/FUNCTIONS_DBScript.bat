@@ -22,14 +22,14 @@ REM MySQL credentials
 @REM set MYSQL_DATABASE="vms_test"
 @REM set MYSQL_HOST="192.168.0.240" 
 @REM set MYSQL_PORT="3306"
-set MYSQL_USER="root"
-set MYSQL_PASSWORD="Leiten@2024"
-set MYSQL_DATABASE="vms_test"
-set MYSQL_HOST="3.6.39.244" 
+set MYSQL_USER="VMS"
+set MYSQL_PASSWORD="Leiten@2024*"
+set MYSQL_DATABASE="vms_web"
+set MYSQL_HOST="192.168.10.141" 
 set MYSQL_PORT="3306"
 
 REM Directory containing SQL files
-set SQL_DIR=E:\TFS\VisitorManagement\Demo-branch\MYSQL\MySQL-DBScript\Functions
+set SQL_DIR=C:\TFS\VMS\VisitorManagement\General\Dev-branch\DBScript\Functions
 
 REM Loop through each SQL file in the directory and run it in MySQL
 for %%f in (%SQL_DIR%\*.sql) do (

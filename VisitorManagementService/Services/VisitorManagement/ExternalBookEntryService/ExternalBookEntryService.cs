@@ -14,7 +14,6 @@ using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.ApprovalWorkflow;
 using VisitorManagementMySQL.Services.Common;
 using VisitorManagementMySQL.Services.MailService;
-using VisitorManagementMySQL.Services.MailService;
 using VisitorManagementMySQL.Services.Master.FileUploadService;
 using VisitorManagementMySQL.Services.WhatsAppService;
 using VisitorManagementMySQL.Utils;
@@ -31,8 +30,9 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
         private readonly IHttpContextAccessor httpContextAccessor;
         private readonly IDapperContext dapperContext;
         private readonly FileUploadService uploadService;
-        private readonly IApprovalWorkFlow approvalservice;
+        private readonly IApprovalWorkFlow approvalservice; 
         private VisitorEntryDTO dto;
+         private readonly ApprovalWorkFlowDTO approvaldto;
 
         public ExternalBookEntryService(
             DbContextHelper _dbContext,
@@ -55,6 +55,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
             this.whatsAppService = whatsAppService;
             commonService = _commonService;
             dto = new VisitorEntryDTO();
+            approvaldto = new ApprovalWorkFlowDTO();
             dto.tranStatus = new ErrorContext();
             dto.tranStatus.result = false;
             dto.tranStatus.lstErrorItem = new List<ErrorItem>();
@@ -1070,6 +1071,13 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                                 "REJECT",
                                                 $"{appdet.DocumentNo}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{appdet.DocumentId}_{workflowdetail.PrimaryUserId}_76_{VisEntry.VisitorTypeId}_67"
                                             );
+                                            var rescheduleLink = GenerateMailToken(
+                                                "ENCRYPT",
+                                                "",
+                                                "RESCHEDULE",
+                                                $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{67}_{VisEntry.VisitorEntryId}_{ApproveSendUser.DefaultRoleId ?? 0}"
+                                            );
+
                                             visitorEntryUpdated = VisEntry;
                                             dto.VisitorEntryHeader = visitorEntryUpdated;
                                             var visitorCompany = VisEntrydetail[0].VisitorCompany;
@@ -1079,6 +1087,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                                     Convert.ToString(ApproveSendUser?.UserName)
                                                 )
                                                 .Replace("[Visitor]", Convert.ToString(names))
+                                                .Replace("[approveLevels]", "")
                                                 .Replace(
                                                     "[VisitDate]",
                                                     Convert.ToString(
@@ -1107,6 +1116,11 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                                     "{{RejectLink}}",
                                                     Convert.ToString(rejectLink.Result)
                                                 )
+                                                .Replace(
+                                                    "{{RescheduleLink}}",
+                                                    Convert.ToString(rescheduleLink.Result)
+                                                )
+
                                                 .Replace("{{serviceURL}}", _mailSettings.Service)
                                                 .Replace("{{siteURL}}", _mailSettings.Website)
                                                 .Replace("{{Logo}}", BrandLogo)
@@ -1131,7 +1145,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                             {
                                                 if (
                                                     token.IsEmApprovalEnabled == true
-                                                    && _mailSettings.MSend
+                                                    && _mailSettings.MSend == true
                                                 )
                                                 {
                                                     var mail = mailService.SendApprovalReqEmail(
@@ -1140,12 +1154,12 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                                         company
                                                     );
                                                 }
-                                            }
-                                            foreach (dynamic token in companyLocTokenss)
-                                            {
+                                            // }
+                                            // foreach (dynamic token in companyLocTokenss)
+                                            // {
                                                 if (
                                                     token.IsWaApprovalEnabled == true
-                                                    && _mailSettings.WSend
+                                                    && _mailSettings.WSend == true
                                                 )
                                                 {
                                                     var whatsApp = sendWhatsAppApproval(
@@ -1156,6 +1170,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                                         ApproveSendUser,
                                                         approveLink,
                                                         rejectLink
+                                                        // rescheduleLink
                                                     );
                                                 }
                                             }
@@ -1567,6 +1582,11 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                         await CheckIn(jObject);
                     }
                 }
+                if (VisitorEntry.VisitorEntryCode == null)
+                {
+                    VisitorEntry.VisitorEntryCode = await GenerateUniqueCode();
+                }
+
                 dbContext.VisitorEntries.Update(VisitorEntry);
                 dbContext.SaveChanges();
                 dto.tranStatus.result = true;
@@ -1949,6 +1969,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             SchemeVehicle = (object)null,
                             SchemeDetail = (object)null,
                             PartyType = (object)null,
+                            
                             Visitor_Type_Id = (object)null,
                             CompanyId = (object)null,
                             VehicleData = (object)null,
@@ -1971,20 +1992,30 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                     dto.RefList = (await spcall.ReadAsync<Metadatum>()).ToList();
                 }
                 dto.tranStatus.result = true;
-                if (dto.VisitorEntryHeader != null)
+               
+                if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime != null && dto.VisitorEntryHeader.ExitTime == null)
+                    )
                 {
-                    if (dto.VisitorEntryHeader.EntryType == 102)
-                    {
-                        dto.tranStatus.lstErrorItem.Add(
-                            new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN Data Found" }
-                        );
-                    }
-                    else
-                    {
-                        dto.tranStatus.lstErrorItem.Add(
-                            new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle OUT Data Found" }
-                        );
-                    }
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN Record Found." }
+                    );
+                }
+                else if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime == null && dto.VisitorEntryHeader.ExitTime != null)
+                    )
+                {
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle OUT Record Found." }
+                    );
+                }
+                else if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime != null && dto.VisitorEntryHeader.ExitTime != null)
+                    )
+                {
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN/ OUT Record Found." }
+                    );
                 }
             }
             catch (Exception ex)
@@ -2040,10 +2071,28 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                     dto.RefList = (await spcall.ReadAsync<Metadatum>()).ToList();
                 }
                 dto.tranStatus.result = true;
-                if (dto.VisitorEntryHeader != null)
+                 if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime != null && dto.VisitorEntryHeader.ExitTime == null)
+                    )
                 {
                     dto.tranStatus.lstErrorItem.Add(
-                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN Data Found" }
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN Record Found." }
+                    );
+                }
+                else if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime == null && dto.VisitorEntryHeader.ExitTime != null)
+                    )
+                {
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle OUT Record Found." }
+                    );
+                }
+                else if (dto.VisitorEntryHeader != null && dto.VisitorEntryHeader.VisitorEntryId > 0 
+                    && (dto.VisitorEntryHeader.EntryTime != null && dto.VisitorEntryHeader.ExitTime != null)
+                    )
+                {
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS000", Message = "Vehicle IN/ OUT Record Found." }
                     );
                 }
             }
@@ -2236,6 +2285,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                     {
                         resultValue = ApproveTokenService.GenerateToken(ApprovalText);
                     }
+                    else if (ApprovalType == "RESCHEDULE")
+                    {
+                        resultValue = ApproveTokenService.GenerateToken(ApprovalText);
+                    }
                 }
                 else if (tokenType == "DECRYPT")
                 {
@@ -2251,5 +2304,377 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
             }
             return resultValue;
         }
+
+
+                public async Task<VisitorEntryDTO> GetRescheduleVisList(JObject obj)
+        {
+            try
+            {
+                long VisitorEntryId = obj["VisitorEntryId"].ToObject<long>();
+                long CompanyId = obj["CompanyId"].ToObject<long>();
+                long RoleId = obj["RoleId"].ToObject<long>();
+                long? PrimaryUserId = obj?["PrimaryUserId"]?.ToObject<long?>();
+                string Type = "GetRescheduleVisList";
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(
+                        spName: "SP_VISITOR_RESCHEDULE_EX",
+                        new
+                        {
+                            Type,
+                            VisitorEntryId,
+                            CompanyId = (object)null,
+                            RoleId = (object)null,
+                            PrimaryUserId,
+                        }
+                    );
+                    // dto.reScheduleVisiorList = (await spcall.ReadAsync<dynamic>()).ToList(); 
+                    dto.VisitorEntry = (await spcall.ReadAsync<dynamic>()).SingleOrDefault();
+                    dto.VisitorEntryDetail = (await spcall.ReadAsync<VisitorEntryDetail>()).ToList();
+                }
+                dto.tranStatus.result = true;
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VM0000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> UpdateVisitorEntry(JObject obj)
+{
+    try
+    {
+        using (var transaction = dbContext.Database.BeginTransaction())
+        {
+            JObject _EmployeeJSON = (JObject)obj;
+            var serializer = new Newtonsoft.Json.JsonSerializer();
+
+            VisitorEntry VisitorEntry = _EmployeeJSON["VisitorEntry"]
+                .ToObject<VisitorEntry>(serializer);
+
+            VisitorEntry.VisitorEntryDetails = _EmployeeJSON["VisitorEntryDetail"]
+                .ToObject<List<VisitorEntryDetail>>(serializer);
+
+            User VisitEmp = new User();
+            Role VisitedEmpRole = new Role();
+            if (VisitorEntry.VisitorTypeId != 66)
+            {
+                VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisitorEntry.VisitedEmployeeId);
+                VisitedEmpRole = dbContext.Roles.FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
+            }
+
+            JObject ApprovalRequest = (JObject)obj["ApprovalRequest"];
+            string SaveType = obj["SaveType"].ToObject<string>();
+
+            JObject payload = new JObject
+            {
+                ["ApprovalRequest"] = JObject.FromObject(ApprovalRequest)
+            };
+
+            dbContext.VisitorEntries.Update(VisitorEntry);
+
+            if (SaveType == "resc")
+            {
+                await approvalservice.ApprovalWorkFlowUpdate(payload);
+            }
+
+            dbContext.SaveChanges();
+
+            // ⬇️ After saving, call WhatsApp and Email services
+
+            string mailType = "true"; // or "false", based on your condition
+            string filePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "VisitorPassReschedule.html");
+
+            Company company = dbContext.Companies
+                .FirstOrDefault(x => x.CompanyId == VisitorEntry.CompanyId);
+
+            string mailText = System.IO.File.ReadAllText(filePath);
+
+            dto.tranStatus.result = true;
+            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+            {
+                ErrorNo = "VMS000",
+                Message = "Visitor Data Updated & Notifications Sent Successfully."
+            });
+
+            transaction.Commit();
+
+
+            ApprovalWorkFlowDTO emailPass = SendPassEmail(
+                VisitorEntry.VisitorEntryDetails.ToList(),
+                VisitorEntry,
+                mailText,
+                mailType,
+                filePath,
+                company
+            );
+
+            // 📤 Send WhatsApp
+            ApprovalWorkFlowDTO whatsPass = SendPassWhatsApp(
+                VisitorEntry.VisitorEntryDetails.ToList(),
+                VisitorEntry,
+                mailText,
+                mailType,
+  VisitEmp?.UserName,
+                VisitedEmpRole?.RoleName
+            );
+
+            // 📧 Send Email
+
+
+            // ✅ Response
+            
+        }
+    }
+    catch (Exception ex)
+    {
+        dto.tranStatus.result = false;
+        dto.tranStatus.lstErrorItem.Add(
+            new ErrorItem { ErrorNo = "VM0000", Message = ex.Message }
+        );
+    }
+
+    return dto;
+}
+
+private ApprovalWorkFlowDTO SendPassEmail(
+            List<VisitorEntryDetail> visitorEntryDetail,
+            VisitorEntry visitorEntry,
+            string MailText,
+            string MailType,
+            string FilePath,
+            Company company
+        )
+        {
+            string visitorTypeClass = "";
+            string visitorTypeName = "";
+            string BrandLogo = "/upload/Logo/app-logo.png";
+            string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+
+            if (visitorEntry.VisitorTypeId == 35)
+            {
+                visitorTypeClass = "#61c455";
+                visitorTypeName = "Visitor";
+            }
+            else if (visitorEntry.VisitorTypeId == 36)
+            {
+                visitorTypeClass = "#3eabeb";
+                visitorTypeName = "Contractor";
+            }
+            else if (visitorEntry.VisitorTypeId == 117)
+            {
+                visitorTypeClass = "#eba63e";
+                visitorTypeName = "WorkPermit";
+            }
+            foreach (var item in visitorEntryDetail)
+            {
+                var TokenData = "";
+                var resultValue = "";
+                // foreach (var itemDtl in visitorEntryDetail)
+                // {
+
+                var User = dbContext
+                                    .Users.Where(x => x.UserId == visitorEntry.VisitedEmployeeId)
+                                    .SingleOrDefault();
+
+                var Role = dbContext
+                                    .Roles.Where(x => x.RoleId == User.DefaultRoleId)
+                                    .SingleOrDefault();
+
+                TokenData =
+                    $"{visitorEntry.CompanyId}_{item.VisitorEntryDetailId}_{visitorEntry.PlantId}_{visitorEntry.VisitorEntryCode}_{visitorEntry.VisitorTypeId}_{visitorEntry.VisitorEntryId}";
+                // }
+                resultValue = ApproveTokenService.GenerateToken(TokenData);
+                StreamReader str = new StreamReader(FilePath);
+                MailText = str.ReadToEnd();
+
+                MailText = MailText
+                    .Replace(
+                        "{{PersonName}}",
+                        Convert.ToString(item.FirstName + " " + item.LastName)
+                    )
+                    .Replace(
+                        "{{PassLink}}",
+                        Convert.ToString(
+                            _mailSettings.Website + "/home/print?encrypted=" + resultValue
+                        )
+                    )
+                    .Replace("{{UserName}}", Convert.ToString(User.UserName))
+                    .Replace("{{RoleName}}", Convert.ToString(Role.RoleName))
+                    .Replace("{{serviceURL}}", _mailSettings.Service)
+                    .Replace("{{siteURL}}", _mailSettings.Website)
+                    .Replace("{{Logo}}", BrandLogo)
+                    .Replace("{{BrandLogoBig}}", BrandLogoBig);
+
+                var stringObject = "";
+                if (MailType == "true")
+                {
+                    stringObject =
+                        $"{item.FirstName + " " + item.LastName} your Pass for your Visit on {visitorEntry.RescheduledDateTime}";
+                }
+                else if (MailType == "false")
+                {
+                    stringObject = "Requested Gate Pass Rejected.";
+                }
+                // var emailVal = ApproveTokenService.DecryptToken(item.MailId);
+                object emailObj = new
+                {
+                    FromID = "reply-no@visitorManagement.com",
+                    ToID = item.MailId,
+                    Subject = stringObject,
+                    Template = MailText,
+                };
+
+                // var converter = new CoreHtmlToImage.HtmlConverter();
+                // var bytes = converter.FromHtmlString(MailText);
+                // File.WriteAllBytes("image.jpg", bytes);
+
+
+                JObject convertObj = (JObject)JToken.FromObject(emailObj);
+                var mail = mailService.SendApprovalReqEmail(
+                    convertObj,
+                    visitorEntry.CompanyId,
+                    company
+                );
+            }
+
+            dto.tranStatus.result = true;
+            return approvaldto;
+        }
+
+private ApprovalWorkFlowDTO SendPassWhatsApp(
+            List<VisitorEntryDetail> visitorEntryDetail,
+            VisitorEntry visitorEntry,
+            string MailText,
+            string MailType,
+            string UserName,
+            string RoleName
+        )
+        {
+            string visitorTypeClass = "";
+            string visitorTypeName = "";
+            string BrandLogo = "/upload/Logo/app-logo.png";
+            string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+
+            foreach (var item in visitorEntryDetail)
+            {
+                
+                  string notifyMessage = $"Dear {UserName},\n" +
+                        $"Your visit has been ended.";
+                                                
+                    var whatsJson = new JObject
+                    {
+                        ["to_contact"] = "91" + item.MobileNo,
+                        ["type"] = "text",
+                        ["text"] = new JObject { ["body"] = notifyMessage }
+                    };
+
+                // string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(whatsJson);                           
+                
+
+                string jsonString = Newtonsoft.Json.JsonConvert.SerializeObject(whatsJson);
+
+                Console.WriteLine(jsonString);
+                JObject tempObj = new JObject();
+                tempObj = whatsJson;
+                string FromContact = "917358112529";
+                string ToContact = "91" + Convert.ToString(item.MobileNo);
+                DateTime MessageTime = DateTime.Now;
+                string Template = "approval_template_vms";
+                WhatsAppLogSaveOut(
+                    tempObj,
+                    (int)visitorEntry.CompanyId,
+                    (int)visitorEntry.PlantId,
+                    (int)visitorEntry.VisitedEmployeeId,
+                    FromContact,
+                    ToContact,
+                    MessageTime,
+                    Template,
+                    (string)visitorEntry.VisitorEntryCode
+                );
+                var mail = whatsAppService.SendApprovalReqWhatsApp(jsonString);
+                // if (MailType == "true")
+                // {
+                //     if (mail != null)
+                //     {
+                //         dynamic text = new JObject();
+                //         jsonObject.to_contact = "91" + Convert.ToString(item.MobileNo);
+                //         jsonObject.type = "text";
+
+                //         text.body =
+                //             $"Dear {Convert.ToString(workPermit.WorkerName)},We regret to inform you that your  gate pass request has been rejected.";
+                //         jsonObject.text = text;
+                //     }
+                // }
+            }
+            approvaldto.tranStatus.result = true;
+            // dto.tranStatus.lstErrorItem.Add(new ErrorItem
+            // {
+            //     ErrorNo = "VMS000",
+            //     Message = ""
+            // });
+            return approvaldto;
+        }
+
+        public ApprovalWorkFlowDTO WhatsAppLogSaveOut(
+            JObject obj,
+            int CompanyId,
+            int PlantId,
+            int UserId,
+            string FromContact,
+            string ToContact,
+            DateTime MessageTime,
+            string Template,
+            string EntryRefCode
+        )
+        {
+            try
+            {
+                long messageType = 104;
+
+                Newtonsoft.Json.Linq.JObject _WhatsAppJSON = (Newtonsoft.Json.Linq.JObject)obj;
+                Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+
+                WhatsAppLog whatsAppLog = new WhatsAppLog();
+                whatsAppLog.WhatsAppLogData = _WhatsAppJSON.ToString();
+                whatsAppLog.TemplateId = Template;
+                whatsAppLog.SentType = 103;
+                whatsAppLog.FromContact = FromContact;
+                whatsAppLog.ToContact = ToContact;
+                whatsAppLog.MessageType = (int?)messageType;
+                whatsAppLog.DeliveryStatus = null;
+                whatsAppLog.MessageTime = MessageTime;
+                whatsAppLog.RefCode = EntryRefCode;
+                whatsAppLog.CompanyId = CompanyId;
+                whatsAppLog.PlantId = PlantId;
+                whatsAppLog.CreatedBy = UserId;
+                whatsAppLog.CreatedOn = DateTime.Now;
+                whatsAppLog.ModifiedBy = null;
+                whatsAppLog.ModifiedOn = null;
+                dbContext.WhatsAppLogs.Add(whatsAppLog);
+                dbContext.SaveChanges();
+
+                dto.tranStatus.result = true;
+                //     dto.tranStatus.lstErrorItem.Add(
+                //        new ErrorItem
+                //        {
+                //            Message = "Something Went Wrong, Please Try Again."
+                //        }
+                //    );
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VM0000", Message = ex.Message }
+                );
+            }
+            return approvaldto;
+        }
+
+
     }
 }

@@ -35,6 +35,19 @@ namespace VisitorManagementMySQL.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpPost("AndroidApprovalWorkFlowUpdate")]
+        [AllowAnonymous]
+        public async Task<IActionResult> AndroidApprovalWorkFlowUpdate(JObject input)
+        {
+            try
+            {
+                return Ok(await service.AndroidApprovalWorkFlowUpdate(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
         [HttpPost("UserWorkFlowUpdate")]
         public IActionResult UserWorkFlowUpdate(JObject input)
@@ -149,7 +162,7 @@ namespace VisitorManagementMySQL.Controllers
         {
             try
             {
-                return Ok(service.SendPass(input, SendMail));
+                return Ok(service.SendPass(input, SendMail, "",""));
             }
             catch (Exception ex)
             {

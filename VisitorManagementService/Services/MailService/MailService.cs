@@ -34,6 +34,7 @@ using System.Net.Http;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.Net;
 using VisitorManagementMySQL.Services.MailService;
+using VisitorManagementMySQL.Utils;
 
 namespace VisitorManagementMySQL.Services.MailService
 {
@@ -123,6 +124,207 @@ namespace VisitorManagementMySQL.Services.MailService
                 throw new Exception(ex.Message);
             }
 
+        }
+             public async Task<MailDTO> SendOTPEmail(string UserName, DateTime expirytime, string email, string otp, string type)
+        {
+            try
+            {
+                dto.tranStatus.result = true;
+                dto.OTP = otp;
+                var message = new MimeMessage();
+                message.From.Add(new MailboxAddress("", _mailSettings.Mail));
+                message.To.Add(MailboxAddress.Parse(email));
+
+                if (type == "REGISTER")
+                {
+                    message.Subject = "Registration OTP Verification Code";
+                }
+                else if (type == "PASSWORD")
+                {
+                    message.Subject = "Password OTP Verification Code";
+                }
+                else if (type == "MAILCHANGE")
+                {
+                    message.Subject = "Mail Changes Verification";
+                }
+
+                var builder = new BodyBuilder();
+                builder.HtmlBody = $@"
+                <div style='max-width: 500px; margin: auto; padding: 20px; border-radius: 10px; font-family: Arial, sans-serif; background: #fff; box-shadow: 0px 0px 10px rgba(0,0,0,0.1); text-align: center;'>
+                    <h2 style='color: #1976d2;'>OTP Verification</h2>
+                    <hr>
+                    <p style='font-size: 16px; color: #333;'>Dear {UserName},</p>
+                    <p style='font-size: 16px; color: #333;'>Your One-Time Password (OTP) is:</p>
+                    <p style='font-size: 32px; font-weight: bold; color: #4CAF50; margin: 10px 0;'>{otp}</p>
+                    <p style='font-size: 14px; color: #666;'>This OTP is valid for <strong>5 minutes</strong>. It will expire at <strong>{expirytime:hh:mm tt}</strong>.</p>
+                    <p style='font-size: 14px; color: #666;'>Please do not share this code with anyone.</p>
+                    <p style='font-size: 14px; color: #666;'>Thank you</p>
+                    <hr>
+                </div>";
+
+
+                message.Body = builder.ToMessageBody();
+
+                using var smtp = new SmtpClient();
+                smtp.Connect(_mailSettings.Host, _mailSettings.Port, SecureSocketOptions.StartTls);
+                smtp.Authenticate(_mailSettings.Mail, _mailSettings.Password);
+                await smtp.SendAsync(message);
+                smtp.Disconnect(true);
+
+                if (dto.tranStatus.result)
+                {
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Your OTP Verification code has been sent to your email." });
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = ex.Message });
+            }
+            return dto;
+        }
+
+
+        public async Task<MailDTO> SendOtp(string email, string type, string mobileno)
+        {
+            MailDTO dto = new MailDTO(); // Ensure dto is created here
+
+            using (var transaction = DbContext.Database.BeginTransaction())
+            {
+                try
+                {
+
+                    // 1. Check if user exists
+                    bool isexists = DbContext.AndroidUsers.Any(a => a.Emailid == email);
+
+                    if (!isexists)
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                        {
+                            ErrorNo = "VMS001",
+                            Message = "Invalid Email ID"
+                        });
+                        return dto;
+                    }
+
+                    if (type == "MAILCHANGE")
+                    {
+                        var androidusers = DbContext.AndroidUsers.Where(a => a.Mobileno == mobileno).FirstOrDefault();
+                        androidusers.Verified = false;
+                        androidusers.Emailid = email;
+                        DbContext.SaveChanges();
+
+                    }
+
+
+                    // 2. Generate OTP and expiry
+                    string otp = new Random().Next(1000, 9999).ToString();
+                    DateTime expiry = DateTime.Now.AddMinutes(5);
+
+                    string UserName = DbContext.AndroidUsers
+                        .Where(a => a.Emailid == email)
+                        .Select(a => a.UserName)
+                        .FirstOrDefault();
+
+                    // 3. Save OTP to DB
+                    var otpVerification = new OtpVerificationMob
+                    {
+                        VerificationType = "12",
+                        VerificationNo = email,
+                        OtpCode = otp,
+                        ExpiryAt = expiry,
+                        Status = 1
+                    };
+
+                    DbContext.OtpVerificationMobs.Add(otpVerification);
+                    await DbContext.SaveChangesAsync();
+
+                    // 4. Try to send OTP via email
+                    dto = await SendOTPEmail(UserName, expiry, email, otp, type);
+
+                    if (!dto.tranStatus.result)
+                    {
+                        // Email failed — do not commit transaction
+                        transaction.Rollback();
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                        {
+                            ErrorNo = "MAIL_ERROR",
+                            Message = "Failed to send OTP. Check SMTP configuration or internet connectivity."
+                        });
+
+                        return dto;
+                    }
+
+                    dto.OTP = otp;
+                    dto.tranStatus.result = true;
+                    transaction.Commit();
+                }
+                catch (Exception ex)
+                {
+                    transaction.Rollback();
+
+                    dto.tranStatus.result = false;
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                    {
+                        ErrorNo = "VMS000",
+                        Message = ex.Message
+                    });
+                }
+
+                return dto;
+            }
+        }
+
+
+        public async Task<MailDTO> VerifyOTP(OTPVerifyRequest request)
+        {
+            try
+            {
+                dto.tranStatus.result = true;
+                var otpRecord = DbContext.OtpVerificationMobs.FirstOrDefault(o => o.VerificationNo == request.Email && o.OtpCode == request.OTP && o.Status == 1);
+
+                using (var transaction = DbContext.Database.BeginTransaction())
+                {
+                    if (otpRecord == null)
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Invalid OTP" });
+                        return dto;
+                    }
+                    else if (otpRecord.ExpiryAt < DateTime.UtcNow)
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "OTP expired" });
+                        return dto;
+                    }
+                    else if (dto.tranStatus.result == true)
+                    {
+                        otpRecord.Status = 2;
+                        DbContext.OtpVerificationMobs.Update(otpRecord);
+                        DbContext.SaveChanges();
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "OTP verified successfully" });
+
+                        if (request.Type == "REGISTER" || request.Type == "MAILCHANGE")
+                        {
+                            var registerdetails = DbContext.AndroidUsers.Where(w => w.Emailid == request.Email).SingleOrDefault();
+                            registerdetails.Verified = true;
+                            DbContext.SaveChanges();
+
+                        }
+                    }
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+            return dto;
         }
         // public void SendOrderStatusEmailAsync(DbContextHelper dbContext, List<long> orderids)
         // {

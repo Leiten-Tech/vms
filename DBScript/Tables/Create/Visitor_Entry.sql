@@ -56,6 +56,13 @@ CREATE TABLE IF NOT EXISTS `Visitor_Entry` (
   `IsExternal` BOOL NOT NULL DEFAULT '0',
   `Is_Internal_Appointment` BOOL NULL DEFAULT NULL,
   `Ref_No` VARCHAR(50) NULL DEFAULT NULL,
+  `is_android_visitor` bit(1) ,
+	`is_meeting_close` bit(1) ,
+	`Aadhar_No` bigint ,
+	`rescheduled_date_time` datetime ,
+	`previous_Valid_From` datetime(6) ,
+	`previous_Valid_To` datetime(6) ,
+	`Visit_End_Time` datetime(6),
   PRIMARY KEY (`Visitor_Entry_Id`)
 ) ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

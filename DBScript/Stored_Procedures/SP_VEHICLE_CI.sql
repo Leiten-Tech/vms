@@ -14,6 +14,7 @@ BEGIN
   then      
    select*from Metadata  where Meta_Type_Code = 'STA'  ;
    select*from Metadata  where Meta_Type_Code = 'VTY'  ;
+   select*from Metadata  where Meta_Type_Code = 'POVV'  ;
    select*from Supplier s where s.Status=1 and s.Supplier_Category_Id=77 and s.Company_Id = CompanyId and s.Plant_Id = PlantId;
    select*from Company c where c.Status=1 and c.Company_Id = CompanyId ;
    select*from Plant p where p.Company_Id = CompanyId  and Status=1;

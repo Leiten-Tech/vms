@@ -215,6 +215,8 @@ const VWorkFlow = () => {
         requestfromdate: null,
         requesttodate: null,
         Isviewed: 1,
+        documentactivityid: rowData.ApprovalActivityId,
+        documentdetailid: rowData.DocumentId
       },
     };
     servicecall(obj);
@@ -242,6 +244,8 @@ const VWorkFlow = () => {
         requestfromdate: null,
         requesttodate: null,
         Isviewed: 1,
+        documentactivityid: rowData.ApprovalActivityId,
+        documentdetailid: rowData.DocumentId
       },
     };
     servicecall(obj);

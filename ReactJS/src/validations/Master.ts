@@ -1,4 +1,5 @@
 import { object, string, number, array, date, InferType } from "yup";
+import { boolean, mixed } from "yup";
 
 //Login
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -130,10 +131,25 @@ export const GateValidationSchema = object({
   PlantId: number().required("Please Select Plant Name."),
   Status: number().required("Please Select Status."),
 });
+
+
 // gateDetail
 export const GateDetailValidationSchema = object({
   SecurityId: number().required("Please Select Security Name."),
 });
+
+// export const PlantValidationSchema = object({
+//   CompanyId: string().required("Please Select Company"),
+//   PlantType: string().required("Please Select Plant Type"),
+//   PlantName: string().required("Please Select Plant Name"),
+//   // Address: string().required("Address is required"),
+//   CountryId: string().required("Please Select Country"),
+//   StateId: string().required("Please Select State"),
+//   CityId: string().required("Please Select City"),
+//   Status: number().required("Status is required"),
+// });
+
+const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 
 export const PlantValidationSchema = object({
   CompanyId: string().required("Please Select Company"),
@@ -144,7 +160,47 @@ export const PlantValidationSchema = object({
   StateId: string().required("Please Select State"),
   CityId: string().required("Please Select City"),
   Status: number().required("Status is required"),
+
+   ToMail: string()
+    .required("To Mail is required")
+    .test("valid-to-emails", "Invalid email(s) in To Mail", function (value) {
+      if (!value) return false;
+      const emails = value.split(',').map(e => e.trim());
+      return emails.every(email => emailRegex.test(email));
+    }),
+
+ 
+  CcMail: string()
+  .test("valid-cc-emails", "Invalid CC email(s)", function (value) {
+    const { ToMail } = this.parent;
+    if (!value) return true;
+
+    const ccEmails = value.split(',').map(e => e.trim().toLowerCase());
+    const toEmails = (ToMail || '').split(',').map(e => e.trim().toLowerCase());
+
+  
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    const hasInvalid = ccEmails.some(email => !emailRegex.test(email));
+    if (hasInvalid) {
+      return this.createError({
+        path: "CcMail",
+        message: "One or more CC emails are invalid or contain special characters",
+      });
+    }
+
+    
+    const hasDuplicate = ccEmails.some(email => toEmails.includes(email));
+    if (hasDuplicate) {
+      return this.createError({
+        path: "CcMail",
+        message: "Cc Mail must not contain the same email(s) as To Mail",
+      });
+    }
+
+    return true;
+  }),
 });
+
 //Visitor
 //Visitor
 const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
@@ -301,8 +357,8 @@ export const VehicleValidationSchema = object({
   //   .max(90, "Maximum Length Exceeded."),
   VehicleNo: string()
     .required("Please Enter Vehicle No")
-    .matches(vehNoRegex, "Invalid Vehicle Number Format. Expected format: AB00EX0000.")
-    .max(10, "Maximum Length Exceeded."),
+    // .matches(vehNoRegex, "Invalid Vehicle Number Format. Expected format: AB00EX0000.")
+    .max(25, "Maximum Length Exceeded."),
   VehicleModel: string()
     .required("Please Enter Vehicle Model")
     .max(50, "Maximum Length Exceeded."),
@@ -384,22 +440,52 @@ export const ApprovalValidationSchema = object({
   DocumentId: number().required("Please Select Document."),
   ApprovalActivityId: number().required("Please Select Approval Activity."),
 });
+
 //ApprovalDetail
+
+// export const ApprovalDetailValidationSchema = object({
+//   LevelId: number().required("Please Select Level."),
+//   RoleId: number().required("Please Select Role."),
+//   PrimaryUserId: number().required("Please Select Primary User."),
+// });
 export const ApprovalDetailValidationSchema = object({
+  IsHost: boolean().default(false),
+
   LevelId: number().required("Please Select Level."),
-  // RoleId: number().required("Please Select Role."),
-  RoleId: number().when("IsHost", {
-    is: true,
-    then: (schema) => schema.notRequired(),
-    otherwise: (schema) => schema.required("Please Select Role"),
-  }),
-  
-  PrimaryUserId: number().when("IsHost", {
-    is: true,
-    then: (schema) => schema.notRequired(),
-    otherwise: (schema) => schema.required("Please Select Primary User."),
-  }),
-  // PrimaryUserId: number().required("Please Select Primary User."),
+
+  RoleId: number()
+    .nullable()
+    .when("IsHost", (isHost, schema) =>
+      !Boolean(isHost)
+        ? schema.required("Please Select Role.")
+        : schema.nullable()
+    ),
+
+  PrimaryUserId: number()
+    .nullable()
+    .when("IsHost", (isHost, schema) =>
+      !Boolean(isHost)
+        ? schema.required("Please Select Primary User.")
+        : schema.nullable()
+    ),
+
+  SecondaryUserId: number()
+    .nullable()
+    .when("IsHost", (isHost, schema) =>
+      !Boolean(isHost)
+        ? schema.required("Please Select Secondary User.")
+        : schema.nullable()
+    ),
+});
+
+
+
+
+
+export const NotificationDetailValidationSchema = object({
+  LevelId: number().required("Please Select Level."),
+  DepartmentId: number().required("Please Select Department."),
+  PrimaryUserId: number().required("Please Select Primary User."),
 });
 
 //RptCheckinCheckout

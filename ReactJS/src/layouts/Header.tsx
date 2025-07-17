@@ -1032,8 +1032,10 @@ const Header = () => {
                 <header className="web-view header">
                     <div className="grid">
                         <div className="col-12 md:col-8 lg:col-8">
-                            <div className="apps-logo text-center inline-block pt-3 bg-white">
-                                <img className="w-full" src={Appslogo} alt="logo" />
+                            <div className="apps-logo text-center inline-block bg-white">
+                                <img className="" src={Appslogo} alt="logo" style={{
+                                    width: "50px",
+                                }}/>
                             </div>
 
                             <div className="hdr-search p10 inline-block align-top">

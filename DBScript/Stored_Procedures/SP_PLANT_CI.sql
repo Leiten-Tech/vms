@@ -6,6 +6,7 @@ CREATE PROCEDURE SP_PLANT_CI (
     IN CountryId INT,
     IN StateId INT,
     IN CompanyId BIGINT,
+    IN DepartmentId BIGINT,
     IN RoleId BIGINT
 )
 BEGIN
@@ -25,10 +26,16 @@ BEGIN
         WHERE Meta_Type_Code = 'STA';
 
         SELECT * FROM Metadata WHERE Meta_Type_Code = 'PLT';
+        
 
         SELECT * FROM Company c WHERE c.Company_Id = CompanyId and c.Status = 1;
 
         SELECT * FROM Country WHERE Status = 1;
+        
+        SELECT * FROM Metadata WHERE Meta_Type_Code = 'LVL' and Meta_sub_Id in (67,68,69);
+        
+        SELECT * FROM Department d WHERE d.Company_Id = CompanyId and status = 1;
+        
 
         IF PlantId > 0 THEN
             SELECT * FROM State WHERE Status = 1;
@@ -36,9 +43,17 @@ BEGIN
             SELECT * FROM City WHERE Status = 1;
 
             SELECT * FROM Plant WHERE Plant_Id = PlantId;
+            
+            SELECT * FROM Plant_Notification_Details WHERE Plant_Id = PlantId;
+            
+			SELECT * FROM Users u where u.Company_Id = CompanyId and u.Plant_Id = PlantId;
         END IF;
     END IF;
-
+    
+    IF Type = 'OnChangeDepartment' THEN
+       SELECT * FROM Users u WHERE u.Dept_Id = DepartmentId AND u.Status = 1 AND u.Company_Id = CompanyId;
+    END IF;
+ 
     IF Type = 'OnChangeCountry' THEN
         SELECT * FROM State WHERE Status = 1 AND Country_Id = CountryId;
     END IF;

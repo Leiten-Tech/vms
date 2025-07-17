@@ -56,6 +56,7 @@ const DocumentHyperLink: any = (rowData: any) => {
   );
 };
 const VehicleForm = (props) => {
+// const { PurposeList } = useSelector((state: any) => state.vehicle)
   const {
     isCreate,
     isView,
@@ -71,6 +72,7 @@ const VehicleForm = (props) => {
     VehicleMasterList,
     VehicleTypeList,
     SupplierList,
+    PurposeList,
     DriverList,
     PlantList,
     VehicleList,
@@ -148,7 +150,7 @@ const VehicleForm = (props) => {
                 handleSelect={""}
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
-                maxLength={10}
+                maxLength={25}
               />
               <FormFields
                 type={"text"}
@@ -179,7 +181,7 @@ const VehicleForm = (props) => {
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
               />
-              <div className="col-12 md:col-9">
+              <div className="col-12 md:col-12">
                 <div className="grid">
                   <FormFields
                     type={"select"}
@@ -193,7 +195,7 @@ const VehicleForm = (props) => {
                     optionValue={"SupplierId"}
                     handleSelect={handleSupplierSelect}
                     formik={formik}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
                   />
                   <FormFields
                     type={"text"}
@@ -207,7 +209,7 @@ const VehicleForm = (props) => {
                     optionValue={""}
                     handleSelect={""}
                     formik={formik}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
                   />
                   <FormFields
                     type={"text"}
@@ -221,7 +223,24 @@ const VehicleForm = (props) => {
                     optionValue={""}
                     handleSelect={""}
                     formik={formik}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
+                  />
+
+                  <FormFields
+                    type={"select"}
+                    name={"PurposeOfVisit"}
+                    label={"Purpose Of Visit "}
+                    options={PurposeList}
+                    show={true}
+                    required={true}
+                    // disable={!isCreate}
+                     disable={isView ? true : false}
+                    optionLabel={"MetaSubDescription"}
+                    optionValue={"MetaSubId"}
+                    handleSelect={handleSelect}
+                    formik={formik}
+                    fldStyle={"col-12 md:col-3"}
+                    filter={true}
                   />
 
                   <FormFields
@@ -236,7 +255,7 @@ const VehicleForm = (props) => {
                     optionValue={""}
                     formik={formik}
                     handleChange={formik.handleChange}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
                   />
                   <FormFields
                     type={"Calendar"}
@@ -250,7 +269,7 @@ const VehicleForm = (props) => {
                     optionValue={""}
                     formik={formik}
                     handleChange={formik.handleChange}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
                   />
                   <FormFields
                     type={"select"}
@@ -267,12 +286,13 @@ const VehicleForm = (props) => {
                     optionValue={"MetaSubId"}
                     handleSelect={handleSelect}
                     formik={formik}
-                    fldStyle={"col-12 md:col-4"}
+                    fldStyle={"col-12 md:col-3"}
                   />
-                </div>
-              </div>
-              <FormFields
-                type={"textarea"}
+             
+              
+          
+            <FormFields
+                type={"text"}
                 name={"Remarks"}
                 label={"Remarks"}
                 options={""}
@@ -284,11 +304,13 @@ const VehicleForm = (props) => {
                 handleSelect={""}
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
-                maxLength="500"
-                style={{ maxHeight: "100px", overflowY: "auto" }}
+                // maxLength="500"
+                // style={{ maxHeight: "70px", overflowY: "auto" }}
               />
-            </div>
+              </div>
+                 </div>
           </div>
+            </div>
         </div>
       </div>
     </Formik>
@@ -549,6 +571,7 @@ const CVehicle = () => {
   const [DisableSupplier, setDisableSupplier] = useState(true);
   const [vehicleDetailList, setVehicleDetailList] = useState([]);
   const [plantList, setPlantList] = useState([]);
+  //  const [PurposeList, setPurposeList] = useState([]);
   const [AttachmentUrl, setAttachmentUrl] = useState("");
   const [document, setDocument] = useState<File | null>(null);
   const [documentfiles, setDocumentfiles] = useState<File[] | null>([]);
@@ -564,6 +587,7 @@ const CVehicle = () => {
     StatusList,
     HdrTable,
     EmployeeList,
+    PurposeList,
     CompanyList,
     PlantList,
     OnChangeCompanyList,
@@ -604,7 +628,7 @@ const CVehicle = () => {
         PlantId: +localStorage["PlantId"],
         RoleId: +localStorage["DefaultRoleId"],
       };
-      dispatch(createInit(data));
+      dispatch(createInit(data))
     }
   }, []);
   async function fetchBlobFromUrl(url: string): Promise<Blob> {
@@ -618,7 +642,7 @@ const CVehicle = () => {
 
   const generateQrCodes = (data) => {
     const encryptData = dispatch(
-      EncryptData(data.VehicleId + "," + data.VehicleCode)
+      EncryptData(data.VehicleNo)
     );
     encryptData
       .then((res) => {
@@ -628,10 +652,10 @@ const CVehicle = () => {
         ) {
           vehicleFormik.setFieldValue(
             "VehicleToken",
-            res.payload.VisitorEntryHeader
+            "E^^_"+ res.payload.VisitorEntryHeader
           );
 
-          data.VehicleToken = res.payload.VisitorEntryHeader;
+          data.VehicleToken = "E^^_" + res.payload.VisitorEntryHeader;
 
           const formData = new FormData();
           let List: any[] = [];
@@ -704,6 +728,7 @@ const CVehicle = () => {
     SupplierMobileNo: HdrTable != null ? HdrTable.SupplierMobileNo : "",
     SupplierAddress: HdrTable != null ? HdrTable.SupplierAddress : "",
     VehicleModel: HdrTable != null ? HdrTable.VehicleModel : "",
+    PurposeOfVisit: HdrTable != null ? HdrTable.PurposeOfVisit : null,
     EmployeeId: HdrTable != null ? HdrTable.EmployeeId : null,
     VehicleFcDate: HdrTable != null   && HdrTable?.VehicleFcDate != null? new Date(HdrTable.VehicleFcDate) :null,
     ServiceDate: HdrTable != null && HdrTable?.ServiceDate != null ? new Date(HdrTable.ServiceDate) :null,
@@ -998,9 +1023,20 @@ const CVehicle = () => {
     vehicleDetailFormik.setFieldValue("AttachmentUrl", null);
     setAttachmentUrl("");
   };
+  // const handleClick = (linkValue) => {
+  //   window.open(linkValue, "_blank");
+  // };
   const handleClick = (linkValue) => {
+  if (linkValue) {
     window.open(linkValue, "_blank");
-  };
+  } else {
+    toast.current?.show({
+      severity: "warn",
+      summary: "Invalid File",
+      detail: "No attachment found to open.",
+    });
+  }
+};
   return (
     <>
       <div className="page-container">
@@ -1071,6 +1107,7 @@ const CVehicle = () => {
                   DisableSupplier={DisableSupplier}
                   OnClear={OnClear}
                   DriverList={DriverList}
+                  PurposeList={PurposeList}
                 />
                 <VehicleDetailForm
                   isCreate={isCreate}

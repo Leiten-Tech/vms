@@ -1,0 +1,1 @@
+import{j as e}from"./index-25a41ef1.js";const a=n=>{const{scanned:r,setScannedText:i,videoElementRef:s}=n;return e.jsx("div",{children:e.jsx("div",{className:"videoWrapper",id:"video-container",children:e.jsx("video",{className:"qrVideo",ref:s})})})};export{a as Q};

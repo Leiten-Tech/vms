@@ -48,3 +48,9 @@ export const OnChangePlant = (data) => {
 export const OnChangeDepartment = (data) => {
   return api.post("/ExternalBookEntry/OnChangeDepartment", data);
 };
+export const GetRescheduleVisList = (data) => {
+  return api.post("/ExternalBookEntry/GetRescheduleVisList", data);
+};
+export const updateVisitorEntry = (data) => {
+  return api.post("/ExternalBookEntry/UpdateVisitorEntry", data);
+};

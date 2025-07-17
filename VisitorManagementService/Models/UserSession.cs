@@ -18,6 +18,7 @@ namespace VisitorManagementMySQL.Models
         public long? GateId { get; set; }
         public long? PlantId { get; set; }
         public bool AndroidUser { get; set; }
+        public bool IosUser { get; set; }
         public string Mobileno { get; set; }
     }
 }

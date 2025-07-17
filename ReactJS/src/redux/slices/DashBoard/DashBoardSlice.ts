@@ -23,6 +23,17 @@ export const dashOnClick = createAsyncThunk(
         }
     }
 );
+export const GetVisitor = createAsyncThunk(
+    "VisitorDashboard/SearchInitialize",
+    async (data: any, { rejectWithValue }) => {
+        try {
+            const dashBoard = await DashBoardService.GetVisitor(data);
+            return dashBoard.data;
+        } catch (err) {
+            return rejectWithValue(err.message);
+        }
+    }
+);
 const initialState = {
     isCreate: true,
     createEditData: null,

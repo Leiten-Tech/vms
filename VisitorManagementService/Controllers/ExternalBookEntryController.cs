@@ -350,5 +350,55 @@ namespace VisitorManagementMySQL.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        // [HttpPost("GetRescheduleVisList")]
+        // public async Task<IActionResult> GetRescheduleVisList(JObject input)
+        // {
+        //     try
+        //     {
+        //         return Ok(await IExternalBookEntryService.GetRescheduleVisList(input));
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return BadRequest(new { message = ex.Message });
+        //     }
+        // }
+        // [HttpPost("UpdateVisitorEntry")]
+        // public async Task<IActionResult> UpdateVisitorEntry(JObject input)
+        // {
+        //     try
+        //     {
+        //         return Ok(await IExternalBookEntryService.UpdateVisitorEntry(input));
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return BadRequest(new { message = ex.Message });
+        //     }
+        // }
+
+        [HttpPost("GetRescheduleVisList")]
+        public async Task<IActionResult> GetRescheduleVisList(JObject input)
+        {
+            try
+            {
+                return Ok(await IExternalBookEntryService.GetRescheduleVisList(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("UpdateVisitorEntry")]
+        public async Task<IActionResult> UpdateVisitorEntry(JObject input)
+        {
+            try
+            {
+                return Ok(await IExternalBookEntryService.UpdateVisitorEntry(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -30,6 +30,7 @@ using VisitorManagementMySQL.Services.ApprovalWorkflow;
 using VisitorManagementMySQL.Services.Authentication;
 using VisitorManagementMySQL.Services.Common;
 using VisitorManagementMySQL.Services.DashBoard.IndividualService;
+using VisitorManagementMySQL.Services.DashBoard.VisitorDashboardService;
 using VisitorManagementMySQL.Services.Login;
 using VisitorManagementMySQL.Services.MailService;
 using VisitorManagementMySQL.Services.Master.ApprovalService;
@@ -70,6 +71,10 @@ using VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService;
 using VisitorManagementMySQL.Services.VisitorManagement.WorkPermitService;
 using VisitorManagementMySQL.Services.WhatsAppService;
 using VisitorManagementMySQL.Services.WorkPermitMod.VendorRegService;
+using VisitorManagementService.Services.VisitorReportScheduler.JobCheckinCheckoutService;
+using VisitorManagementService.Services.VisitorReportScheduler;
+using Wkhtmltopdf.NetCore;
+using VisitorManagementMySQL.Services.FirebaseService;
 
 namespace VisitorManagementMySQL
 {
@@ -223,6 +228,19 @@ namespace VisitorManagementMySQL
             services.AddScoped<ICategoryCPMappingService, CategoryCPMappingService>();
             services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<ICalendarService, CalendarService>();
+
+               //Android Notification
+             services.AddScoped<IFirebaseService, FirebaseService>();
+            // services.AddScoped<IJobCheckinCheckoutService,JobCheckinCheckoutService>();
+
+            // services.AddHostedService<VisitorReportHostedJob>();
+
+            // services.AddWkhtmltopdf();
+
+            services.AddScoped<IVisitorDashboardService,VisitorDashboardService>();
+
+
+            services.Configure<ReportSettings>(Configuration.GetSection("ReportScheduler"));
 
             #endregion
         }

@@ -46,6 +46,7 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                             CountryId = (object)null,
                             StateId = (object)null,
                             CompanyId,
+                            DepartmentId = (object)null,
                         }
                     );
 
@@ -53,11 +54,16 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                     dto.PlantTypeList = (await spcall.ReadAsync<Metadatum>()).ToList();
                     dto.CompanyList = (await spcall.ReadAsync<Company>()).ToList();
                     dto.CountryList = (await spcall.ReadAsync<Country>()).ToList();
+                    dto.LevelList = (await spcall.ReadAsync<Metadatum>()).ToList();
+                    dto.DepartmentList = (await spcall.ReadAsync<Department>()).ToList();
+
                     if (PlantId > 0)
                     {
                         dto.StateList = (await spcall.ReadAsync<State>()).ToList();
                         dto.CityList = (await spcall.ReadAsync<City>()).ToList();
                         dto.HdrTable = (await spcall.ReadAsync<Plant>()).SingleOrDefault();
+                        dto.DetailList = (await spcall.ReadAsync<PlantNotificationDetail>()).ToList();
+                        dto.PrimaryUserList = (await spcall.ReadAsync<User>()).ToList();
                     }
                 }
                 dto.transtatus.result = true;
@@ -93,6 +99,7 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                             StateId = (object)null,
                             RoleId = (object)null,
                             CompanyId = (object)null,
+                            DepartmentId = (object)null,
                         }
                     );
                     dto.StateList = (await spcall.ReadAsync<State>()).ToList();
@@ -127,6 +134,8 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                             RoleId = (object)null,
                             StateId,
                             CompanyId = (object)null,
+                            DepartmentId = (object)null,
+
                         }
                     );
                     dto.CityList = (await spcall.ReadAsync<City>()).ToList();
@@ -141,6 +150,45 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                 );
             }
             return dto;
+        }
+
+        public async Task<Object> OnChangeDepartment(JObject obj)
+        {
+            try
+            {
+                long DepartmentId = obj["DepartmentId"].ToObject<long>();
+                long CompanyId = obj["CompanyId"].ToObject<long>();
+                string Type = "OnChangeDepartment";
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_PLANT_CI", new
+                    {
+                            Type,
+                            PlantId = (object)null,
+                            CountryId = (object)null,
+                            RoleId = (object)null,
+                            StateId = (object)null,
+                            CompanyId ,
+                            DepartmentId,
+
+                    });
+                    dto.PrimaryUserList = (await spcall.ReadAsync<User>()).ToList();
+                }
+                dto.transtatus.result = true;
+            }
+            catch (Exception ex)
+            {
+                dto.transtatus.result = false;
+                dto.transtatus.lstErrorItem.Add(
+                    new ErrorItem
+                    {
+                        ErrorNo = "VM0000",
+                        Message = ex.Message
+                    }
+                );
+            }
+            return dto;
+
         }
 
         public async Task<object> SearchInitialize(JObject obj)
@@ -164,6 +212,7 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
                             RoleId,
                             CountryId = (object)null,
                             StateId = (object)null,
+                            DepartmentId = (object)null,
                         }
                     );
 
@@ -189,7 +238,16 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
         {
             try
             {
+
+                Newtonsoft.Json.Linq.JObject _PlantJSON = (Newtonsoft.Json.Linq.JObject)obj;
+                Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+
                 Plant Plant = obj["Plant"].ToObject<Plant>();
+                Plant.PlantNotificationDetails = (List<PlantNotificationDetail>)
+                        serializer.Deserialize(
+                            new JTokenReader(_PlantJSON["PlantNotificationDetails"]),
+                            typeof(List<PlantNotificationDetail>)
+                        );
                 string PlantName = Plant.PlantName;
                 long CompanyId = Plant.CompanyId;
                 //if PlantName is already exists it show error
@@ -243,7 +301,31 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
         {
             try
             {
+                Newtonsoft.Json.Linq.JObject _PlantJSON = (Newtonsoft.Json.Linq.JObject)obj;
+                Newtonsoft.Json.JsonSerializer serializer = new Newtonsoft.Json.JsonSerializer();
+
                 Plant Plant = obj["Plant"].ToObject<Plant>();
+                // Plant.PlantNotificationDetails = (List<PlantNotificationDetail>)
+                //         serializer.Deserialize(
+                //             new JTokenReader(_PlantJSON["PlantNotificationDetails"]),
+                //             typeof(List<PlantNotificationDetail>)
+                //         );
+
+                var detailsToken = _PlantJSON["PlantNotificationDetails"];
+
+                if (detailsToken != null && detailsToken.Type != JTokenType.Null)
+                {
+                    Plant.PlantNotificationDetails = (List<PlantNotificationDetail>)
+                        serializer.Deserialize(
+                            new JTokenReader(detailsToken),
+                            typeof(List<PlantNotificationDetail>)
+                        );
+                }
+                else
+                {
+                    Plant.PlantNotificationDetails = new List<PlantNotificationDetail>(); // or set to null if needed
+                }
+
                 long PlantId = Plant.PlantId;
                 long CompanyId = Plant.CompanyId;
                 string PlantName = Plant.PlantName;
@@ -455,3 +537,4 @@ namespace VisitorManagementMySQL.Services.Master.PlantService
         }
     }
 }
+	

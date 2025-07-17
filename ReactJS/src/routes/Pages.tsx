@@ -2,8 +2,6 @@ import { IMAGES } from "@/assets/images/Images";
 import AppTable from "../components/AppTable";
 
 import { lazy } from "react";
-import VControlApp from "@/pages/ControlApp/vControlApp";
-import CControlApp from "@/pages/ControlApp/cControlApp";
 
 export const Pages = {
   LoginPage: lazy(() => import("../pages/Auth/Login")),
@@ -130,6 +128,10 @@ export const Pages = {
     () =>
       import("../pages/VisitorManagement/ExternalVisitorManage/MailApproval")
   ),
+   MailReschedule: lazy(
+    () =>
+      import("../pages/VisitorManagement/ExternalVisitorManage/MailReschedule")
+  ),
 
   vInstructionsPage: lazy(
     () => import("../pages/master/Instructions/vInstructions")
@@ -166,9 +168,13 @@ export const Pages = {
   vAppointmentCalendar: lazy(
     () => import("../pages/VisitorManagement/AppointmentCalendar/vAppointmentCalendar")
   ),
-  cAppointmentCalendar: lazy(
-    () => import("../pages/ControlApp/cControlApp")
+
+  VisitorDashboard: lazy(
+    () =>
+      import("../pages/DashBoard/VisitorDashboard")
   ),
+
+
   vFeedback: lazy(() => import("../pages/master/Feedback/vFeedback")),
   cFeedback: lazy(() => import("../pages/master/Feedback/cFeedback")),
   AdminPage: () => <div>Admin Page</div>,

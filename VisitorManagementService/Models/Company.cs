@@ -23,7 +23,7 @@ namespace VisitorManagementMySQL.Models
         public string Port { get; set; }
         public string UserName { get; set; }
         public string Password { get; set; }
-        public string WhatsAppTemp { get; set; }
         public string CheckToken { get; set; }
+        public string WhatsAppTemp { get; set; }
     }
 }

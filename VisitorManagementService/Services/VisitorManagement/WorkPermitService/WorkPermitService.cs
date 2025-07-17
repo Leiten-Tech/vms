@@ -13,7 +13,6 @@ using VisitorManagementMySQL.Entities;
 using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.ApprovalWorkflow;
 using VisitorManagementMySQL.Services.MailService;
-using VisitorManagementMySQL.Services.MailService;
 using VisitorManagementMySQL.Services.Master.FileUploadService;
 using VisitorManagementMySQL.Services.WhatsAppService;
 using VisitorManagementMySQL.Utils;

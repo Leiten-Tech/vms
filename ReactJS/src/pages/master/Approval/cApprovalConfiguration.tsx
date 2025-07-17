@@ -20,6 +20,7 @@ import {
   Dropdown,
   InputText,
   Toast,
+
 } from "@/assets/css/prime-library";
 import { pageLoadScript } from "@/assets/js/common-utilities";
 import { AppProgressSpinner } from "@/components/UtilityComp";
@@ -80,6 +81,7 @@ const ApprovalForm = (props) => {
     handleSelect,
     approvalDetailList,
     handlePlantSelect,
+    onNotiFyApproveChange,
   } = props;
   return (
     <Formik
@@ -150,6 +152,17 @@ const ApprovalForm = (props) => {
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
               />
+              <FormFields
+                type={"checkbox"}
+                name={"IsNotifyApprove"}
+                label={"Is Only Notification"}
+                show={true}
+                disable={isView ? true : false}
+                required={false}
+                fldStyle="col-12 md:col-3"
+                formik={formik}
+                handleChange={onNotiFyApproveChange}
+              />
             </div>
           </div>
         </div>
@@ -192,6 +205,7 @@ const ApprovalDetailForm = (props) => {
     setApprovalDetailList,
     rowselect,
     onClickSelfHostCheck,
+    
     isHostChecked,
     isHostEnabled,
     setIsHostEnabled,
@@ -231,6 +245,8 @@ const ApprovalDetailForm = (props) => {
               />
             </div>
             <div className="grid">
+              
+
               <FormFields
                 type={"checkbox"}
                 name={"IsHost"}
@@ -428,6 +444,7 @@ const CApproval = () => {
           ).UserName;
         }
         List.push(obj);
+        
       }
       setApprovalDetailList(List);
     }
@@ -440,6 +457,7 @@ const CApproval = () => {
     PlantId: HdrTable != null ? HdrTable.PlantId : +localStorage["PlantId"],
     DocumentId: HdrTable != null ? HdrTable.DocumentId : null,
     ApprovalActivityId: HdrTable != null ? HdrTable.ApprovalActivityId : 70,
+    IsNotifyApprove: HdrTable != null ? HdrTable.IsNotifyApprove : null,
     Status: HdrTable != null ? HdrTable.Status : 1,
     CreatedBy: HdrTable != null ? HdrTable.CreatedBy : localStorage["UserId"],
     CreatedOn: HdrTable != null ? HdrTable.CreatedOn : new Date(),
@@ -449,7 +467,7 @@ const CApproval = () => {
   const approvalDetailForm = {
     ApprovalConfigurationDetailId: 0,
     ApprovalConfigurationId: 0,
-    IsHost: false,
+    IsHost: false,    
     LevelId: 67 || 68 || 69,
     RoleId: null,
     PrimaryUserId: null,
@@ -558,10 +576,21 @@ const CApproval = () => {
   const approvalDetailFormik: any = useFormik({
     initialValues: approvalDetailForm,
     validationSchema: ApprovalDetailValidationSchema,
-    onSubmit: (values: any, { resetForm }) => {
+       onSubmit: (values: any, { resetForm }) => {
+        if (!values.IsHost && !values.RoleId) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning Message",
+        detail: "Please select Is Host User or Role based User.",
+        life: 4000,
+      });
+      return;
+    }
+     
       let obj: any = {};
       obj.ApprovalConfigurationDetailId = 0;
       obj.LevelId = values.LevelId;
+      obj.IsNotifyApprove = values.IsNotifyApprove;
       obj.RoleId = values.IsHost ? 0 : values.RoleId;
       obj.PrimaryUserId = values.IsHost ? 0 : values.PrimaryUserId;
       obj.SecondaryUserId = values.IsHost ? 0 : values.SecondaryUserId;
@@ -743,6 +772,10 @@ const CApproval = () => {
     });
   };
 
+  const onNotiFyApproveChange = (value) => {
+    approvalFormik.setFieldValue("IsNotifyApprove", value?.checked);
+  };
+
   const onClickSelfHostCheck = (value) => {
     approvalDetailFormik.setFieldValue("IsHost", value?.checked);
     setIsHostChecked(value?.checked);
@@ -840,6 +873,7 @@ const CApproval = () => {
                   formik={approvalFormik}
                   handleSelect={handleSelect}
                   handlePlantSelect={handlePlantSelect}
+                      onNotiFyApproveChange={onNotiFyApproveChange}
                 />
                 <ApprovalDetailForm
                   isCreate={isCreate}
@@ -869,6 +903,7 @@ const CApproval = () => {
                   onRowSelect={onRowSelect}
                   rowselect={rowselect}
                   onClickSelfHostCheck={onClickSelfHostCheck}
+              
                   isHostChecked={isHostChecked}
                   isHostEnabled={isHostEnabled}
                   setIsHostEnabled={setIsHostEnabled}

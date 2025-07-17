@@ -6,7 +6,6 @@ using VisitorManagementMySQL.Utils;
 using VisitorManagementMySQL.Entities;
 using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.ContextHelper;
-using VisitorManagementMySQL.Entities;
 using Newtonsoft.Json.Linq;
 
 namespace VisitorManagementMySQL.Services.Master.CalendarService

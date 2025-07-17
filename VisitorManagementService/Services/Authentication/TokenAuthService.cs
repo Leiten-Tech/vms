@@ -29,6 +29,8 @@ namespace VisitorManagementMySQL.Services.Authentication
             _mailSettings = mailSettings.Value;
         }
 
+
+
         public string Authentication(User user, Company userCompany, string role, string apiresult)
         {
             // 1. Create Security Token Handler
@@ -52,6 +54,40 @@ namespace VisitorManagementMySQL.Services.Authentication
                             ClaimTypes.Expiration,
                             DateTime.UtcNow.AddDays(1).ToString("MMM ddd dd yyyy HH:mm:ss tt")
                         ),
+                    }
+                ),
+                Expires = DateTime.UtcNow.AddDays(1),
+                SigningCredentials = new SigningCredentials(
+                    new SymmetricSecurityKey(tokenKey),
+                    SecurityAlgorithms.HmacSha256Signature
+                ),
+            };
+            //4. Create Token
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            // 5. Convert To Base64
+            string plainText = tokenHandler.WriteToken(token);
+            // 5. Return Token from method
+            var result = plainText;
+            return result;
+        }
+               public string AndroidAuthentication(string mobileno,string username)
+        {
+             // 1. Create Security Token Handler
+            var tokenHandler = new JwtSecurityTokenHandler();
+            // 2. Create Private Key to Encrypted
+            var tokenKey = Encoding.ASCII.GetBytes(keys);
+            string id = Guid.NewGuid().ToString();
+
+            //3. Create JETdescriptor
+            var tokenDescriptor = new SecurityTokenDescriptor()
+            {
+                Subject = new ClaimsIdentity(
+                    new Claim[]
+                    {
+                        new Claim(type: "MobileNo", value: mobileno.ToString()),
+                        new Claim(ClaimTypes.Name, username),
+                        new Claim(ClaimTypes.NameIdentifier, id.ToString()),
+                       
                     }
                 ),
                 Expires = DateTime.UtcNow.AddDays(1),

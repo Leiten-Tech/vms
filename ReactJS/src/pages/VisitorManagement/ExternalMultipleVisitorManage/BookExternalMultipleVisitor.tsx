@@ -379,6 +379,7 @@ const deleteTemplate = (
   const OnEdit = () => {
     setVisitorDetailList(visitorDetailList.filter((f) => f != rowData));
     formik.setFieldValue("FirstName", rowData.FirstName);
+    formik.setFieldValue("AadharNo", rowData.AadharNo);
     formik.setFieldValue("MailId", rowData.MailId);
     formik.setFieldValue("MobileNo", rowData.MobileNo);
     formik.setFieldValue("TagNo", rowData.TagNo);
@@ -743,6 +744,21 @@ const VisitorForm = (props) => {
                   fldStyle={"col-12 md:col-6"}
                   formik={formik}
                 />
+                {/* <FormFields
+  type="text"
+  name="AadharNo"
+  label="Aadhar No"
+  options={[]}
+  show={true}
+  maxLength={12} 
+  required={true}
+  disable={isView}
+  // handleChange={handleAadhaarChange}  
+  fldStyle="col-12 md:col-6"
+  keyfilter="int"
+  formik={formik}
+  value={formik.values["AadharNo"]}
+/> */}
 
                 <FormFields
                   type={"text"}
@@ -836,6 +852,7 @@ const VisitorForm = (props) => {
               globalFilterFields={[
                 "FirstName",
                 "MailId",
+                "AadharNo",
                 "MobileNo",
                 "VisitorCompany",
                 "TagNo",
@@ -892,6 +909,16 @@ const VisitorForm = (props) => {
                 // body={(e) => DocumentHyperLink(e)}
                 headerClassName="text-center"
               ></Column>
+                {/* <Column
+                field="AadharNo"
+                header="Aadhar No"
+                style={{
+                  width: "5%",
+                  overflowWrap: "break-word",
+                }}
+                // body={(e) => DocumentHyperLink(e)}
+                headerClassName="text-center"
+              ></Column> */}
               {/* <Column
                 field="VisitorCompany"
                 style={{
@@ -917,7 +944,27 @@ const VisitorForm = (props) => {
     </Formik>
   );
 };
-
+export const visitorForm = {
+  VisitorName: '',           
+  MobileNo: '',             
+  AadharNo: '',        
+  Email: '',                 
+  Gender: '',               
+  VisitPurpose: '',        
+  VisitDate: '',            
+  DepartmentId: '',          
+  IdCardType: '',           
+  IdCardNo: '',              
+  CompanyName: '',        
+  Designation: '',           
+  Status: '',                // Visit status (Pending, Approved, Rejected)
+  EntryTime: '',             // Time of entry
+  ExitTime: '',              // Time of exit
+  IsCheckedIn: false,        // Boolean flag if visitor has checked in
+  IsCheckedOut: false,       // Boolean flag if visitor has checked out
+  DocumentUpload: null,      // Placeholder for uploaded document/image
+  Remarks: '',               // Additional notes or remarks
+};
 export const BookExternalVisitor = (props) => {
   const {
     setIsVisMaster,

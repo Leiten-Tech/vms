@@ -15,9 +15,9 @@ namespace VisitorManagementMySQL.Entities
             tranStatus.result = false;
             tranStatus.lstErrorItem = new List<ErrorItem>();
         }
-
-        public ErrorContext tranStatus { get; set; }
+      public ErrorContext tranStatus { get; set; }
         public List<dynamic> Ecmaildetails { get; internal set; }
+        public string OTP { get; set; }
     }
     public class OrderConfirmationEmail
     {
@@ -67,4 +67,27 @@ namespace VisitorManagementMySQL.Entities
         public string messageValidity { get; set; }
         public string sendDateTime { get; set; }
     }
+
+    public class AppSettings
+{
+    public string BaseUrl { get; set; }
+}
+
+    public class ReportSettings
+    {
+        public bool VisitorReport { get; set; }
+    }
+ public class OTPRequest
+    {
+        public string Email { get; set; }
+        public string Type { get; set; }
+        public string mobileno { get; set; }
+    }
+    public class OTPVerifyRequest
+    {
+        public string Email { get; set; }
+        public string OTP { get; set; }
+        public string Type { get; set; }
+    }
+
 }

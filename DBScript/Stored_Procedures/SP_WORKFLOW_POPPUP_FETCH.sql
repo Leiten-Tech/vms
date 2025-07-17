@@ -50,7 +50,8 @@ BEGIN
                     ve.Company_Id CompanyId,
 					ve.Plant_Id PlantId,
 					ve.Gate_Id GateId,
-					ve.Visitor_Entry_Id AS VisitorId
+					ve.Visitor_Entry_Id AS VisitorId,
+                    146 AS NotificationType
 				FROM 
 					Visitor_Entry ve 
 				INNER JOIN 
@@ -79,6 +80,51 @@ BEGIN
 					ve.Created_On DESC, ve.Modified_On DESC
 			);
             
+            
+			CREATE TEMPORARY TABLE Temp_Visitor_After_Visit_End AS
+			(
+				SELECT 
+					ve.Visitor_Entry_Code AS VisitorEntryCode,
+					vd.First_Name AS VisitorName,
+					g.Gate_Name AS GateName,
+					p.Plant_Name AS PlantName,
+					vd.Mobile_No AS MobileNo,
+					vd.Mail_Id AS MailId,
+					u.User_Id AS ApproveUserId,
+                    ve.Company_Id CompanyId,
+					ve.Plant_Id PlantId,
+					ve.Gate_Id GateId,
+					ve.Visitor_Entry_Id AS VisitorId,
+					147 AS NotificationType
+				FROM 
+					Visitor_Entry ve 
+				INNER JOIN 
+					Visitor_Entry_Detail vd ON vd.Visitor_Entry_Id = ve.Visitor_Entry_Id
+				LEFT JOIN
+					Gate g ON g.Gate_Id = ve.Gate_Id
+				INNER JOIN 
+					Plant p ON p.Plant_Id = ve.Plant_Id
+				INNER JOIN 
+					Users u ON u.User_Id = ve.Visited_Employee_Id
+				WHERE 
+					ve.Status = 75 and p.Check_Token is not null and p.Check_Token != ""
+					AND CURDATE() BETWEEN DATE(vd.Valid_From) AND DATE(vd.Valid_To) 
+                    AND ve.is_meeting_close = 1
+					AND EXISTS (
+						SELECT 1 
+						FROM Visitor_Entry_Log v 
+						WHERE
+							v.Visitor_Entry_Code = ve.Visitor_Entry_Code
+							AND v.Visitor_Entry_Detail_Id = vd.Visitor_Entry_Detail_Id
+							AND v.Checked_In IS NOT NULL
+							AND v.Checked_Out IS NULL
+							AND DATE(v.Created_On) = CURDATE()
+					)
+					AND NOW() > DATE_ADD(ve.Visit_End_Time, INTERVAL 15 MINUTE)
+                    ORDER BY
+					ve.Created_On DESC, ve.Modified_On DESC
+			);
+            
 		INSERT INTO Notification (
 			Company_Id,
 			Plant_Id,
@@ -93,10 +139,11 @@ BEGIN
 			Sent_Timestamp,
 			Created_By,
 			Created_On,
-			Status
+			Status,
+            Notification_Type
 		)
 		SELECT 
-			tv.CompanyId AS Company_Id, 
+			tv.CompanyId AS Company_Id,
 			tv.PlantId Plant_Id,
 			tv.GateId Gate_Id,
 			tv.VisitorEntryCode AS Entry_Code,
@@ -109,46 +156,55 @@ BEGIN
 			NULL AS Sent_Timestamp,
 			NULL AS Created_By,
 			NOW() AS Created_On,
-			1 AS Status 
-		FROM 
-			Temp_Visitor_Not_Checked_Out tv
+			1 AS Status,
+            tv.NotificationType AS Notification_Type
+		FROM (
+		SELECT * FROM Temp_Visitor_Not_Checked_Out
+		UNION
+		SELECT * FROM Temp_Visitor_After_Visit_End
+		) tv
 		WHERE 
 			NOT EXISTS (
 				SELECT 1 
-				FROM Notification n 
-				WHERE 
+				FROM Notification n
+				WHERE
 					n.Entry_Code = tv.VisitorEntryCode
+				AND n.Notification_Type = tv.NotificationType
 			);
-		
+            
         select 
-        n.Notification_Id NotificationId, 
-		n.Company_Id CompanyId, 
-		n.Plant_Id PlantId, 
+        n.Notification_Id NotificationId,
+		n.Company_Id CompanyId,
+		n.Plant_Id PlantId,
         p.Plant_Name PlantName,
-		n.Gate_Id GateId, 
+		n.Gate_Id GateId,
         g.Gate_Name GateName,
-		n.Entry_Code EntryCode, 
-		n.Visitor_Id VisitorId, 
-		n.Incharge_Id InchargeId, 
+		n.Entry_Code EntryCode,
+		n.Visitor_Id VisitorId,
+		n.Incharge_Id InchargeId,
         u.User_Name InchargeName,
         u.User_Email InchargeMail,
         u.User_Tel_No InchargeMobile,
-		n.Visitor_Name VisitorName, 
+		n.Visitor_Name VisitorName,
 		n.Mobile_No MobileNo,
-		n.Mail_Id MailId, 
+		n.Mail_Id MailId,
 		n.Notification_Sent NotificationSent, 
 		n.Sent_Timestamp SentTimestamp, 
 		n.Created_By CreatedBy, 
 		n.Created_On CreatedOn, 
 		n.Modified_By ModifiedBy, 
 		n.Modified_On ModifiedOn, 
-		n.Status Status
+		n.Status Status,
+        n.Notification_Type AS NotificationType,
+        d.Department_Name AS DepartmentName
         from Notification n 
         inner join Users u on u.User_Id = n.Incharge_Id
+        inner join Department d on d.Department_Id = u.Dept_Id
         INNER JOIN Gate g ON g.Gate_Id = n.Gate_Id
 		INNER JOIN Plant p ON p.Plant_Id = n.Plant_Id
         where n.Notification_Sent = 0 and p.Check_Token is not null and p.Check_Token != "";
         DROP TEMPORARY TABLE IF EXISTS Temp_Visitor_Not_Checked_Out;
+		DROP TEMPORARY TABLE IF EXISTS Temp_Visitor_After_Visit_End;
 
     end if;
 	if Type = 'PopupFetchWp'

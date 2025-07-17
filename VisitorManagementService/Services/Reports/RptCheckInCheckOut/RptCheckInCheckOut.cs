@@ -69,22 +69,23 @@ namespace VisitorManagementMySQL.Services.Reports.RptCheckInCheckOutService
             try
             {
                 string Type = "SearchInitialize";
-                DateTime FromDate = (DateTime)(obj["FromDate"]?.ToObject<DateTime>());
-                DateTime ToDate = (DateTime)(obj["ToDate"]?.ToObject<DateTime>());
-                string PlantIds = obj["PlantId"]?.ToObject<string>();
-                long CompanyId = obj["CompanyId"].ToObject<long>();
-                string VisitorTypeId = obj["VisitorTypeId"]?.ToObject<string>();
-                string PurposeOfVisit = obj["PurposeOfVisit"]?.ToObject<string>();
-                string Scheme =
-                    httpContextAccessor.HttpContext.Request.Scheme
-                    + "://"
-                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
-                    + "/upload/VisitorEntry/";
-                string SignScheme =
-                    httpContextAccessor.HttpContext.Request.Scheme
-                    + "://"
-                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
-                    + "/upload/VisitorDigSigns/";
+
+                DateTime? FromDate = obj["FromDate"]?.ToObject<DateTime?>();
+                DateTime? ToDate = obj["ToDate"]?.ToObject<DateTime?>();
+
+                // Default filters to null (which will be treated as "All" in stored procedure)
+                string PlantIds = obj["PlantId"].ToString();
+                string VisitorTypeId = obj["VisitorTypeId"].ToString();
+                string PurposeOfVisit = obj["PurposeOfVisit"].ToString();
+
+                long CompanyId = obj["CompanyId"]?.ToObject<long>() ?? 0;
+
+                // URL schemes for images
+                string Scheme = httpContextAccessor.HttpContext.Request.Scheme + "://" +
+                                httpContextAccessor.HttpContext.Request.Host.Value + "/upload/VisitorEntry/";
+
+                string SignScheme = httpContextAccessor.HttpContext.Request.Scheme + "://" +
+                                    httpContextAccessor.HttpContext.Request.Host.Value + "/upload/VisitorDigSigns/";
 
                 using (dapperContext)
                 {
@@ -108,18 +109,22 @@ namespace VisitorManagementMySQL.Services.Reports.RptCheckInCheckOutService
 
                     dto.CheckinCheckoutList = (await spcall.ReadAsync<dynamic>()).ToList();
                 }
+
                 dto.transtatus.result = true;
             }
             catch (Exception ex)
             {
                 dto.transtatus.result = false;
-                dto.transtatus.lstErrorItem.Add(
-                    new ErrorItem { ErrorNo = "VM0000", Message = ex.Message }
-                );
+                dto.transtatus.lstErrorItem.Add(new ErrorItem
+                {
+                    ErrorNo = "VM0000",
+                    Message = ex.Message
+                });
             }
 
             return dto;
         }
+
 
         public async Task<object> CreateInitialize(JObject obj)
         {
@@ -151,7 +156,7 @@ namespace VisitorManagementMySQL.Services.Reports.RptCheckInCheckOutService
                             VisitorTypeId,
                             PurposeOfVisit = (object)null,
                             Scheme,
-                            SignScheme=(object)null
+                            SignScheme = (object)null
                         }
                     );
 

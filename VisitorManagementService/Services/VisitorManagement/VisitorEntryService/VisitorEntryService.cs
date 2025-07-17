@@ -5,13 +5,16 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json.Linq;
 using VisitorManagementMySQL.ContextHelper;
+using VisitorManagementMySQL.DTOs;
 using VisitorManagementMySQL.Entities;
 using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.ApprovalWorkflow;
 using VisitorManagementMySQL.Services.Common;
+using VisitorManagementMySQL.Services.FirebaseService;
 using VisitorManagementMySQL.Services.MailService;
 using VisitorManagementMySQL.Services.Master.FileUploadService;
 using VisitorManagementMySQL.Services.WhatsAppService;
@@ -30,7 +33,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
         private readonly FileUploadService uploadService;
         private readonly IApprovalWorkFlow approvalservice;
         private readonly ICommonService commonService;
+        private readonly IFirebaseService FirebaseService;
+        private IConfiguration configuration;
 
+        private string androidmyprofilespath = "";
         private VisitorEntryDTO dto;
 
         public VisitorEntryService(
@@ -42,7 +48,9 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             IMailService mailService,
             IOptions<MailSettings> mailSettings,
             IWhatsAppService whatsAppService,
-            ICommonService _commonService
+            ICommonService _commonService,
+             IFirebaseService _firebaseService,
+              IConfiguration _configuration
         )
         {
             dbContext = _dbContext;
@@ -51,6 +59,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             uploadService = _uploadService;
             approvalservice = _approvalservice;
             this.mailService = mailService;
+          this.FirebaseService = _firebaseService;
             this.whatsAppService = whatsAppService;
             commonService = _commonService;
             dto = new VisitorEntryDTO();
@@ -699,7 +708,6 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             );
                             dbContext.VisitorEntries.Add(VisitorEntry);
                             dbContext.SaveChanges();
-                            ftransaction.Commit();
 
                             var VisEntry = dbContext
                                 .VisitorEntries.Where(x =>
@@ -711,6 +719,35 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                     x.VisitorEntryId == VisEntry.VisitorEntryId
                                 )
                                 .ToList();
+
+                            // For New Vehicle 
+                            if (VisitorEntry.VisitorTypeId == 66)
+                            {
+                                Vehicle existVehicle = dbContext.Vehicles.Where(x => x.VehicleNo == VisEntry.VehicleNo).SingleOrDefault();
+                                if (existVehicle == null)
+                                {
+                                    int? driverId = int.TryParse(VisEntry.DriverId, out var parsed) ? parsed : (int?)null;
+
+                                    Vehicle vehicle = new Vehicle
+                                    {
+                                        VehicleNo = VisEntry.VehicleNo,
+                                        VehicleType = (int)VisEntry.VehicleTypeId,
+                                        PurposeOfVisit = VisEntry.PurposeOfVisit,
+                                        DriverId = driverId,
+                                        VehicleCode = await GenerateUniqueCode(),
+                                        CreatedBy = VisEntry.CreatedBy,
+                                        CreatedOn = VisEntry.CreatedOn,
+                                        CompanyId = (long)VisEntry.CompanyId,
+                                        PlantId = (long)VisEntry.PlantId,
+                                        Status = 1
+                                    };
+                                    dbContext.Vehicles.Add(vehicle);
+                                    dbContext.SaveChanges();
+                                }
+                            }
+                            // For New Vehicle 
+                            ftransaction.Commit();
+
                             User VisitedEmp = new User();
                             Role VisitedEmpRole = new Role();
                             if (VisEntry.VisitorTypeId != 66)
@@ -762,7 +799,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                 }
                             }
 
-                            if (blackListedVisitor && VisitorEntry.VisitorTypeId == 66)
+                            if (blackListedVisitor)
                             {
                                 FilePath =
                                     Directory.GetCurrentDirectory()
@@ -867,7 +904,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                     .Users.Where(x => x.UserId == VisEntry.VisitedEmployeeId)
                                     .SingleOrDefault();
                                 if (
-                                     VisitorEntry.VisitorTypeId != 117
+                                     VisitorEntry.VisitorTypeId != 117 && VisitorEntry.VisitorTypeId != 66
                                 )
                                 {
                                     ApprovalRequest request = new ApprovalRequest();
@@ -892,7 +929,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                         request.companyid = VisEntry.CompanyId ?? 0;
                                         approvalservice.ApprovalWorkFlowInsert(request);
                                     }
-                                    else
+                                    else if (VisitorEntry.VisitorTypeId == 35)
                                     {
                                         // Whom To Visit Approval
 
@@ -901,7 +938,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                         App.DocumentId = 34;
                                         App.DocumentNo = VisEntry.VisitorEntryCode;
                                         App.ApprovalActivityId = 70;
-                                        App.Status = 74;
+                                        App.Status = 75;
                                         App.CreatedBy = VisitorEntry.CreatedBy;
                                         App.CreatedOn = VisitorEntry.CreatedOn;
 
@@ -910,8 +947,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                         appdet.DocumentId = 34;
                                         appdet.DocumentNo = VisEntry.VisitorEntryCode;
                                         appdet.LevelId = 67;
-                                        appdet.PrimaryUserId = primeUser.UserId;
-                                        appdet.Status = 74;
+                                        appdet.PrimaryUserId = (long)(primeUser?.UserId ?? 1);
+                                        appdet.Status = 75;
                                         appdet.Remarks1 = "";
                                         appdet.Remarks2 = "";
                                         appdet.CreatedBy = VisitorEntry.CreatedBy;
@@ -1067,6 +1104,13 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                                 "REJECT",
                                                 $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{workflowdetail.PrimaryUserId}_76_{VisEntry.VisitorTypeId}_67"
                                             );
+                                            var rescheduleLink = GenerateMailToken(
+                                                "ENCRYPT",
+                                                "",
+                                                "RESCHEDULE",
+                                                $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_67_{VisEntry.VisitorEntryId}_{ApproveSendUser.DefaultRoleId ?? 0}"
+                                            );
+
 
                                             visitorEntryUpdated = VisEntry;
                                             dto.VisitorEntryHeader = visitorEntryUpdated;
@@ -1080,6 +1124,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                                     "[Visitor]",
                                                     Convert.ToString(VisEntry.PersonName)
                                                 )
+                                                .Replace("[approveLevels]", "")
                                                 .Replace(
                                                     "[VisitDate]",
                                                     Convert.ToString(
@@ -1108,6 +1153,11 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                                     "{{RejectLink}}",
                                                     Convert.ToString(rejectLink.Result)
                                                 )
+                                                .Replace(
+                                                    "{{RescheduleLink}}",
+                                                    Convert.ToString(rescheduleLink.Result)
+                                                )
+
                                                 .Replace("{{serviceURL}}", _mailSettings.Service)
                                                 .Replace("{{siteURL}}", _mailSettings.Website)
                                                 .Replace("{{Logo}}", BrandLogo)
@@ -1125,7 +1175,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                             {
                                                 if (
                                                     token.IsEmApprovalEnabled == true
-                                                    && _mailSettings.MSend
+                                                    && _mailSettings.MSend == true
                                                 )
                                                 {
                                                     var mail = mailService.SendApprovalReqEmail(
@@ -1139,7 +1189,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                             {
                                                 if (
                                                     token.IsWaApprovalEnabled == true
-                                                    && _mailSettings.WSend
+                                                    && _mailSettings.WSend == true
                                                 )
                                                 {
                                                     var whatsApp = sendWhatsAppApproval(
@@ -1150,6 +1200,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                                         ApproveSendUser,
                                                         approveLink,
                                                         rejectLink
+                                                    // rescheduleLink
                                                     );
                                                 }
                                             }
@@ -1187,7 +1238,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                             await approvalservice.SendPassInternal(
                                                 VisEntry,
                                                 "true",
-                                                companyEmailConfig
+                                                companyEmailConfig,
+                                                VisitedEmp?.UserName,
+                                                VisitedEmpRole?.RoleName
+
                                             );
                                         }
                                     }
@@ -2128,6 +2182,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                     {
                         resultValue = ApproveTokenService.GenerateToken(ApprovalText);
                     }
+                    else if (ApprovalType == "RESCHEDULE")
+                    {
+                        resultValue = ApproveTokenService.GenerateToken(ApprovalText);
+                    }
                 }
                 else if (tokenType == "DECRYPT")
                 {
@@ -2272,7 +2330,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "ntn_approval";
+                string Template = "approval_template_vms";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
                 approvalservice.WhatsAppLogSaveOut(
                     tempObj,
@@ -2378,5 +2436,819 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             }
             return dto;
         }
+        //******Android Start*********//
+        public async Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj, IFormFile webfile)
+        {
+            try
+            {
+                using (var transaction = dbContext.Database.BeginTransaction())
+                {
+                    var returnString = uploadService.UploadFile(webfile, "myprofiles");
+
+                    //VISITOR DETAILS
+                    VisitorEntry visitorEntry = obj["VisitorEntry"].ToObject<VisitorEntry>();
+                    visitorEntry.VisitorTypeId = 35;
+                    visitorEntry.VisitorEntryAtvDetails = obj["VisitorEntryAreatoVisit"].ToObject<List<VisitorEntryAtvDetail>>();
+                    visitorEntry.VisitorEntryBelongingDetails = obj["VisitorEntryBelongingDetail"].ToObject<List<VisitorEntryBelongingDetail>>();
+
+                    if (dbContext.AndroidVisitorValidationViews.Any(a => a.MobileNo == visitorEntry.MobileNo && a.CompanyId == visitorEntry.CompanyId))
+                    {
+                        string visitorrequestno = dbContext.AndroidVisitorValidationViews.Where(v => v.CompanyId == visitorEntry.CompanyId && v.MobileNo == visitorEntry.MobileNo).Select(v => v.VisitorEntryCode).FirstOrDefault();
+
+
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem
+                        {
+                            ErrorNo = "VMS000",
+                            Message = $"Checkout required: Visitor request No. {visitorrequestno} must be checked out before re-appointment",
+                        });
+                    }
+
+                    else
+                    {
+                        visitorEntry.VisitorEntryCode = await GenerateUniqueCode();
+                        dto.visitorentrycode = visitorEntry.VisitorEntryCode;
+
+                        if (visitorEntry != null)
+                        {
+                            var visitordetails = dbContext.AndroidUsers.Where(a => a.UserId == visitorEntry.VisitorId).FirstOrDefault();
+
+                            if (visitordetails != null)
+                            {
+                                VisitorEntryDetail detail = new VisitorEntryDetail();
+                                detail.VisitorEntryDetailId = 0;
+                                detail.VisitorEntryId = 0;
+                                detail.VisitorEntryDetailCode = "";
+                                detail.VisitorId = (int)visitorEntry.VisitorId;
+                                detail.TitleId = 37;
+                                detail.FirstName = visitorEntry.PersonName;
+                                detail.LastName = "";
+                                detail.MailId = visitordetails.Emailid;
+                                detail.MobileNo = visitordetails.Mobileno;
+                                detail.Status = 1;
+                                detail.ValidFrom = visitorEntry.ValidFrom;
+                                detail.ValidTo = visitorEntry.ValidFrom;
+                                detail.DigitalSignName = "";
+                                detail.DigitalSignUrl = "";
+                                detail.DocumentName = "";
+                                detail.DocumentUrl = "";
+                                detail.IdCardNo = "";
+                                detail.SignedVersion = 0;
+                                detail.IsTermsAgreed = false;
+                                detail.TagNo = "";
+                                detail.VisitorCompany = visitordetails.CompanyName;
+
+                                visitorEntry.VisitorEntryDetails.Add(detail);
+                            }
+                        }
+                        if (webfile != null)
+                        {
+                            string fileNameOnly = Path.GetFileName(webfile.FileName);
+                            visitorEntry.VisitorImageUrl = fileNameOnly;
+
+
+                        }
+
+                        if (!string.IsNullOrEmpty(visitorEntry.VisitorImageUrl))
+                        {
+                            string fileNameOnly = Path.GetFileName(visitorEntry.VisitorImageUrl);
+                            visitorEntry.VisitorImageUrl = fileNameOnly;
+                        }
+
+                        dbContext.VisitorEntries.Add(visitorEntry);
+                        dbContext.SaveChanges();
+                        //APPROVAL DETAILS
+                        VisitorAppointmentSendToApproval(visitorEntry);
+                        AndroidNotificationSend(visitorEntry);
+                        dto.tranStatus.result = true;
+
+
+                    }
+                    transaction.Commit();
+                }
+            }
+
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> AndroidVisitorAppointmentPageOnLoad(JObject obj)
+        {
+            try
+            {
+                long _CompanyId = obj["CompanyId"].ToObject<long>();
+                long _PlantId = obj["PlantId"].ToObject<long>();
+                long _RoleId = obj["RoleId"].ToObject<long>();
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_VISITOR_APPOINTMENT_PAGEONLOAD",
+                    new
+                    {
+                        _CompanyId,
+                        _PlantId,
+                        _RoleId
+                    });
+                    dto.PlantList = (await spcall.ReadAsync<Plant>()).ToList();
+                    dto.DepartmentList = (await spcall.ReadAsync<Department>()).ToList();
+                    dto.AreaList = (await spcall.ReadAsync<Area>()).ToList();
+                    dto.PersonDetails = (await spcall.ReadAsync<User>()).ToList();
+                    dto.PurposeList = (await spcall.ReadAsync<Metadatum>()).ToList();
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public void VisitorAppointmentSendToApproval(VisitorEntry visitorEntry)
+        {
+            //
+            //HOST DETAILS
+            var hostdetails = dbContext.Users.Where(x => x.UserId == visitorEntry.VisitedEmployeeId).SingleOrDefault();
+            //
+            if (hostdetails != null)//APPROVAL PROCESS
+            {
+                //HEADER
+                Approval App = new Approval();
+                App.ApprovalId = 0;
+                App.PlantId = visitorEntry.PlantId ?? 0;
+                App.DocumentId = 8;
+                App.DocumentNo = visitorEntry.VisitorEntryCode;
+                App.ApprovalActivityId = 70;
+                App.Status = 74;
+                App.CreatedBy = (int)hostdetails.UserId;
+                App.CreatedOn = visitorEntry.CreatedOn;
+                //
+
+                //DETAIL
+                ApprovalDetail appdet = new ApprovalDetail();
+                appdet.ApprovalDetailId = 0;
+                appdet.ApprovalId = 0;
+                appdet.DocumentId = 8;
+                appdet.DocumentNo = visitorEntry.VisitorEntryCode;
+                appdet.LevelId = 67;
+                appdet.PrimaryUserId = hostdetails.UserId;
+                appdet.Status = 74;
+                appdet.Remarks1 = "";
+                appdet.Remarks2 = "";
+                appdet.CreatedBy = (int)hostdetails.UserId;
+                appdet.CreatedOn = visitorEntry.CreatedOn;
+                appdet.IsViewed = false;
+
+                App.ApprovalDetails.Add(appdet);
+
+                dbContext.Approvals.Add(App);
+                dbContext.SaveChanges();
+                //
+            }
+        }
+        public async void AndroidNotificationSend(VisitorEntry visitorEntry)
+        {
+
+            var hostdetails = dbContext.Users.Where(u => u.UserId == visitorEntry.VisitedEmployeeId).FirstOrDefault();
+            var visitordetails = dbContext.AndroidUsers.Where(u => u.UserId == visitorEntry.VisitorId).FirstOrDefault();
+            string purposeOfVisit = dbContext.Metadata.Where(u => u.MetaSubId == visitorEntry.PurposeOfVisit).Select(u => u.MetaSubDescription).FirstOrDefault();
+            string companyname = dbContext.Companies.Where(u => u.CompanyId == visitorEntry.CompanyId && u.Status == 1).Select(u => u.CompanyName).FirstOrDefault();
+            string reason = $"Request for a meeting {purposeOfVisit}";
+            string ImageUrl = dbContext.VisitorEntries.Where(u => u.VisitorEntryCode == visitorEntry.VisitorEntryCode).Select(u => u.VisitorImageUrl).FirstOrDefault();
+            //   string DateTime = dbContext.VisitorEntries.Where(u => u.VisitorEntryCode == visitorEntry.VisitorEntryCode).Select(u => u.VisitorEntryDate).FirstOrDefault().ToString("yyyy-MM-dd HH:mm:ss");
+
+            DateTime visitorDate = dbContext.VisitorEntries.Where(u => u.VisitorEntryCode == visitorEntry.VisitorEntryCode).Select(u => u.VisitorEntryDate).FirstOrDefault();
+
+            string formattedDateTime = visitorDate.ToString("yyyy-MM-dd hh:mm tt"); // 12-hour with AM/PM
+
+
+            string notificationContent = $"You have received a new request from {visitordetails.UserName}" +
+                                        (!string.IsNullOrEmpty(companyname) ? $" ({companyname})" : "") +
+                                         $", Request submitted on {formattedDateTime}.";
+
+
+            AndroidNotificationDetail notificationdetail = new AndroidNotificationDetail();
+            notificationdetail.NotificationId = 0;
+            notificationdetail.NotificationType = "1";
+            notificationdetail.MobileNo = hostdetails.UserTelNo + "";
+            notificationdetail.VisitorOrHostId = hostdetails.UserId.ToString(); ;
+            notificationdetail.NotificationMessage = notificationContent;
+            notificationdetail.NotificationStatus = 1;
+            notificationdetail.Imageurl = ImageUrl;
+            notificationdetail.VisitorAddress = "";
+            notificationdetail.VisitorEntryDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+            notificationdetail.VisitorEntryCode = visitorEntry.VisitorEntryCode;
+            dbContext.AndroidNotificationDetails.Add(notificationdetail);
+            dbContext.SaveChanges();
+
+            if (hostdetails.UserTelNo != null && hostdetails.UserTelNo != "")
+            {
+                // Fetch Device Token from the DeviceToken table based on MobileNo
+                var deviceToken = dbContext.Userdevicetokens
+                  .Where(d => d.MobileNumber == hostdetails.UserTelNo)
+                  .Select(d => d.DeviceToken)
+                  .FirstOrDefault();
+
+                if (deviceToken != null)
+                {
+
+                    // Send notification to the user's device
+                    var notification = new FirebaseNotificationDto
+                    {
+                        Token = deviceToken, // Use the fetched device token
+                        Title = $"Visitor Request ({visitorEntry.VisitorEntryCode})",
+                        Body = reason,
+                        Image = ImageUrl,
+                    };
+                    await FirebaseService.SendPushNotificationAsync(notification);
+
+                    dto.tranStatus.result = true;
+
+                }
+                else
+                {
+                    dto.tranStatus.result = false;
+                    dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem { ErrorNo = "VMS001", Message = "Device token not found for the user." }
+                    );
+                }
+            }
+        }
+        public async Task<VisitorEntryDTO> AndroidSecurityDashBoard(JObject obj)
+        {
+            try
+            {
+                int CompanyId = obj["CompanyId"].ToObject<int>();
+                int RoleId = obj["RoleId"].ToObject<int>();
+                int UserId = obj["UserId"].ToObject<int>();
+                // Construct the base image URL from request context
+                string serviceUrl = httpContextAccessor.HttpContext.Request.Scheme
+                                    + "://"
+                                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
+                                    + "/upload/myprofiles/";
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_SECURITY_DASHBOARD",
+                    new
+                    {
+                        CompanyId,
+                        RoleId,
+                        UserId,
+                        serviceUrl
+                    });
+                    dto.SecurityDashboardResponse = (await spcall.ReadAsync<SecurityDashboardResponse>()).ToList();
+
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidHostAppointmentDetails(JObject obj)
+        {
+            try
+            {
+                string _MobileNo = obj["MobileNo"].ToObject<string>();
+
+                long _UserId = dbContext.Users.Where(w => w.UserTelNo == _MobileNo).Select(s => s.UserId).FirstOrDefault();
+                string serviceurl =
+                  httpContextAccessor.HttpContext.Request.Scheme
+                  + "://"
+                  + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
+                  + "/upload/myprofiles/";
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_HOST_APPOINTMENT_DETAILS",
+                    new
+                    {
+                        _UserId,
+                        serviceurl
+                    });
+                    dto.HostRequestDetails = (await spcall.ReadAsync<AndroidHostAppointmentDetails>()).ToList();
+                    dto.HostApprovedDetails = (await spcall.ReadAsync<AndroidHostAppointmentDetails>()).ToList();
+                    dto.HostRejectedDetails = (await spcall.ReadAsync<AndroidHostAppointmentDetails>()).ToList();
+                    dto.HostCompletedDetails = (await spcall.ReadAsync<AndroidHostAppointmentDetails>()).ToList();
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> AndroidVisitorAppointmentDetails(JObject obj)
+        {
+            try
+            {
+                string _MobileNo = obj["MobileNo"].ToObject<string>();
+
+                long _UserId = dbContext.AndroidUsers.Where(w => w.Mobileno == _MobileNo).Select(s => s.UserId).FirstOrDefault();
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_VISITOR_APPOINTMENT_DETAILS",
+                    new
+                    {
+                        _UserId
+
+                    });
+                    dto.VisitorRequestDetails = (await spcall.ReadAsync<AndroidVisitorAppointmentDetails>()).ToList();
+                    dto.VisitorApprovedDetails = (await spcall.ReadAsync<AndroidVisitorAppointmentDetails>()).ToList();
+                    dto.VisitorRejectedDetails = (await spcall.ReadAsync<AndroidVisitorAppointmentDetails>()).ToList();
+                    dto.VisitorCompletedDetails = (await spcall.ReadAsync<AndroidVisitorAppointmentDetails>()).ToList();
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> AndroidVisitorPassDetails(JObject obj)
+        {
+            try
+            {
+                string _VisitorRequestNo = obj["VisitorRequestNo"].ToObject<string>();
+                string serviceurl =
+                 httpContextAccessor.HttpContext.Request.Scheme
+                 + "://"
+                 + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
+                 + "/upload/myprofiles/";
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_VISITOR_PASS_DETAILS",
+                    new
+                    {
+                        _VisitorRequestNo,
+                        serviceurl
+                    });
+                    dto.AndroidVisitorPassDetails = (await spcall.ReadAsync<AndroidVisitorPassDetails>()).SingleOrDefault();
+                    dto.AndroidVisitorPassBelonginDetails = (await spcall.ReadAsync<AndroidVisitorPassBelonginDetails>()).ToList();
+
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidCheckIn(JObject obj)
+        {
+            try
+            {
+                visitorcheckincheckoutrequest checkinrequest = obj.ToObject<visitorcheckincheckoutrequest>();
+
+                if (checkinrequest != null)
+                {
+
+                    var visitorentry = dbContext.VisitorEntries.Where(v => v.VisitorEntryCode == checkinrequest.VisitorRequestNo && v.CompanyId == checkinrequest.qrcodecompanyid && v.PlantId == checkinrequest.qrcodeplantid).FirstOrDefault();
+                    var visitorentrylog = dbContext.VisitorEntryLogs.Any(v => v.VisitorEntryCode == checkinrequest.VisitorRequestNo && v.CheckedIn == null);
+
+                    if (visitorentry != null && !visitorentrylog)
+                    {
+                        long visitorentryDetailid = dbContext.VisitorEntryDetails.Where(v => v.VisitorEntryId == visitorentry.VisitorEntryId).Select(v => v.VisitorEntryDetailId).FirstOrDefault();
+
+                        VisitorEntryLog log = new VisitorEntryLog();
+                        log.VisitorEntryLogId = 0;
+                        log.VisitorEntryDetailId = visitorentryDetailid;
+                        log.VisitorEntryCode = checkinrequest.VisitorRequestNo;
+                        log.CheckedIn = DateTime.Now;
+                        log.CreatedBy = 1;
+                        log.CreatedOn = DateTime.Now;
+                        dbContext.VisitorEntryLogs.Add(log);
+                        dbContext.SaveChanges();
+
+                        dto.tranStatus.result = true;
+                        dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem
+                        {
+                            ErrorNo = "VMS000",
+                            Message = $"Visitor Checked-In Successfully.",
+                        });
+                    }
+                    else
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(
+                        new ErrorItem
+                        {
+                            ErrorNo = "VMS000",
+                            Message = $"Invalid QR Code. Please try again.",
+                        });
+
+                    }
+
+                }
+            }
+
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidCheckOut(JObject obj)
+        {
+            try
+            {
+                visitorcheckincheckoutrequest checkoutrequest = obj.ToObject<visitorcheckincheckoutrequest>();
+
+
+
+                if (checkoutrequest != null)
+                {
+                    var checkout = dbContext.VisitorEntryLogs.Where(v => v.VisitorEntryCode == checkoutrequest.VisitorRequestNo).FirstOrDefault();
+
+                    if (checkout != null)
+                    {
+                        var visitorEntry = dbContext.VisitorEntries.Where(v => v.VisitorEntryCode == checkout.VisitorEntryCode && v.CompanyId == checkoutrequest.qrcodecompanyid && v.PlantId == checkoutrequest.qrcodeplantid).FirstOrDefault();
+
+                        var visitorentrylog = dbContext.VisitorEntryLogs.Any(v => v.VisitorEntryCode == checkoutrequest.VisitorRequestNo && v.CheckedOut == null);
+
+                        if (visitorEntry != null && visitorentrylog)
+                        {
+                            checkout.CheckedOut = DateTime.Now;
+                            checkout.ModifiedBy = 1;
+                            checkout.ModifiedOn = DateTime.Now;
+                            dbContext.VisitorEntryLogs.Update(checkout);
+                            dbContext.SaveChanges();
+
+                            dto.tranStatus.result = true;
+                            dto.tranStatus.lstErrorItem.Add(
+                            new ErrorItem
+                            {
+                                ErrorNo = "VMS000",
+                                Message = $"Visitor Checked-Out Successfully.",
+                            });
+
+                        }
+                        else
+                        {
+                            dto.tranStatus.result = false;
+                            dto.tranStatus.lstErrorItem.Add(
+                            new ErrorItem
+                            {
+                                ErrorNo = "VMS000",
+                                Message = $"Invalid QR Code. Please try again.",
+                            });
+
+                        }
+                    }
+                }
+            }
+
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidDashBoard(JObject obj)
+        {
+            try
+            {
+
+                string _Mobileno = obj["MobileNo"].ToObject<string>();
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_HOME_PAGE",
+                    new
+                    {
+                        _Mobileno
+                    });
+                    dto.AndroidDashBoardDetails = (await spcall.ReadAsync<AndroidDashBoardDetails>()).FirstOrDefault();
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidVisitorRejected(JObject obj)
+        {
+            try
+            {
+                using (var ftransaction = dbContext.Database.BeginTransaction())
+                {
+                    string _VisitorRequestNo = obj["VisitorRequestNo"].ToObject<string>();
+
+                    var visitorentry = dbContext.VisitorEntries.Where(v => v.VisitorEntryCode == _VisitorRequestNo).FirstOrDefault();
+                    if (visitorentry == null)
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                        {
+                            ErrorNo = "VMS002",
+                            Message = $"No visitor found with VisitorRequestNo: {_VisitorRequestNo}"
+                        });
+                        return dto;
+                    }
+
+
+                    var visitorentryareatovisit = dbContext.VisitorEntryAtvDetails.Where(v => v.VisitorEntryId == visitorentry.VisitorEntryId).ToList();
+                    dbContext.VisitorEntryAtvDetails.RemoveRange(visitorentryareatovisit);
+
+                    var visitorEntryBelongings = dbContext.VisitorEntryBelongingDetails.Where(v => v.VisitorEntryId == visitorentry.VisitorEntryId).ToList();
+                    dbContext.VisitorEntryBelongingDetails.RemoveRange(visitorEntryBelongings);
+
+                    var visitorEntryDetails = dbContext.VisitorEntryDetails.Where(v => v.VisitorEntryId == visitorentry.VisitorEntryId).ToList();
+                    dbContext.VisitorEntryDetails.RemoveRange(visitorEntryDetails);
+
+                    dbContext.VisitorEntries.Remove(visitorentry);
+                    dbContext.SaveChanges();
+
+                    dto.tranStatus.result = true;
+                    dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem
+                    {
+                        ErrorNo = "VMS000",
+                        Message = $"Request Cancelled Successfully.",
+                    });
+
+                    ftransaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidReschedule(JObject obj)
+        {
+
+            try
+            {
+                // using (var transaction = dbContext.Database.BeginTransaction())
+                {
+                    string _VisitorRequestNo = obj["VisitorRequestNo"]?.ToObject<string>();
+                    string Date = obj["NewDate"]?.ToObject<string>();
+                    string _Rescheduledateandtime = obj["NewDateTime"]?.ToObject<string>();
+
+
+                    var visitorentry = dbContext.VisitorEntries.FirstOrDefault(v => v.VisitorEntryCode == _VisitorRequestNo);
+                    var visitorentrydetails = dbContext.VisitorEntryDetails.FirstOrDefault(v => v.VisitorEntryId == visitorentry.VisitorEntryId);
+
+
+                    if (visitorentry == null)
+                    {
+                        dto.tranStatus.result = false;
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                        {
+                            ErrorNo = "VMS002",
+                            Message = $"No visitor found with VisitorRequestNo: {_VisitorRequestNo}"
+                        });
+                        return dto;
+                    }
+
+                    visitorentry.PreviousValidFrom = visitorentry.ValidFrom;
+                    visitorentry.PreviousValidTo = visitorentry.ValidTo;
+                    visitorentry.RescheduledDateTime = Convert.ToDateTime(_Rescheduledateandtime);
+                    visitorentry.ValidFrom = Convert.ToDateTime(_Rescheduledateandtime);
+                    visitorentry.ValidTo = Convert.ToDateTime(_Rescheduledateandtime);
+                    visitorentry.Status = 75;
+                    visitorentrydetails.ValidFrom = Convert.ToDateTime(_Rescheduledateandtime);
+                    visitorentrydetails.ValidTo = Convert.ToDateTime(_Rescheduledateandtime);
+                    dbContext.VisitorEntries.Update(visitorentry);
+                    await dbContext.SaveChangesAsync();
+                    // transaction.Commit();
+                    JObject approvalRequestObject = new JObject
+                    {
+                        ["ApprovalRequest"] = new JObject
+                        {
+                            ["companyid"] = visitorentry.CompanyId,
+                            ["plantid"] = visitorentry.PlantId,
+                            ["requesterid"] = visitorentry.CreatedBy,
+                            ["documentno"] = visitorentry.VisitorEntryCode,
+                            ["documentid"] = 8,
+                            ["documentactivityid"] = 70,
+                            ["documentdetailid"] = 0,
+                            ["status"] = visitorentry.Status,
+                            ["approverid"] = visitorentry.CreatedBy,
+                            ["levelid"] = 67,
+                            ["alternateuser"] = visitorentry.VisitorId,
+                            ["remarks1"] = "Rescheduled via Android",
+                            ["remarks2"] = "",
+                            ["parentid"] = 0,
+                            ["userid"] = visitorentry.CreatedBy,
+                            ["requestfromdate"] = visitorentry.ValidFrom,
+                            ["requesttodate"] = visitorentry.ValidTo,
+                            ["Isviewed"] = 1
+                        }
+                    };
+
+
+                    var approvalResult = await approvalservice.AndroidApprovalWorkFlowUpdate(approvalRequestObject);
+                    // transaction.Commit();
+                    dto.tranStatus.result = true;
+                    dto.tranStatus.lstErrorItem.Add(
+                   new ErrorItem { ErrorNo = "VMS000", Message = "Rescheduled Successfully" }
+               );
+
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                {
+                    ErrorNo = "VMS999",
+                    Message = ex.Message
+                });
+            }
+
+            return dto;
+        }
+
+        public async Task<VisitorEntryDTO> AndroidNotificationDetails(JObject obj)
+        {
+            try
+            {
+                string _MobileNo = obj["MobileNo"].ToObject<string>();
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_NOTIFICATION_DETAILS",
+                    new
+                    {
+                        _MobileNo
+                    });
+                    dto.NewNotification = (await spcall.ReadAsync<AndroidNotificationDetails>()).ToList();
+                    dto.OldNotification = (await spcall.ReadAsync<AndroidNotificationDetails>()).ToList();
+
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> AndroidUpdateNotificationStatus(JObject obj)
+        {
+            try
+            {
+                string NotificationId = obj["NotificationId"].ToObject<string>();
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "ANDROID_UPDATE_NOTIFICATION_STATUS", new
+                    {
+                        NotificationId
+                    });
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task<VisitorEntryDTO> AndroidMeetingClose(JObject obj)
+        {
+            try
+            {
+                string _VisitorRequestNo = obj["VisitorRequestNo"].ToObject<string>();
+
+                var visitorEntry = dbContext.VisitorEntries.Where(v => v.VisitorEntryCode == _VisitorRequestNo).SingleOrDefault();
+                visitorEntry.IsMeetingClose = true;
+                visitorEntry.VisitEndTime = DateTime.Now;
+                dbContext.VisitorEntries.Update(visitorEntry);
+                dbContext.SaveChanges();
+
+                await SendApprovalOrRejectionNotification(visitorEntry);
+                dto.tranStatus.result = true;
+                dto.tranStatus.lstErrorItem.Add(
+               new ErrorItem { ErrorNo = "VMS000", Message = "Meeting closed Successfully" }
+           );
+
+
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+        public async Task SendApprovalOrRejectionNotification(VisitorEntry visitorEntry)
+        {
+            var visitor = dbContext.AndroidUsers
+                .Where(u => u.UserId == visitorEntry.VisitorId)
+                .FirstOrDefault();
+            string imageUrl = dbContext.VisitorEntries
+                 .Where(u => u.VisitorEntryCode == visitorEntry.VisitorEntryCode)
+                 .Select(u => u.VisitorImageUrl)
+                 .FirstOrDefault();
+
+            var host = dbContext.Users
+         .Where(u => u.UserId == visitorEntry.VisitedEmployeeId)
+         .FirstOrDefault();
+
+            string companyName = dbContext.Companies
+            .Where(c => c.CompanyId == visitorEntry.CompanyId && c.Status == 1)
+            .Select(c => c.CompanyName)
+            .FirstOrDefault();
+
+            string dateTime = visitorEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
+            string notificationContent = $"Your Meeting closed ({visitorEntry.VisitorEntryCode}) by {host.UserName}" +
+             (!string.IsNullOrEmpty(companyName) ? $" ({companyName})" : "") + $". Please check out.";
+
+            var notificationDetail = new AndroidNotificationDetail
+            {
+                NotificationId = 0,
+                NotificationType = "2",
+                MobileNo = visitor.Mobileno,
+                VisitorOrHostId = visitor.UserId.ToString(),
+                NotificationMessage = notificationContent,
+                NotificationStatus = 1,
+                Imageurl = imageUrl,
+                VisitorAddress = "",
+                VisitorEntryDate = dateTime,
+                VisitorEntryCode = visitorEntry.VisitorEntryCode
+            };
+
+            dbContext.AndroidNotificationDetails.Add(notificationDetail);
+            dbContext.SaveChanges();
+
+            // Fetch device token
+            var deviceToken = dbContext.Userdevicetokens
+                .Where(d => d.MobileNumber == visitor.Mobileno)
+                .Select(d => d.DeviceToken)
+                .FirstOrDefault();
+
+
+            if (!string.IsNullOrEmpty(deviceToken))
+            {
+                var notification = new FirebaseNotificationDto
+                {
+                    Token = deviceToken,
+                    Title = $"Meeting Closed ({visitorEntry.VisitorEntryCode})",
+                    Body = notificationContent,
+                    Image = imageUrl
+                };
+
+                await FirebaseService.SendPushNotificationAsync(notification);
+            }
+        }
+        //Android End*********
     }
 }

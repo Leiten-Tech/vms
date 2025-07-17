@@ -359,6 +359,7 @@ const BookExternalMultiple = (props) => {
     VisitorId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VisitorId : null,
     PersonName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PersonName : "",
     MobileNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.MobileNo : "",
+    AadharNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.AadharNo : "",
     TagNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.TagNo : "",
     IdProofType: DtoVisitorEntryHeader
       ? DtoVisitorEntryHeader.IdProofType
@@ -517,12 +518,13 @@ const BookExternalMultiple = (props) => {
           vedObj.Dob = x.Dob;
           vedObj.MailId = x.MailId;
           vedObj.MobileNo = x.MobileNo;
+          vedObj.AadharNo = x.AadharNo;
           vedObj.TagNo = x.TagNo;
           vedObj.VisitorCompany = x.VisitorCompany;
           vedObj.DigitalSignName = x.DigitalSignName || "";
-        vedObj.DigitalSignUrl = x.DigitalSignUrl || "";
-        vedObj.SignedVersion = x.SignedVersion || 0;
-        vedObj.IsTermsAgreed = x.IsTermsAgreed || 0;
+          vedObj.DigitalSignUrl = x.DigitalSignUrl || "";
+          vedObj.SignedVersion = x.SignedVersion || 0;
+          vedObj.IsTermsAgreed = x.IsTermsAgreed || 0;
           vedObj.IdCardType = x.IdCardType;
           vedObj.IdCardNo = x.IdCardNo;
           vedObj.DocumentName = x.DocumentName;
@@ -650,7 +652,7 @@ const BookExternalMultiple = (props) => {
               // });
               setIsCompleted(true);
               setSuccessData(res.payload.VisitorEntryHeader);
-              setCurrMobNo("")
+              setCurrMobNo("");
               // fetchVisEntryDtl(res.payload.VisitorEntryHeader);
               setVisible(false);
               resetAllForm();
@@ -725,6 +727,7 @@ const BookExternalMultiple = (props) => {
       obj.Dob = new Date(x.Dob);
       obj.MailId = x.MailId;
       obj.MobileNo = x.MobileNo;
+      obj.AadharNo = x.AadharNo;
       obj.IdCardType = x.IdCardType;
       obj.IdCardNo = x.IdCardNo;
       obj.DocumentName = x.DocumentName;
@@ -1038,8 +1041,8 @@ const BookExternalMultiple = (props) => {
     setDocumentUrl("");
     setPartyNameList([]);
     setVisitorDetailList([]);
-    handleCloseImage()
-    setIsVisMaster(false)
+    handleCloseImage();
+    setIsVisMaster(false);
 
     // CreatePageOnLoad(0);
     // setVisible(false);
@@ -1053,6 +1056,7 @@ const BookExternalMultiple = (props) => {
       if (visitor) {
         visitorEntryFormik.setFieldValue("PersonName", visitor.FirstName);
         visitorEntryFormik.setFieldValue("MobileNo", visitor.MobileNo);
+        visitorEntryFormik.setFieldValue("AadharNo", visitor.AadharNo);
         visitorEntryFormik.setFieldValue("IdProofType", visitor.IdCardType);
         visitorEntryFormik.setFieldValue("IdProofNo", visitor.IdCardNo);
         visitorEntryFormik.setFieldValue("TagNo", visitor.TagNo);
@@ -1419,6 +1423,7 @@ const BookExternalMultiple = (props) => {
       visitorEntryFormik.setFieldValue("VisitorId", null);
       visitorEntryFormik.setFieldValue("PersonName", "");
       visitorEntryFormik.setFieldValue("MobileNo", "");
+      visitorEntryFormik.setFieldValue("AadharNo", "");
       visitorEntryFormik.setFieldValue("IdProofType", null);
       visitorEntryFormik.setFieldValue("IdProofNo", "");
       visitorEntryFormik.setFieldValue("InvoiceNumber", "");
@@ -1977,6 +1982,10 @@ const BookExternalMultiple = (props) => {
     if (values.MobileNo.length != 10)
       return toastValidation("Please Enter Valid Mobile No.");
 
+    // if (values.AadharNo == "" || values.AadharNo == null)
+    //   return toastValidation("Please Enter Aadhar No.");
+    // if (values.AadharNo.length != 12)
+    //   return toastValidation("Please Enter Valid Aadhar No.");
     return true;
   };
 
@@ -2124,6 +2133,7 @@ const BookExternalMultiple = (props) => {
         obj.Dob = new Date(x.Dob);
         obj.MailId = x.MailId;
         obj.MobileNo = x.MobileNo;
+        obj.AadharNo = x.AadharNo;
         obj.IdCardType = x.IdCardType;
         obj.IdCardNo = x.IdCardNo;
         obj.DocumentName = x.DocumentName;
@@ -2132,7 +2142,8 @@ const BookExternalMultiple = (props) => {
         obj.ExpirryDate = x.ExpirryDate;
         obj.WorkSeverity = x.WorkSeverity;
         obj.VisitorName =
-          TitleListVM.find((f) => f.MetaSubId == obj.TitleId).MetaSubDescription +
+          TitleListVM.find((f) => f.MetaSubId == obj.TitleId)
+            .MetaSubDescription +
           ". " +
           x.FirstName +
           " " +
@@ -2266,6 +2277,7 @@ const BookExternalMultiple = (props) => {
     Address: VisitorHeaderVM != null ? VisitorHeaderVM.Address : "",
     MailId: VisitorHeaderVM != null ? VisitorHeaderVM.MailId : "",
     MobileNo: VisitorHeaderVM != null ? VisitorHeaderVM.MobileNo : "",
+    AadharNo: VisitorHeaderVM != null ? VisitorHeaderVM.AadharNo : "",
     CountryCode: VisitorHeaderVM != null ? VisitorHeaderVM.CountryCode : "+91",
     TagNo: VisitorHeaderVM != null ? VisitorHeaderVM.TagNo : "",
     IdCardType: VisitorHeaderVM != null ? VisitorHeaderVM.IdCardType : 17,
@@ -2295,6 +2307,7 @@ const BookExternalMultiple = (props) => {
     Dob: new Date(),
     MailId: "",
     MobileNo: "",
+    AadharNo: "",
     VisitorCompany: "",
     TagNo: "",
     DigitalSignName: "",
@@ -2381,6 +2394,7 @@ const BookExternalMultiple = (props) => {
         }
       }
       visValues.MobileNo = visitorDetailList[0].MobileNo;
+      visValues.AadharNo = visitorDetailList[0].AadharNo;
       visValues.FirstName = visitorDetailList[0].FirstName;
       visValues.MailId = visitorDetailList[0].MailId || "";
       visValues.VisitorCompany = visitorDetailList[0].VisitorCompany;
@@ -2511,6 +2525,7 @@ const BookExternalMultiple = (props) => {
       obj.Dob = values.Dob;
       obj.MailId = values.MailId;
       obj.MobileNo = values.MobileNo;
+      obj.AadharNo = values.AadharNo;
       obj.TagNo = values.TagNo;
       obj.VisitorCompany = values.VisitorCompany;
       obj.DigitalSignName = values.DigitalSignName || "";
@@ -2636,9 +2651,13 @@ const BookExternalMultiple = (props) => {
     visitorDFormik.setFieldValue("Dob", rowData.data.Dob);
     visitorDFormik.setFieldValue("MailId", rowData.data.MailId);
     visitorDFormik.setFieldValue("MobileNo", rowData.data.MobileNo);
+    visitorDFormik.setFieldValue("AadharNo", rowData.data.AadharNo);
     visitorDFormik.setFieldValue("TagNo", rowData.data.TagNo);
     visitorDFormik.setFieldValue("VisitorCompany", rowData.data.VisitorCompany);
-    visitorDFormik.setFieldValue("DigitalSignName", rowData.data.DigitalSignName);
+    visitorDFormik.setFieldValue(
+      "DigitalSignName",
+      rowData.data.DigitalSignName
+    );
     visitorDFormik.setFieldValue("DigitalSignUrl", rowData.data.DigitalSignUrl);
     visitorDFormik.setFieldValue("SignedVersion", rowData.data.SignedVersion);
     visitorDFormik.setFieldValue("IsTermsAgreed", rowData.data.IsTermsAgreed);
@@ -2966,6 +2985,7 @@ const BookExternalMultiple = (props) => {
       obj.FirstName = visitorFormik.values.FirstName;
       obj.MailId = visitorFormik.values.MailId;
       obj.MobileNo = visitorFormik.values.MobileNo;
+      obj.AadharNo = visitorFormik.values.AadharNo?.replace(/\s+/g, "") || "";
       obj.TagNo = visitorFormik.values.TagNo;
       obj.VisitorCompany = visitorFormik.values.VisitorCompany;
       obj.DigitalSignName = visitorFormik.values.DigitalSignName || "";
@@ -3027,6 +3047,18 @@ const BookExternalMultiple = (props) => {
             return;
           }
         }
+        if (obj.AadharNo != "") {
+          let isexistAadhar =
+            visitorDetailList.filter((f) => f.AadharNo == obj.AadharNo) || [];
+          if (isexistAadhar.length > 0 || obj.VisitorDetailId == 0) {
+            toast.current?.show({
+              severity: "warn",
+              summary: "Warning Message",
+              detail: "Aadhar No Already Exists",
+            });
+            return;
+          }
+        }
         setVisitorDetailList([...visitorDetailList, obj]);
       } else {
         let List: any[] = visitorDetailList;
@@ -3040,6 +3072,7 @@ const BookExternalMultiple = (props) => {
   const OnClear = () => {
     visitorDFormik.resetForm();
     visitorFormik.resetForm();
+    visitorFormik.setFieldValue("AadharNo", "");
     setImageUrlVM(IMAGES.NO_IMG);
   };
 
@@ -3072,7 +3105,7 @@ const BookExternalMultiple = (props) => {
       MobileNo: visitorFormik.values.MobileNo,
       PlantId: accessData && accessData?.PlantId,
       CompanyId: accessData && accessData?.CompanyId,
-      RoleId: accessData && accessData?.RoleId || 0,
+      RoleId: (accessData && accessData?.RoleId) || 0,
     };
     var updateres = dispatch(OnEnterMobileNo(mobNo));
     updateres
@@ -3086,7 +3119,7 @@ const BookExternalMultiple = (props) => {
             setCurrVisData(vData);
             loadVisData(vData);
             setPageTypeTogg(false);
-          } 
+          }
           // else {
           //   loadVisData({
           //     PersonName: "",
@@ -3107,6 +3140,7 @@ const BookExternalMultiple = (props) => {
     visitorFormik.setFieldValue("FirstName", vData.PersonName);
     visitorFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorFormik.setFieldValue("MobileNo", vData.MobileNo);
+    visitorFormik.setFieldValue("AadharNo", vData.AadharNo);
     visitorFormik.setFieldValue("MailId", vData.MailId);
     visitorFormik.setFieldValue("IdProofType", vData.IdCardType);
     visitorFormik.setFieldValue("IdProofNo", vData.IdCardNo);
@@ -3116,42 +3150,39 @@ const BookExternalMultiple = (props) => {
     visitorEntryFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorEntryFormik.setFieldValue("MailId", vData.MailId);
     visitorEntryFormik.setFieldValue("MobileNo", vData.MobileNo);
+    visitorEntryFormik.setFieldValue("AadharNo", vData.AadharNo);
     visitorEntryFormik.setFieldValue("IdProofType", vData.IdCardType);
     visitorEntryFormik.setFieldValue("IdProofNo", vData.IdCardNo);
     visitorEntryFormik.setFieldValue("TagNo", vData.TagNo);
   };
 
   const handleMobKeyPress = (event) => {
-    visitorFormik.setFieldValue("MobileNo", event?.target?.value)
-    setCurrMobNo(event?.target?.value)
+    visitorFormik.setFieldValue("MobileNo", event?.target?.value);
+    setCurrMobNo(event?.target?.value);
     console.log(event);
-  }
-  
+  };
+
   useEffect(() => {
-    if(currMobNo != "" &&
-      currMobNo != null &&
-      currMobNo.length == 10) {
+    if (currMobNo != "" && currMobNo != null && currMobNo.length == 10) {
       loadMobileNo();
     }
-    
-  }, [currMobNo])
+  }, [currMobNo]);
 
   const handleMobBack = (event) => {
     console.log(event);
-    if(event?.keyCode == 8 && visitorFormik.values.MobileNo.length < 10) {
-
+    if (event?.keyCode == 8 && visitorFormik.values.MobileNo.length < 10) {
       loadVisData({
         PersonName: "",
         VisitorCompany: "",
         MailId: "",
         MobileNo: "",
+        AadharNo: "",
         IdCardType: null,
         IdCardNo: "",
         TagNo: "",
       });
     }
-  }
-
+  };
 
   // VIS MASTER
   return (

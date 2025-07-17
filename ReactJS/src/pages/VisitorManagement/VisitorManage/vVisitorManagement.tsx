@@ -98,6 +98,7 @@ const VVisitorManagement = () => {
         name: "print",
       },
     ],
+    
     tableColumns: [
       {
         title: "Visitor Entry Code",

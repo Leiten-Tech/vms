@@ -1,5 +1,3 @@
-
-DROP TABLE IF EXISTS `vehicle`;
 CREATE TABLE IF NOT EXISTS `vehicle` (
   `Vehicle_Id` BIGINT NOT NULL AUTO_INCREMENT,
   `Vehicle_Code` VARCHAR(50) NOT NULL,
@@ -22,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `vehicle` (
   `Modified_By` INT NULL DEFAULT NULL,
   `Modified_On` DATETIME(6) NULL DEFAULT NULL,
   `Remarks` VARCHAR(500) NULL DEFAULT NULL,
+  `Purpose_Of_Visit` INT NULL,
   PRIMARY KEY (`Vehicle_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

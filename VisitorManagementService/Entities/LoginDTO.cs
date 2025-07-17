@@ -25,5 +25,28 @@ namespace VisitorManagementMySQL.Entities
         public dynamic userrolemapList { get; set; }
         public dynamic usermoduleList { get; set; }
         public dynamic userscreenmapList { get; set; }
+        //******Start *****Android App
+        public string mobileno { get; set; }
+        public string password { get; set; }
+        public long Userid { get; set; }
+        public string OTP { get; set; }
+        public bool isalready { get; set; }
+        public MobAndroidUsersView mobandroiduserdetails { get; set; }
+        public List<MobAndroidUsersView> userdetails { get; set; }
+
     }
+    public class ChangePasswordRequest
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    // DeviceTokenDTO.cs
+    public class DeviceTokenDTO
+    {
+        public string MobileNumber { get; set; }
+        public string DeviceToken { get; set; }
+    }
+    
+    //****End*******Android App
 }

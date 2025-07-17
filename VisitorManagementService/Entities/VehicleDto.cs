@@ -10,6 +10,8 @@ namespace VisitorManagementMySQL.Entities
         public Vehicle HdrTable { get; set; }
         public List<Metadatum> StatusList { get; set; }
         public List<Metadatum> VehicleTypeList { get; set; }
+        public List<Metadatum> PurposeList { get; set; }
+        
         public List<Supplier> SupplierList { get; set; }
         public List<Employee> EmployeeList { get; set; }
         public List<Company> CompanyList { get; set; }

@@ -35,6 +35,7 @@ using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.ApprovalWorkflow;
 using VisitorManagementMySQL.Services.WhatsAppService;
 using VisitorManagementMySQL.Utils;
+using HtmlAgilityPack;
 
 namespace VisitorManagementMySQL.Services.WhatsAppService
 {
@@ -118,7 +119,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
         }
 
         public VisitorEntryDTO SendWhatsAppApproval(List<VisitorEntryDetail> visEntrydetail, dynamic visitorEntry, dynamic PurposeName,
-        dynamic visComp, dynamic VisitedEmp, Task<string> approveLink, Task<string> rejectLink)
+        dynamic visComp, dynamic VisitedEmp, Task<string> approveLink, Task<string> rejectLink,string ?levelParam)
         {
             try
             {
@@ -131,6 +132,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
 
                 customJsonObject.ApproveToken = Convert.ToString(approveLink.Result);
                 customJsonObject.RejectToken = Convert.ToString(rejectLink.Result);
+                // customJsonObject.RescheduleToken = Convert.ToString(rescheduleLink.Result);
                 customJsonObject.WhatsAppCallApi = Convert.ToString(
                     _mailSettings.Service + _mailSettings.WhatsAppCallAPIPath
                 );
@@ -138,7 +140,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "ntn_approval";
+                template.name = "approval_template_vms";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -158,9 +160,10 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 dynamic tParam = new JObject();
                 dynamic foParam = new JObject();
                 dynamic fiParam = new JObject();
+                dynamic lParam = new JObject();
 
                 hParam.type = "image";
-
+                lParam.type = "text";
                 fParam.type = "text";
                 sParam.type = "text";
                 tParam.type = "text";
@@ -168,7 +171,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 fiParam.type = "text";
 
                 hParam.image = new JObject();
-                string Scheme =
+                string Scheme = 
                     _httpContextAccessor.HttpContext.Request.Scheme
                     + "://"
                     + _httpContextAccessor.HttpContext.Request.Host.Value.ToString()
@@ -180,6 +183,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 if (visitorEntry.IsInternalAppointment)
                 {
                     string BrandLogoBig = "/upload/Logo/avatar.png";
+                //    string BrandLogoBig =  "https://www.leitenindia.com/assets/images/newsletter/welcome-img.jpg";
                     hParam.image.link = SchemeUpload + BrandLogoBig;
                 }
                 else
@@ -217,7 +221,14 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 );
                 fiParam.text = Convert.ToString(PurposeName.MetaSubDescription);
 
+
+                var leveldetail = ConvertHtmlToWhatsAppMarkdown(
+                            levelParam ?? "-");
+                lParam.text = leveldetail.Result;
+
                 parameters.Add(fParam);
+                parameters.Add(lParam);
+               
                 parameters.Add(sParam);
                 parameters.Add(tParam);
                 parameters.Add(foParam);
@@ -241,7 +252,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "ntn_approval";
+                string Template = "approval_template_vms";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
 
                 WhatsAppLogSaveOut(
@@ -270,6 +281,51 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
             }
             return VisitorEntryDTO;
         }
+
+         public async Task<string> ConvertHtmlToWhatsAppMarkdown(string html)
+        {
+            if (string.IsNullOrWhiteSpace(html))
+                return string.Empty;
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.LoadHtml(html);
+
+            // Convert <strong> and <b> to WhatsApp Bold (*text*)
+            foreach (var node in doc.DocumentNode.SelectNodes("//strong|//b") ?? new HtmlNodeCollection(null))
+            {
+                node.ParentNode.ReplaceChild(HtmlTextNode.CreateNode($"*{node.InnerText.Trim()}*"), node);
+            }
+
+            // Convert <em> and <i> to WhatsApp Italic (_text_)
+            foreach (var node in doc.DocumentNode.SelectNodes("//em|//i") ?? new HtmlNodeCollection(null))
+            {
+                node.ParentNode.ReplaceChild(HtmlTextNode.CreateNode($"_{node.InnerText.Trim()}_"), node);
+            }
+
+            // Replace <p> with " - " instead of newlines
+            foreach (var node in doc.DocumentNode.SelectNodes("//p") ?? new HtmlNodeCollection(null))
+            {
+                node.ParentNode.ReplaceChild(HtmlTextNode.CreateNode($"{node.InnerText.Trim()} - "), node);
+            }
+
+            // Decode HTML entities like &amp; → &, &quot; → "
+            string text = WebUtility.HtmlDecode(doc.DocumentNode.InnerText);
+
+            // Remove all newlines, tabs, and limit excessive spaces
+            text = text.Replace("\r", "")
+                    .Replace("\n", "")
+                    .Replace("\t", "")
+                    .Trim();
+
+            // Optionally replace multiple spaces with a single space
+            text = Regex.Replace(text, @" {2,}", " ");
+
+            // Trim trailing hyphens or spaces
+            text = text.Trim('-', ' ');
+
+            return text;
+        }
+
 
         public ApprovalWorkFlowDTO WhatsAppLogSaveOut(
            JObject obj,

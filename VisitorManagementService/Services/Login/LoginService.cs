@@ -15,6 +15,7 @@ using VisitorManagementMySQL.Entities;
 using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.Authentication;
 using VisitorManagementMySQL.Services.Common;
+using VisitorManagementMySQL.Services.Master.FileUploadService;
 using VisitorManagementMySQL.Utils;
 
 namespace VisitorManagementMySQL.Services.Login
@@ -29,6 +30,8 @@ namespace VisitorManagementMySQL.Services.Login
         private readonly ICommonService commonService;
 
         private LoginDTO dto;
+        private readonly FileUploadService uploadService;
+        private readonly MailService.IMailService mailService;
 
         public LoginService(
             DbContextHelper _dbContext,
@@ -36,7 +39,9 @@ namespace VisitorManagementMySQL.Services.Login
             ITokenAuthService _ITokenAuthService,
             IDapperContext _dapperContext,
             IOptions<MailSettings> mailSettings,
-            ICommonService _commonService
+            ICommonService _commonService,
+               FileUploadService _uploadService,
+             MailService.IMailService _mailService
         )
         {
             dbContext = _dbContext;
@@ -49,6 +54,8 @@ namespace VisitorManagementMySQL.Services.Login
             dto.tranStatus = new ErrorContext();
             dto.tranStatus.result = false;
             dto.tranStatus.lstErrorItem = new List<ErrorItem>();
+            uploadService = _uploadService;
+            mailService = _mailService;
         }
 
         public async Task<LoginDTO> Login(JObject obj) //string userName, string password)
@@ -211,7 +218,7 @@ namespace VisitorManagementMySQL.Services.Login
                             );
                             return dto;
                         }
-                        else 
+                        else
                         {
                             apiresult = licRes.ToString();
                         }
@@ -524,5 +531,427 @@ namespace VisitorManagementMySQL.Services.Login
                 return dto;
             }
         }
+        //*****Start*****Android 
+        public LoginDTO AndroidCreateSession(LoginDTO uContext)
+        {
+            try
+            {
+                string sessionId = ParseRequestHeader();
+
+                if (!dbContext.UserSessions.Any(s => s.SessionId.Equals(sessionId)))
+                {
+                    dbContext.UserSessions.Add(
+                        new UserSession
+                        {
+                            // UserSessionId = 0,
+                            SessionId = sessionId,
+                            LoggedUser = uContext.Userid,
+                            LoggedRole = 1,
+                            LoggedInOn = DateTime.Now,
+                            SessionStatus = 1,
+                            Mobileno = uContext.mobileno,
+                            AndroidUser = true
+                        }
+                    );
+                    dbContext.SaveChanges();
+                }
+                uContext.SessionID = sessionId;
+                return uContext;
+            }
+            catch (Exception ex)
+            {
+                uContext.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return uContext;
+            }
+        }
+          public async Task<LoginDTO> AndroidLogin(JObject obj)
+        {
+            try
+            {
+                string mobileNo = obj["mobileno"].ToObject<string>();
+                string password = obj["password"].ToObject<string>();
+                dto.tranStatus.result = false;
+
+                var ismobileexists = dbContext.MobAndroidUsersViews.Any(a => a.Mobileno == mobileNo);
+                var ispasswprdexists = dbContext.MobAndroidUsersViews.Any(a => a.Mobileno == mobileNo && a.Password == password);
+
+                if (!ismobileexists)
+                {
+                    dto.tranStatus.result = false;
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Invalid mobile number." });
+                    return dto;
+                }
+                // else if (!ispasswprdexists)
+                // {
+                //     dto.tranStatus.result = false;
+                //     dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS001", Message = "Invalid password." });
+                //     return dto;
+                // }
+
+                MobAndroidUsersView users = dbContext.MobAndroidUsersViews.Where(x => x.Mobileno.Equals(mobileNo)).AsNoTracking().FirstOrDefault();
+
+                var storedHashedPassword = StringToByteArray(users.Password);
+
+                var hashedInputPassword = HashPassword(password);
+                if (hashedInputPassword.SequenceEqual(storedHashedPassword))
+                {
+                    dto.mobileno = mobileNo;
+                    dto.password = password;
+
+                    var userdetails = dbContext.MobAndroidUsersViews.Where(a => a.Mobileno == mobileNo).FirstOrDefault();
+                    dto.AuthToken = ITokenAuthService.AndroidAuthentication(mobileNo, userdetails.UserName);
+                    dto.Userid = Convert.ToInt64(userdetails.UserId);
+                    dto = AndroidFetchSession(dto);
+                    dto.tranStatus.result = true;
+                }
+
+                else
+                {
+                    dto.tranStatus.result = false;
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS001", Message = "Invalid password." });
+                    return dto;
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+            return dto;
+        }
+
+        public async Task<LoginDTO> AndroidLogOut(JObject obj)
+        {
+            try
+            {
+                dto.SessionID = obj["SessionId"].ToObject<string>();
+                dto = CloseSession(dto);
+                if (dto.tranStatus.lstErrorItem.Count > 0)
+                    return dto;
+
+                dto.tranStatus.result = true;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = "Logged Out Successfully." }
+                );
+
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+            return dto;
+        }
+        public LoginDTO AndroidFetchSession(LoginDTO dto)
+        {
+            dto = AndroidCreateSession(dto);
+            if (String.IsNullOrEmpty(dto.SessionID))
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Session Id is not valid." });
+                return dto;
+            }
+            else
+            {
+                dto.mobandroiduserdetails = dbContext.MobAndroidUsersViews.Where(a => a.Mobileno == dto.mobileno).FirstOrDefault();
+                dto.mobandroiduserdetails.UserImageUrl = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host.Value.ToString()}/upload/myprofiles/{dto.mobandroiduserdetails.UserImageName}";
+                dto.userdetails = dbContext.MobAndroidUsersViews.AsNoTracking().Where(a => a.Mobileno == dto.mobileno).ToList();
+            }
+            return dto;
+        }
+
+        public async Task<LoginDTO> AndroidVisitorRegistration(IFormFile files, JObject obj)
+        {
+            try
+            {
+                dto.tranStatus.result = true;
+                AndroidUser _visitorRegistration = obj["VisitorRegistration"].ToObject<AndroidUser>();
+
+                var result1 = RegistrationValidation(_visitorRegistration);
+
+                if (dto.tranStatus.result)
+                {
+                    var returnString = uploadService.UploadFile(files, "myprofiles");
+                    var hashedPassword = HashPassword(_visitorRegistration.Password);
+                    var hashedPasswordString = ByteArrayToString(hashedPassword);
+                    _visitorRegistration.Password = hashedPasswordString;
+                    if (result1.isalready == false)
+                    {
+                        dbContext.AndroidUsers.Add(_visitorRegistration);
+                    }
+                    else
+                    {
+
+                    }
+                    await dbContext.SaveChangesAsync();
+
+                    var result = await this.mailService.SendOtp(_visitorRegistration.Emailid, "REGISTER", _visitorRegistration.Mobileno);
+
+                    bool isSuccess = result.tranStatus.result;
+
+                    if (isSuccess == true)
+                    {
+                        dto.OTP = result.OTP;
+                    }
+
+
+                    if (result.tranStatus.lstErrorItem.Count > 0)
+                    {
+                        dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Mail Not Working" });
+                    }
+                    dto.tranStatus.result = isSuccess;
+
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = ex.Message });
+            }
+
+            return dto;
+        }
+
+        public LoginDTO RegistrationValidation(AndroidUser androidUser)
+        {
+
+            var mobileisalreadyexists = dbContext.AndroidUsers.Any(a => a.Mobileno == androidUser.Mobileno && a.Verified == true);
+            var emailisalreadyexists = dbContext.AndroidUsers.Any(a => a.Emailid == androidUser.Emailid && a.Verified == true);
+            var mobileisalreadyexistsNotverified = dbContext.AndroidUsers.Where(a => a.Mobileno == androidUser.Mobileno && a.Verified == false).FirstOrDefault();
+            dto.isalready = false;
+
+            if (mobileisalreadyexists)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = "Mobile Number is Already Exists" }
+                );
+            }
+            else if (emailisalreadyexists)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = "Email Id is Already Exists" }
+                );
+            }
+            else if (mobileisalreadyexistsNotverified != null)
+            {
+                dto.isalready = true;
+                    var hashedPassword = HashPassword(androidUser.Password);
+                    var hashedPasswordString = ByteArrayToString(hashedPassword);
+                    androidUser.Password = hashedPasswordString;
+                mobileisalreadyexistsNotverified.UserName = androidUser.UserName;
+                mobileisalreadyexistsNotverified.Emailid = androidUser.Emailid;
+                 mobileisalreadyexistsNotverified.CompanyName = androidUser.CompanyName;
+                 mobileisalreadyexistsNotverified.Password = androidUser.Password;
+                  mobileisalreadyexistsNotverified.UserImageName = hashedPasswordString;
+                 dbContext.AndroidUsers.Update(mobileisalreadyexistsNotverified);
+            }
+
+
+            return dto;
+        }
+
+        public async Task<LoginDTO> AndroidMyProfileEdit(JObject obj)
+        {
+            try
+            {
+                string mobileNo = obj["mobileno"].ToObject<string>();
+                string type = obj["type"].ToObject<string>();
+                string value = obj["value"].ToObject<string>();
+
+
+                dto.tranStatus.result = true;
+
+                using (var transaction = dbContext.Database.BeginTransaction())
+                {
+                    var visitordetails = dbContext.AndroidUsers.Where(w => w.Mobileno == mobileNo).FirstOrDefault();
+
+                    if (visitordetails != null)// VISITOR DETAILS
+                    {
+                        if (type == "Name")
+                        {
+                            visitordetails.UserName = value;
+                        }
+                        else if (type == "EmailId")
+                        {
+                            visitordetails.Emailid = value;
+                        }
+                        else if (type == "CompanyName")
+                        {
+                            visitordetails.CompanyName = value;
+                        }
+                        dbContext.AndroidUsers.Update(visitordetails);
+                    }
+
+                    var hostdetails = dbContext.Users.Where(w => w.UserTelNo == mobileNo).FirstOrDefault();
+
+                    if (hostdetails != null)// HOST DETAILS
+                    {
+                        if (type == "Name")
+                        {
+                            hostdetails.UserName = value;
+                        }
+                        else if (type == "EmailId")
+                        {
+                            hostdetails.UserEmail = value;
+                        }
+                        else if (type == "CompanyName")
+                        {
+                            visitordetails.CompanyName = value;
+                        }
+                        dbContext.Users.Update(hostdetails);
+                    }
+                    dbContext.SaveChanges();
+                    transaction.Commit();
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+
+            return dto;
+        }
+
+        public async Task<LoginDTO> AndroidMyProfileImageEdit(IFormFile image, string mobileno)
+        {
+            try
+            {
+                dto.tranStatus.result = true;
+                var returnString = uploadService.UploadFile(image, "myprofiles");
+
+                var registerdetails = dbContext.AndroidUsers.Where(a => a.Mobileno == mobileno).SingleOrDefault();
+                registerdetails.UserImageName = image.FileName;
+                dbContext.AndroidUsers.Update(registerdetails);
+                dbContext.SaveChanges();
+                dto.mobandroiduserdetails = dbContext.MobAndroidUsersViews.Where(a => a.Mobileno == mobileno).FirstOrDefault();
+                dto.mobandroiduserdetails.UserImageUrl = $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host.Value.ToString()}/upload/myprofiles/{dto.mobandroiduserdetails.UserImageName}";
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+
+            return dto;
+        }
+
+
+        public async Task<LoginDTO> AndroidChangePassword(ChangePasswordRequest changePasswordRequest)
+        {
+            try
+            {
+
+                dto.tranStatus.result = true;
+                var registerdetails = dbContext.AndroidUsers.Where(a => a.Emailid == changePasswordRequest.Email).SingleOrDefault();
+                // registerdetails.Password = changePasswordRequest.Password;
+                var hashedPassword = HashPassword(changePasswordRequest.Password);
+                var hashedPasswordString = ByteArrayToString(hashedPassword);
+                registerdetails.Password = hashedPasswordString;
+                dbContext.AndroidUsers.Update(registerdetails);
+                dbContext.SaveChanges();
+
+                if (dto.tranStatus.result)
+                {
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Password reset successfully!" });
+                }
+                else
+                {
+                    dto.tranStatus.result = false;
+                    dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "Password reset failed. Please try again." });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+                return dto;
+            }
+
+            return dto;
+        }
+
+
+        //
+
+        // Save device token
+        public async Task SaveDeviceTokenAsync(DeviceTokenDTO deviceTokenDto)
+        {
+            var existingToken = await dbContext.Userdevicetokens
+                                               .Where(x => x.MobileNumber == deviceTokenDto.MobileNumber)
+                                               .FirstOrDefaultAsync();
+
+            if (existingToken != null)
+            {
+                // Update existing token
+                existingToken.DeviceToken = deviceTokenDto.DeviceToken;
+                existingToken.CreatedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                // Add new token record
+                var newToken = new Userdevicetoken
+                {
+                    MobileNumber = deviceTokenDto.MobileNumber,
+                    DeviceToken = deviceTokenDto.DeviceToken,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+
+                dbContext.Userdevicetokens.Add(newToken);
+            }
+
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Remove invalid tokens
+        public async Task RemoveInvalidTokensAsync(string mobileNumber)
+        {
+            var invalidTokens = await dbContext.Userdevicetokens
+                                               .Where(x => x.MobileNumber == mobileNumber)
+                                               .ToListAsync();
+
+            dbContext.Userdevicetokens.RemoveRange(invalidTokens);
+            await dbContext.SaveChangesAsync();
+        }
+
+        // Get device tokens for a mobile number
+        public async Task<List<Userdevicetoken>> GetDeviceTokensAsync(string mobileNumber)
+        {
+            return await dbContext.Userdevicetokens
+                                 .Where(x => x.MobileNumber == mobileNumber)
+                                 .ToListAsync();
+        }
+        public static string ByteArrayToString(byte[] byteArray)
+        {
+            var sb = new StringBuilder();
+            foreach (var b in byteArray)
+            {
+                sb.Append(b.ToString("x2"));
+            }
+            return sb.ToString();
+        }
+         //*****Start*****Android 
     }
 }

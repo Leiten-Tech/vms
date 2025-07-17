@@ -130,7 +130,7 @@ namespace VisitorManagementMySQL.Controllers
             }
         }
         [HttpPost("Update")]
-        public async Task<IActionResult> Update([FromForm] string input, [FromForm] IFormFile webfile,  IFormFile webfile1, [FromForm] List<IFormFile> webfiles)
+        public async Task<IActionResult> Update([FromForm] string input, [FromForm] IFormFile webfile, IFormFile webfile1, [FromForm] List<IFormFile> webfiles)
         {
             try
             {
@@ -262,6 +262,192 @@ namespace VisitorManagementMySQL.Controllers
             try
             {
                 return Ok(await IVisitorEntryService.ShowPass(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+                [HttpPost("AndroidVisitorAppointmentPageOnLoad")]
+        public async Task<IActionResult> AndroidVisitorAppointmentPageOnLoad(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidVisitorAppointmentPageOnLoad(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        // [HttpPost("AndroidVisitorAppointmentEntry")]
+        // public async Task<IActionResult> AndroidVisitorAppointmentEntry(JObject input)
+        // {
+        //     try
+        //     {
+        //         return Ok(await IVisitorEntryService.AndroidVisitorAppointmentEntry(input));
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         return BadRequest(new { message = ex.Message });
+        //     }
+        // }
+
+        [HttpPost("AndroidVisitorAppointmentEntry")]
+        public async Task<IActionResult> AndroidVisitorAppointmentEntry([FromForm] string input, [FromForm] IFormFile webfile)
+        {
+            try
+            {
+                var visitorentry = JObject.Parse(input);
+                return Ok(await IVisitorEntryService.AndroidVisitorAppointmentEntry(visitorentry, webfile));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("AndroidHostAppointmentDetails")]
+        public async Task<IActionResult> AndroidHostAppointmentDetails(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidHostAppointmentDetails(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidVisitorAppointmentDetails")]
+        public async Task<IActionResult> AndroidVisitorAppointmentDetails(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidVisitorAppointmentDetails(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidVisitorPassDetails")]
+        public async Task<IActionResult> AndroidVisitorPassDetails(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidVisitorPassDetails(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidCheckOut")]
+        public async Task<IActionResult> AndroidCheckOut(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidCheckOut(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidCheckIn")]
+        public async Task<IActionResult> AndroidCheckIn(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidCheckIn(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidVisitorRejected")]
+        public async Task<IActionResult> AndroidVisitorRejected(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidVisitorRejected(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidDashBoard")]
+        public async Task<IActionResult> AndroidDashBoard(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidDashBoard(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidSecurityDashBoard")]
+        public async Task<IActionResult> AndroidSecurityDashBoard(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidSecurityDashBoard(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidNotificationDetails")]
+        public async Task<IActionResult> AndroidNotificationDetails(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidNotificationDetails(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidUpdateNotificationStatus")]
+        public async Task<IActionResult> AndroidUpdateNotificationStatus(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidUpdateNotificationStatus(input));
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidMeetingClose")]
+        public async Task<IActionResult> AndroidMeetingClose(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidMeetingClose(input));
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+        [HttpPost("AndroidReschedule")]
+        public async Task<IActionResult> AndroidReschedule(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidReschedule(input));
+
             }
             catch (Exception ex)
             {

@@ -191,6 +191,33 @@ export const OnChangeDepartment = createAsyncThunk(
     }
   }
 );
+
+export const GetRescheduleVisList = createAsyncThunk(
+  "externalBookEntry/GetRescheduleVisList",
+  async (data: any, thunkAPI) => {
+    try {
+      const states = await ExternalBookVisitorEntryService.GetRescheduleVisList(
+        data
+      );
+      return states.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+export const updateVisitorEntry = createAsyncThunk(
+  "externalBookEntry/updateVisitorEntry",
+  async (data: any, thunkAPI) => {
+    try {
+      const states = await ExternalBookVisitorEntryService.updateVisitorEntry(
+        data
+      );
+      return states.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
 const Initialize = {
   isCreate: true,
   isView: false,
@@ -226,6 +253,7 @@ const Initialize = {
   DtoPurposeList: [],
   DtoVisitorEntryPovDetail: [],
   DtoPlantList: [],
+  DtoReScheduleVisiorList: [],
 };
 const externalBookEntrySlice = createSlice({
   name: "externalBookEntry",
@@ -375,6 +403,18 @@ const externalBookEntrySlice = createSlice({
         state.DtoEmployeeList = action.payload.EmployeeList;
       })
       .addCase(OnChangeDepartment.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(GetRescheduleVisList.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(GetRescheduleVisList.fulfilled, (state, action: any) => {
+        state.loading = false;
+        state.DtoReScheduleVisiorList = action.payload.reScheduleVisiorList;
+      })
+      .addCase(GetRescheduleVisList.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

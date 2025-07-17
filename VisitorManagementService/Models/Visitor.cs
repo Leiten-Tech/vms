@@ -39,6 +39,7 @@ namespace VisitorManagementMySQL.Models
         public DateTime CreatedOn { get; set; }
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
+        public long? AadharNo { get; set; }
 
         public virtual ICollection<VisitorDetail> VisitorDetails { get; set; }
     }

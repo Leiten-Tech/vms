@@ -12,6 +12,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
     {
         Task<object> ApprovalWorkFlowInsert(ApprovalRequest request);
         Task<object> ApprovalWorkFlowUpdate(JObject obj);
+        Task<object> AndroidApprovalWorkFlowUpdate(JObject obj);
         Task<ApprovalWorkFlowDTO> Popupfetch(JObject obj);
         Task<ApprovalWorkFlowDTO> checkOutTimer(JObject obj);
         Task<ApprovalWorkFlowDTO> poppupupdate(JObject obj);
@@ -21,8 +22,8 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
         ApprovalWorkFlowDTO DSendPass(string token);
         ApprovalWorkFlowDTO EncryptData(string value);
         ApprovalWorkFlowDTO DecryptData(string value);
-        Task<ApprovalWorkFlowDTO> SendPassInternal(VisitorEntry passTxt, string SendMail, Company company);
-        Task<ApprovalWorkFlowDTO> SendPass(VisitorEntry passTxt, string SendMail);
+        Task<ApprovalWorkFlowDTO> SendPassInternal(VisitorEntry passTxt, string SendMail, Company company, string UserName, string RoleName);
+        Task<ApprovalWorkFlowDTO> SendPass(VisitorEntry passTxt, string SendMail, String UserName, string RoleName);
         Task<string> GenerateMailToken(string tokenType, string encryptedToken, string ApprovalType, string ApprovalText);
         ApprovalWorkFlowDTO WhatsAppLogSaveOut(JObject obj, int CompanyId, int PlantId, int UserId, string FromContact, string ToContact, DateTime MessageTime, string Template, string EntryRefCode);
 

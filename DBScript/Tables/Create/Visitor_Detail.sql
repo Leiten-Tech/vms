@@ -23,6 +23,7 @@ CREATE TABLE IF NOT EXISTS `Visitor_Detail` (
   `Expirry_Date` DATETIME(6) NULL DEFAULT NULL,
   `WorkSeverity` INT NULL DEFAULT NULL,
   `Status` INT NOT NULL,
+  `Aadhar_No` BIGINT DEFAULT NULL,
   PRIMARY KEY (`Visitor_Detail_Id`),
   INDEX `fk_Visitor_Detail_Visitor_Id` (`Visitor_Id` ASC) ,
   CONSTRAINT `fk_Visitor_Detail_Visitor_Id`

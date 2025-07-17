@@ -24,5 +24,6 @@ namespace VisitorManagementMySQL.Models
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public int? Status { get; set; }
+        public long? NotificationType { get; set; }
     }
 }

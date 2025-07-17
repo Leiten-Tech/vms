@@ -114,13 +114,13 @@ export const QRPop = (props) => {
               />
             </div>
           </div>
-          {/* <div
+          <div
             style={{
               maxWidth: "800px",
             }}
           >
             <Instructions />
-          </div> */}
+          </div>
           <div style={{
             padding: "10px"
           }}>

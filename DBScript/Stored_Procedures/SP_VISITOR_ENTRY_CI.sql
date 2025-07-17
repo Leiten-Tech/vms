@@ -302,6 +302,7 @@ select
 		-- v.Person_Name PersonName,
 		vd.First_Name PersonName,
 		v.Mobile_No MobileNo,
+      --   v.Aadhar_No AadharNo,
 		v.Id_Proof_Type IdProofType,
 		v.Id_Proof_No IdProofNo,
 		v.Visited_Employee_Id VisitedEmployeeId,
@@ -440,6 +441,7 @@ select
 			v.Visitor_Company AS VisitorCompany,
 			ve.Person_Name AS PersonName,
 			ve.Mobile_No AS MobileNo,
+            ve.Aadhar_No AS AadharNo,
 			ve.Id_Proof_Type AS IdProofType,
 			ve.Id_Proof_No AS IdProofNo,
 			ve.Visited_Employee_Id AS VisitedEmployeeId,
@@ -512,6 +514,7 @@ select
 			Dob,
 			Mail_Id MailId,
 			Mobile_No MobileNo,
+            Aadhar_No AadharNo,
             Tag_No TagNo,
             Visitor_Company VisitorCompany,
 			Id_Card_Type IdCardType,
@@ -572,6 +575,7 @@ select
 		v.Address,
 		vd.Mail_Id MailId,
 		vd.Mobile_No MobileNo ,
+        vd.Aadhar_No AadharNo,
         vd.Tag_No TagNo,
         vd.Visitor_Company VisitorCompany,
 		v.Id_Card_Type IdCardType,
@@ -698,6 +702,7 @@ select
     
 	if type='OnChangeVisitor'
 	then
+    
 		if VisitorTypeId=36 or VisitorTypeId=35
 		then
 			select
@@ -711,6 +716,7 @@ select
 			v.Dob Dob,
 			v.Mail_Id MailId,
 			v.Mobile_No MobileNo,
+            v.Aadhar_No AadharNo,
             v.Tag_No TagNo,
 			v.Visitor_Company VisitorCompany,
 			v.Id_Card_Type IdCardType,
@@ -752,6 +758,7 @@ select
 			v.Dob Dob,
 			v.Mail_Id MailId,
 			v.Mobile_No MobileNo,
+            v.Aadhar_No AadharNo,
             v.Tag_No TagNo,
 			v.Visitor_Company VisitorCompany,
 			v.Id_Card_Type IdCardType,
@@ -802,6 +809,7 @@ select
 		-- v.Person_Name PersonName,
 		vd.First_Name PersonName,
 		v.Mobile_No MobileNo,
+        vd.Aadhar_No AadharNo,
 		v.Id_Proof_Type IdProofType,
 		v.Id_Proof_No IdProofNo,
 		v.Visited_Employee_Id VisitedEmployeeId,
@@ -1511,50 +1519,7 @@ select
 	 end  if;
 	if Type='FilterVehicleNo'
 	then
-    
-		-- SELECT 
---         ve.Visitor_Entry_Id AS VisitorEntryId,
--- 		v.Vehicle_Id AS VehicleId,
--- 		ve.Vehicle_No AS VehicleNo,
--- 		v.Vehicle_Model AS VehicleModel
--- 		FROM 
--- 			Visitor_Entry ve
--- 		LEFT JOIN 
--- 			Vehicle v ON v.Vehicle_No = ve.Vehicle_No
--- 		WHERE 
--- 			ve.Vehicle_No LIKE CONCAT('%',text, '%')
---             and v.Status = 1
--- 		
--- 		UNION
 
--- 		SELECT 
--- 			ve.Visitor_Entry_Id AS VisitorEntryId,
--- 			v.Vehicle_Id AS VehicleId,
--- 			v.Vehicle_No AS VehicleNo,
--- 			v.Vehicle_Model AS VehicleModel
--- 		FROM 
--- 			Vehicle v
--- 		LEFT JOIN 
--- 			Visitor_Entry ve ON v.Vehicle_No = ve.Vehicle_No
--- 		WHERE 
--- 			v.Vehicle_No LIKE CONCAT('%',text, '%') 
--- 		and v.Status = 1;
-			SELECT distinct
-				NULL AS VehicleId,
-				ve.Vehicle_No AS VehicleNo,
-				NULL AS VehicleModel,
-				ve.Vehicle_Type_Id AS VehicleTypeId
-			FROM 
-				Visitor_Entry ve
-			WHERE 
-                ve.Vehicle_No LIKE CONCAT('%',text, '%')
-				AND NOT EXISTS (
-					SELECT 1
-					FROM Vehicle v
-					WHERE v.Vehicle_No = ve.Vehicle_No and v.Company_Id = CompanyId and v.Plant_Id = PlantId AND v.Status = 1
-				)
-                and ve.Company_Id = CompanyId and ve.Plant_Id = PlantId
-			UNION ALL
 			SELECT 
 				v.Vehicle_Id AS VehicleId,
 				v.Vehicle_No AS VehicleNo,
@@ -1568,6 +1533,8 @@ select
 
         
 	end if;
+    
+    
     if Type='FilterDriver'
 	then
 		select
@@ -1596,102 +1563,112 @@ select
 		inner join role r on r.Role_Id = u.Default_Role_Id
 		where u.User_Name like CONCAT('%',text,'%') and u.Company_Id = CompanyId and u.Plant_Id = PlantId and u.Status = 1; -- Driver;
 	end if;
-	if Type='OnChangeVehicleNo'
-	then
-			DROP TEMPORARY TABLE IF EXISTS VISENT;
-			CREATE TEMPORARY TABLE IF NOT EXISTS VISENT AS
-			(
-				SELECT 
-				ve.Visitor_Entry_Id AS VisitorEntryId,
-				ve.Visitor_Entry_Code AS VisitorEntryCode,
-				ve.Visitor_Entry_Date AS VisitorEntryDate,
-				ve.Valid_From AS ValidFrom,
-				ve.Valid_To AS ValidTo,
-				ve.Vehicle_Name AS VehicleName,
-				ve.Vehicle_No AS VehicleNo,
-				ve.Vehicle_Model AS VehicleModel,
-				ifnull(v.Driver_Id, ve.Driver_Id) AS DriverId,
-				ve.Driver_Name AS DriverName,
-				ve.Vehicle_Type_Id AS VehicleTypeId,
-				ve.Entry_Type AS EntryType,
-				ve.Entry_Time AS EntryTime,
-				ve.Exit_Time AS ExitTime,
-				ve.Number_Of_Passengers AS NumberOfPassengers,
-				ve.Starting_Km AS StartingKm,
-				ve.Ending_Km AS EndingKm,
-				ve.Purpose_Of_Visit AS PurposeOfVisit,
-				ve.Is_Eway_Bill_No AS IsEwayBillNo,
-				ve.Is_Einv_Bill_No AS IsEinvBillNo,
-				ve.Visitor_Remarks AS VisitorRemarks,
-				ve.Created_By AS CreatedBy,
-				ve.Created_On AS CreatedOn,
-				ve.Modified_By AS ModifiedBy,
-				ve.Modified_On AS ModifiedOn,
-				ve.Status AS Status
-			FROM 
-				visitor_entry ve
-			left join Vehicle v on v.Vehicle_No = VehicleNo
-			WHERE 
-				ve.Vehicle_No LIKE CONCAT('%', VehicleNo, '%')
-				AND (ve.Status = 75 OR ve.Status = 1) and (ve.Exit_Time is null or ve.Entry_Time is null)
-			)
-			UNION ALL
-			(
-				SELECT 
-				NULL AS VisitorEntryId,
-				NULL AS VisitorEntryCode,
-				NULL AS VisitorEntryDate,
-				NULL AS ValidFrom,
-				NULL AS ValidTo,
-				v.Vehicle_Name AS VehicleName,
-				v.Vehicle_No AS VehicleNo,
-				v.Vehicle_Model AS VehicleModel,
-				v.Driver_Id AS DriverId,
-				NULL AS DriverName,
-				v.Vehicle_Type AS VehicleTypeId,
-				NULL AS EntryType,
-				NULL AS EntryTime,
-				NULL AS ExitTime,
-				NULL AS NumberOfPassengers,
-				NULL AS StartingKm,
-				NULL AS EndingKm,
-				NULL AS PurposeOfVisit,
-				NULL AS IsEwayBillNo,
-				NULL AS IsEinvBillNo,
-				NULL AS VisitorRemarks,
-				NULL AS CreatedBy,
-				NULL AS CreatedOn,
-				NULL AS ModifiedBy,
-				NULL AS ModifiedOn,
-				NULL AS Status
-			FROM 
-				vehicle v
-			WHERE 
-				v.Vehicle_No LIKE CONCAT('%', VehicleNo, '%')
-				AND v.Status = 1 
-				AND NOT EXISTS (
-					SELECT 1 
-					FROM visitor_entry ve
-					WHERE ve.Vehicle_No = v.Vehicle_No
-					AND (ve.Status = 75 OR ve.Status = 1) and (ve.Exit_Time is null or ve.Entry_Time is null)
-				)
-			);
+		if Type='OnChangeVehicleNo'
+			then
+					
+		DROP TEMPORARY TABLE IF EXISTS VISENT;
 
-			SELECT * FROM VISENT;
-
-		IF (SELECT COUNT(*) FROM VISENT) > 0 THEN
-
+		CREATE TEMPORARY TABLE IF NOT EXISTS VISENT AS
+		(
+		  
+		  SELECT *
+		  FROM (
 			SELECT 
-				rd.Visitor_Entry_Ref_Detail_Id AS VisitorEntryRefDetailId, 
-				rd.Visitor_Entry_Id AS VisitorEntryId, 
-				rd.Ref_Type_Id AS RefTypeId, 
-				rd.Ref_Value AS RefValue
+			  ve.Visitor_Entry_Id AS VisitorEntryId,
+			  ve.Visitor_Entry_Code AS VisitorEntryCode,
+			  ve.Visitor_Entry_Date AS VisitorEntryDate,
+			  ve.Valid_From AS ValidFrom,
+			  ve.Valid_To AS ValidTo,
+			  ve.Vehicle_Name AS VehicleName,
+			  ve.Vehicle_No AS VehicleNo,
+			  ve.Vehicle_Model AS VehicleModel,
+			  ve.Driver_Id AS DriverId,
+			  COALESCE(ve.Driver_Name, u.user_Name) AS DriverName,
+			  ve.Vehicle_Type_Id AS VehicleTypeId,
+			  ve.Entry_Type AS EntryType,
+			  ve.Entry_Time AS EntryTime,
+			  ve.Exit_Time AS ExitTime,
+			  ve.Number_Of_Passengers AS NumberOfPassengers,
+			  ve.Starting_Km AS StartingKm,
+			  ve.Ending_Km AS EndingKm,
+			  ve.Purpose_Of_Visit AS PurposeOfVisit,
+			  ve.Is_Eway_Bill_No AS IsEwayBillNo,
+			  ve.Is_Einv_Bill_No AS IsEinvBillNo,
+			  ve.Visitor_Remarks AS VisitorRemarks,
+			  ve.Created_By AS CreatedBy,
+			  ve.Created_On AS CreatedOn,
+			  ve.Modified_By AS ModifiedBy,
+			  ve.Modified_On AS ModifiedOn,
+			  ve.Status AS Status
 			FROM 
-				Visitor_Entry_Ref_Detail rd;
-		END IF;
+			  visitor_entry ve
+			LEFT JOIN users u ON u.user_Id = ve.Driver_Id 
+			WHERE 
+			  ve.Vehicle_No like CONCAT('%', VehicleNo, '%')
+			  AND ve.Entry_Type IS NOT NULL
+			  AND (ve.Entry_Time IS NULL OR ve.Exit_Time IS NULL)
+			  AND ve.Status IN (75)
+			ORDER BY ve.Entry_Time DESC
+			LIMIT 1
+		  ) latest_entry
+
+		)
+
+
+		UNION ALL
+
+		SELECT 
+		  NULL AS VisitorEntryId,
+		  NULL AS VisitorEntryCode,
+		  NULL AS VisitorEntryDate,
+		  NULL AS ValidFrom,
+		  NULL AS ValidTo,
+		  v.Vehicle_Name AS VehicleName,
+		  v.Vehicle_No AS VehicleNo,
+		  v.Vehicle_Model AS VehicleModel,
+		  v.Driver_Id AS DriverId,
+		  u.user_Name AS DriverName,
+		  v.Vehicle_Type AS VehicleTypeId,
+		  NULL AS EntryType,
+		  NULL AS EntryTime,
+		  NULL AS ExitTime,
+		  NULL AS NumberOfPassengers,
+		  NULL AS StartingKm,
+		  NULL AS EndingKm,
+		  v.Purpose_Of_Visit AS PurposeOfVisit,
+		  NULL AS IsEwayBillNo,
+		  NULL AS IsEinvBillNo,
+		  NULL AS VisitorRemarks,
+		  NULL AS CreatedBy,
+		  NULL AS CreatedOn,
+		  NULL AS ModifiedBy,
+		  NULL AS ModifiedOn,
+		  NULL AS Status
+		FROM 
+		  vehicle v
+		LEFT JOIN users u ON u.user_Id = v.Driver_Id 
+		WHERE 
+		  v.Vehicle_No like CONCAT('%', VehicleNo, '%')
+		  AND v.Status = 1
+		LIMIT 1;
+
+		SELECT * FROM VISENT;
+
+	
+		  SELECT 
+			rd.Visitor_Entry_Ref_Detail_Id AS VisitorEntryRefDetailId, 
+			rd.Visitor_Entry_Id AS VisitorEntryId, 
+			rd.Ref_Type_Id AS RefTypeId, 
+			rd.Ref_Value AS RefValue
+		  FROM 
+			Visitor_Entry_Ref_Detail rd;
+		--   WHERE
+-- 			rd.Visitor_Entry_Id = (SELECT VisitorEntryId FROM VISENT LIMIT 1);
+
+				
 		select * from Metadata where Meta_Type_Code='REF';
 	end if;
-    if Type='OnChangeExistVehicleNo'
+if Type='OnChangeExistVehicleNo'
 	then
 				SELECT 
 				ve.Visitor_Entry_Id AS VisitorEntryId,
@@ -1725,18 +1702,23 @@ select
 			WHERE 
 				ve.Visitor_Entry_Id = VisitorEntryId;
 			
-            SELECT 
-				rd.Visitor_Entry_Ref_Detail_Id AS VisitorEntryRefDetailId, 
-				rd.Visitor_Entry_Id AS VisitorEntryId, 
-				rd.Ref_Type_Id AS RefTypeId, 
+			SELECT 
+				rd.Visitor_Entry_Ref_Detail_Id AS VisitorEntryRefDetailId,
+				rd.Visitor_Entry_Id AS VisitorEntryId,
+				rd.Ref_Type_Id AS RefTypeId,
 				rd.Ref_Value AS RefValue
-			FROM 
-				Visitor_Entry_Ref_Detail rd 
-			where rd.Visitor_Entry_Id = VisitorEntryId;
+			FROM
+				Visitor_Entry_Ref_Detail rd
+			WHERE
+				rd.Visitor_Entry_Id = VisitorEntryId;
             
-            select * from Metadata where Meta_Type_Code='REF';
+			SELECT 
+				*
+			FROM
+				Metadata
+			WHERE
+				Meta_Type_Code = 'REF';
 	end if;
-
 	    if Type='OnChangeVehicleCode'
 	then
 		select

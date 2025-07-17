@@ -9,5 +9,8 @@ namespace VisitorManagementMySQL.Services.Authentication
     public interface ITokenAuthService
     {
         string Authentication(User user, Company userCompany, string role, string apiresult);
+        //****Start Android
+        string AndroidAuthentication(string mobileno, string username);
+               //****END***** Android
     }
 }

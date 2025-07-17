@@ -7,6 +7,7 @@
   <ItemGroup>
     <PackageReference Include="CoreHtmlToImage" Version="1.0.6" />
     <PackageReference Include="Dapper" Version="2.0.78" />
+        <PackageReference Include="FirebaseAdmin" Version="3.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="5.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="5.0.1">
@@ -20,12 +21,22 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="NETCore.MailKit" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="QRCoder" Version="1.4.3" />
     <PackageReference Include="Svg.Skia" Version="0.5.16" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.17" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="Wkhtmltopdf.NetCore" Version="3.0.2" />
+     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
   </ItemGroup>
+   <!-- 👇 ADD THIS PART TO COPY YOUR JSON FILE -->
+  <ItemGroup>
+    <None Update="Services\serviceAccountKey.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <!-- 👆 END -->
+
 
 </Project>

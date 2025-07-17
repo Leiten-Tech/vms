@@ -39,7 +39,7 @@ namespace VisitorManagementMySQL.Services.Notification
                 RunCheckForUnsentNotifications,
                 null,
                 TimeSpan.Zero,
-                TimeSpan.FromMinutes(2)
+                TimeSpan.FromMinutes(10)
             );
 
             return Task.CompletedTask;

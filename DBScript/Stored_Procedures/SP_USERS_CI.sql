@@ -57,7 +57,8 @@ BEGIN
         SELECT *
         FROM Company c
         WHERE c.Status = 1
-        AND c.Company_Id = CompanyId and c.Check_Token is not null and c.Check_Token != "";
+       AND c.Company_Id = CompanyId 
+        and c.Check_Token is not null and c.Check_Token != "";
     -- END IF;
  
 --    IF RoleId = 1 THEN
@@ -121,7 +122,9 @@ BEGIN
 		 *
 		 from 
 		 Plant p
-		 where p.Status=1 and p.Company_Id = CompanyId and p.Check_Token is not null and p.Check_Token != ""; 
+		 where p.Status=1 
+         and p.Company_Id = CompanyId 
+         and p.Check_Token is not null and p.Check_Token != ""; 
     -- END IF;
     
 --      IF RoleId = 1 THEN

@@ -92,6 +92,17 @@ export const ChangeStatus = createAsyncThunk(
   }
 );
 
+export const OnChangeDepartment = createAsyncThunk(
+  "Plant/OnChangeDepartment",
+  async (data: any, thunkAPI) => {
+    try {
+      const Approvals = await PlantService.OnChangeDepartment(data);
+      return Approvals.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
 const initialState = {
   isCreate: true,
   createEditData: null,
@@ -103,6 +114,8 @@ const initialState = {
   CompanyList: [],
   CountryList: [],
   StateList: [],
+  LevelList:[],
+  DepartmentList:[],
   CityList: [],
   OnChangeCountry: [],
   OnChangeState: [],
@@ -139,8 +152,12 @@ const plantSlice = createSlice({
         state.PlantMasterList = action.payload.PlantMasterList;
         state.CountryList = action.payload.CountryList;
         state.HdrTable = action.payload.HdrTable;
+        state.DetailList = action.payload.DetailList;
+        state.PrimaryUserList = action.payload.PrimaryUserList;
         state.StateList = action.payload.StateList;
         state.CityList = action.payload.CityList;
+        state.LevelList = action.payload.LevelList;
+        state.DepartmentList = action.payload.DepartmentList;
       })
       .addCase(CreateInitialize.rejected, (state, action) => {
         state.loading = false;

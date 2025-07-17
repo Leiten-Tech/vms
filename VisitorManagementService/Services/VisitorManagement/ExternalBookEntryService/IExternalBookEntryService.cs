@@ -56,5 +56,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
         );
         Task<VisitorEntryDTO> OnChangePlant(JObject obj);
         Task<VisitorEntryDTO> OnChangeDepartment(JObject obj);
+        Task<VisitorEntryDTO> GetRescheduleVisList(JObject obj);
+        Task<VisitorEntryDTO> UpdateVisitorEntry(JObject obj);
     }
 }

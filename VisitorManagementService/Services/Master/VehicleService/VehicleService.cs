@@ -59,6 +59,7 @@ namespace VisitorManagementMySQL.Services.Master.VehicleService
 
                     dto.StatusList = (await spcall.ReadAsync<Metadatum>()).ToList();
                     dto.VehicleTypeList = (await spcall.ReadAsync<Metadatum>()).ToList();
+                    dto.PurposeList = (await spcall.ReadAsync<Metadatum>()).ToList();
                     dto.SupplierList = (await spcall.ReadAsync<Supplier>()).ToList();
                     dto.CompanyList = (await spcall.ReadAsync<Company>()).ToList();
                     dto.PlantList = (await spcall.ReadAsync<Plant>()).ToList();
@@ -138,6 +139,7 @@ namespace VisitorManagementMySQL.Services.Master.VehicleService
             }
             return dto;
         }
+        
         public async Task<object> Create(object obj, List<IFormFile> webfiles)
         {
             try

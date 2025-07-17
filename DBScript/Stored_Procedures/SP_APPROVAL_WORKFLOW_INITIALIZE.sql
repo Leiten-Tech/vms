@@ -71,7 +71,7 @@ BEGIN
             documentactivityid
         );
 
-        CALL SP_APPROVAL_WORKFLOW_TRANSACTION(companyid, RequestPlantId, documentid, documentno, 74, approverid, documentdetailid, userid);
+        -- CALL SP_APPROVAL_WORKFLOW_TRANSACTION(companyid, RequestPlantId, documentid, documentno, 74, approverid, documentdetailid, userid);
 		
         IF WORKFLOWSTAGE != 0 THEN
             INSERT INTO Approval_Detail (

@@ -32,6 +32,10 @@ import {
 } from "@/validations/VisitorManagement";
 import { IMAGES } from "@/assets/images/Images";
 import CVisitorCreator from "@/pages/master/Visitor/cVisitorCreator";
+import {
+  OnChangeVehicleNo,
+  OnChangeExistVehicleNo,
+} from "@/redux/slices/visitorManagement/externalBookEntrySlice";
 
 export const VisitorEntryForm = (props) => {
   const {
@@ -39,9 +43,9 @@ export const VisitorEntryForm = (props) => {
     VisitorEntryValidationSchema,
     formik,
     onUpload,
-    itemTemplate,
     isView,
     imageUrl,
+    tabConfig,
     IsPreBookingList,
     VisitorTypeList,
     onChangeVisitorType,
@@ -49,13 +53,10 @@ export const VisitorEntryForm = (props) => {
     isCreate,
     handleSelect,
     autoCompleteRef,
-    OnSelectVisitorCode,
-    onChangeMatType,
-    filteritemType,
+    vehicleNoInputRef,
     VisitorNameList,
     onChangeVisitor,
     handleIsPreBook,
-    VECodeDisable,
     EmployeeList,
     ProofList,
     onClickIsAppointmentBooking,
@@ -65,11 +66,6 @@ export const VisitorEntryForm = (props) => {
     onChageToDate,
     TominDate,
     CheckboxDisable,
-    onClickIsExistingVehicle,
-    HideVehicleDD,
-    HideDriverDD,
-    onUploadDocument,
-    documentUrl,
     onClickIsExistingDriver,
     OnChangePartyTypes,
     PartyTypeList,
@@ -77,10 +73,6 @@ export const VisitorEntryForm = (props) => {
     AreaList,
     RouteList,
     DriverList,
-    VehicleList,
-    IsDeliveryChallan,
-    IsInvoiceBased,
-    IsVehicleTripBased,
     IsPartyDisable,
     IsVehicleDetailsDisable,
     ShowVisitorContranctor,
@@ -91,9 +83,6 @@ export const VisitorEntryForm = (props) => {
     PoNumberDisable,
     ContainerNumberDisable,
     StatusList,
-    OnChangeVehicle,
-    deleteDocuments,
-    handleHyperlink,
     cameraOff,
     setCameraOff,
     handleChange,
@@ -102,10 +91,6 @@ export const VisitorEntryForm = (props) => {
     PurposeList,
     ChallanTypeList,
     handlePoVSelect,
-    checkedVehicle,
-    setCheckedVehicle,
-    setCreateVisEnt,
-    createVisEnt,
     isCurrentCreate,
     toast,
     changeField,
@@ -114,18 +99,107 @@ export const VisitorEntryForm = (props) => {
     setVisitorEntryRefDetailList,
     VehicleNoList,
     RefTypeList,
-    setRefTypeList,
-    checkVehAction,
-    resetAllVehForm,
     VehicleTypeList,
-    OnChangeVehNo,
     OnChangeDriver,
     FilterVehNo,
     FilterVehNoCleared,
     FilterDriver,
-    handleInputChange
+    handleScanVehNo,
+    setVehData,
+    handleVehicleNoChange,
+    enableScan,
+    addBtnClass,
+    scanInputRef,
+    handleScanInput,
+    isScanMode,
+    FilterVehNoWrapped,
+    vehMAxLen
   } = props;
-  const chooseOptions = { icon: "las la-upload", iconOnly: true };
+
+  const [vehicleSuggestions, setVehicleSuggestions] = useState([]);
+  const [disableDropdown, setDisableDropdown] = useState(false);
+  const [disableVehicleType, setDisableVehicleType] = useState(false);
+
+  const dispatch: any = useDispatch();
+
+  useEffect(() => {
+    if (VehicleTypeList?.length > 0 && !formik.values.VehicleTypeId) {
+      formik.setFieldValue("VehicleTypeId", VehicleTypeList[0].MetaSubId);
+    }
+  }, [VehicleTypeList]);
+
+  // const handleVehicleNoChange = async (e: any) => {
+  //   let vehicleNo = e?.value?.VehicleNo || e?.value;
+  //   if (!vehicleNo) return;
+
+  //   vehicleNo = vehicleNo.toUpperCase();
+  //   formik.setFieldValue("VehicleNo", vehicleNo);
+
+  //   const currentType = tabConfig?.find((t) => t.active)?.type;
+  //   const isOutScreen = currentType === 102;
+
+  //   const isNewVehicle = !VehicleNoList?.some(
+  //     (v) => v.VehicleNo?.toLowerCase() === vehicleNo.toLowerCase()
+  //   );
+
+  //   if (isOutScreen && isNewVehicle) {
+  //     const now = new Date();
+  //     formik.setFieldValue("ExitTime", now);
+  //   }
+
+  //   const vehicleEntries = VehicleNoList?.filter(
+  //     (v: any) => v.VehicleNo?.toLowerCase() === vehicleNo.toLowerCase()
+  //   );
+
+  //   const hasIn = vehicleEntries?.some(
+  //     (v) => v.EntryType === "In" || v.EntryType === 101
+  //   );
+  //   const hasOut = vehicleEntries?.some(
+  //     (v) => v.EntryType === "Out" || v.EntryType === 102
+  //   );
+  //   const isFullyProcessed = hasIn && hasOut;
+
+  //   const payload = {
+  //     VehicleNo: vehicleNo,
+  //     VisitorEntryId: e?.value?.VisitorEntryId != null && e?.value?.VisitorEntryId != 0
+  //       ?e?.value?.VisitorEntryId : 0,
+  //     EntryType: formik?.values?.EntryType
+  //   };
+
+  //   try {
+  //     let result;
+
+  //     if (e?.value?.VisitorEntryId == 0 || isFullyProcessed) {
+  //       result = await dispatch(OnChangeVehicleNo(payload));
+  //     } else {
+  //       result = await dispatch(OnChangeExistVehicleNo(payload));
+  //     }
+
+  //     const hdr = result?.payload?.VisitorEntryHeader;
+  //     // if (
+  //     //   result?.payload?.tranStatus?.result == true &&
+  //     //   result?.payload?.tranStatus?.lstErrorItem.length > 0 &&
+  //     //   hdr?.VisitorEntryId != 0 &&
+  //     //   hdr?.VisitorEntryId != null
+  //     // ) {
+  //     //   toast?.current?.show({
+  //     //     severity: "success",
+  //     //     summary: "Data Found Successfully",
+  //     //     detail: result?.payload?.tranStatus?.lstErrorItem[0].Message,
+  //     //   });
+  //     // }
+  //     // if (hdr?.VisitorEntryId == null) {
+  //       setVehData(result);
+  //     // }
+  //   } catch (err: any) {
+  //     toast?.current?.show({
+  //       severity: "error",
+  //       summary: "Error",
+  //       detail: err?.message || "Something went wrong.",
+  //     });
+  //   }
+  // };
+
   return (
     <Formik
       initialValues={visitorEntryForm}
@@ -148,10 +222,7 @@ export const VisitorEntryForm = (props) => {
                       options={IsPreBookingList}
                       show={false}
                       required={false}
-                      disable={isView || !isCreate}
-                      optionLabel={""}
-                      optionValue={""}
-                      handleSelect={""}
+                      disable={isView || isCreate}
                       handleChange={handleIsPreBook}
                       formik={formik}
                       fldStyle={"col-12 md:col-4"}
@@ -205,11 +276,7 @@ export const VisitorEntryForm = (props) => {
                       options={VisitorNameList}
                       show={isCurrentCreate ? false : true}
                       disable={isCurrentCreate ? false : true}
-                      // show={ShowVisitorContranctor}
                       required={false}
-                      // disable={
-                      //   !VECodeDisable || isView || !isCreate || initFldDisable
-                      // }
                       optionLabel={"FirstName"}
                       optionValue={"VisitorDetailId"}
                       handleSelect={onChangeVisitor}
@@ -254,16 +321,6 @@ export const VisitorEntryForm = (props) => {
                       show={true}
                       required={true}
                       disable={isCurrentCreate ? false : true}
-                      // disable={
-                      //   !VECodeDisable ||
-                      //   isView ||
-                      //   !isCreate ||
-                      //   formik.values["VisitorTypeId"] == 66 ||
-                      //   formik.values["VisitorTypeId"] == 65 ||
-                      //   formik.values["VisitorTypeId"] == 64
-                      //     ? false
-                      //     : initFldDisable
-                      // }
                       optionLabel={"UserName"}
                       optionValue={"UserId"}
                       handleSelect={handleSelect}
@@ -389,7 +446,6 @@ export const VisitorEntryForm = (props) => {
                       optionLabel={""}
                       optionValue={""}
                       handleChange={onChageFromDate}
-                      // handleSelect={handleSelect}
                       fldStyle={"col-12 md:col-4"}
                       formik={formik}
                       minDate={new Date()}
@@ -528,7 +584,11 @@ export const VisitorEntryForm = (props) => {
                       formik={formik}
                       fldStyle={"col-12 md:col-4"}
                       maxLength="500"
-                      style={{ minHeight: "50px",maxHeight: "50px", overflowY: "auto" }}
+                      style={{
+                        minHeight: "50px",
+                        maxHeight: "50px",
+                        overflowY: "auto",
+                      }}
                     />
                   </div>
                 </div>
@@ -551,71 +611,7 @@ export const VisitorEntryForm = (props) => {
           <div hidden={IsVehicleDetailsDisable}>
             <div className={isView ? "p-disabled" : ""}>
               <div className="normal-table flex">
-                {/* <div className="page-title">
-                      <div className="grid grid-nogutter">
-                        <div className="md:col-6">
-                          <h1>Vehicle Information</h1>
-                          <InputSwitch
-                                checked={checkedVehicle}
-                                onChange={(e) => setCheckedVehicle(e.target.value)
-                                }
-                              />
-                        </div>
-                      </div>
-                    </div> */}
-
                 <div className="grid pl-2 pr-4">
-                  {/* {!initFldDisable ? (
-                    <FormFields
-                      type={"checkbox"}
-                      name={"IsExistingVehicle"}
-                      label={"Is Existing Vehicle "}
-                      options={""}
-                      show={false}
-                      required={false}
-                      disable={isView || !isCreate}
-                      optionLabel={""}
-                      optionValue={""}
-                      handleChange={onClickIsExistingVehicle}
-                      fldStyle={"col-12 md:col-3"}
-                      formik={formik}
-                    />
-                  ) : (
-                    <FormFields
-                      type={""}
-                      fldStyle={"col-12 md:col-3"}
-                      show={false}
-                    />
-                  )} */}
-                  {/* <FormFields
-                    type={"select"}
-                    name={"VehicleName"}
-                    label={"Vehicle Name "}
-                    options={VehicleList}
-                    show={HideVehicleDD}
-                    required={false}
-                    disable={isView || !isCreate}
-                    optionLabel={"VehicleNameAndNo"}
-                    optionValue={"VehicleName"}
-                    handleSelect={OnChangeVehicle}
-                    fldStyle={"col-12 md:col-3"}
-                    formik={formik}
-                  /> */}
-
-                  {/* <FormFields
-                    type={"select"}
-                    name={"VisitorTypeId"}
-                    label={"Visitor Type "}
-                    options={VisitorTypeList}
-                    show={true}
-                    required={false}
-                    disable={isView || !isCreate || initFldDisable}
-                    optionLabel={"MetaSubDescription"}
-                    optionValue={"MetaSubId"}
-                    handleSelect={onChangeVisitorType}
-                    fldStyle={"col-12 md:col-3"}
-                    formik={formik}
-                  /> */}
                   <FormFields
                     type={"radiobox"}
                     name={"VehicleTypeId"}
@@ -623,87 +619,54 @@ export const VisitorEntryForm = (props) => {
                     options={VehicleTypeList}
                     show={changeField["VehicleTypeId"]?.show}
                     required={changeField["VehicleTypeId"]?.required}
-                    disable={changeField["VehicleTypeId"]?.disable}
+                    disable={changeField["VehicleTypeId"]?.enable}
                     optionLabel={"MetaSubDescription"}
                     optionValue={"MetaSubId"}
                     handleChange={onChangeVehicleType}
-                    fldStyle={`col-12 md:col-12 ${
-                      changeField["VehicleTypeId"]?.disablec ? "p-disabled" : ""
-                    }`}
+                    fldStyle={`col-12 md:col-12
+                    `}
                     formik={formik}
                   />
                   <FormFields
-                    type={"autocomplete"}
+                    type={"autocomplete_btn"}
                     name={"VehicleNo"}
-                    label={"Vehicle No "}
-                    options={""}
+                    label={"Vehicle No"}
                     show={changeField["VehicleNo"]?.show}
                     required={true}
                     disable={changeField["VehicleNo"]?.disable}
-                    // disable={isCreate ? HideVehicleDD : true}
-                    optionLabel={""}
-                    optionValue={""}
-                    handleSelect={""}
-                    handleChange={(e) =>
-                      OnChangeVehNo("VehicleNo", {}, e.value)
-                    }
                     fldStyle={"col-12 md:col-3"}
                     formik={formik}
-                    autoSearch={FilterVehNo} //filter Method
-                    autoCompleteRef={autoCompleteRef}
-                    autoSuggestions={VehicleNoList} //Filtered List
+                    // autoCompleteRef={autoCompleteRef}
+                    autoSuggestions={disableDropdown ? [] : VehicleNoList}
                     autoCompleteLbl={"VehicleNo"}
                     field={"VehicleNo"}
-                    maxLength={10}
+                    maxLength={vehMAxLen}
                     placeHolder={"Please Enter Vehicle No"}
                     OnClear={FilterVehNoCleared}
                     autoFocus={true}
+                    forceSelection={false}
+                    autoSearch={FilterVehNoWrapped}
+                    handleChange={handleVehicleNoChange}
+                    // onKeyDown={isScanMode ? FilterVehNoWrapped : undefined}
+                    inputRef={autoCompleteRef}
+                    addBtnEve={enableScan}
+                    addBtnClass={addBtnClass}
+                    readOnly={false}
                   />
-                  {/* <FormFields
-                    type={"text"}
-                    name={"VehicleName"}
-                    label={"Vehicle Name "}
-                    options={""}
-                    show={changeField["VehicleName"]?.show}
-                    required={false}
-                    disable={
-                      isView || !isCreate || changeField["VehicleName"]?.disable
-                    }
-                    optionLabel={""}
-                    optionValue={""}
-                    handleSelect={""}
-                    fldStyle={"col-12 md:col-3"}
-                    formik={formik}
-                    maxLength="50"
+                  {/* <input
+                    ref={scanInputRef}
+                    type="text"
+                    style={{
+                      position: "absolute",
+                      opacity: 0,
+                      height: 0,
+                      width: 0,
+                      pointerEvents: "none"
+                    }}
+                    onInput={handleScanInput}
+                    autoFocus
                   /> */}
 
-                  {/* <div className="col-12 md:col-3">
-                <label className="form-label">Document Upload</label>
-                <div className="p-inputgroup">
-                  <div className="browse-links">
-                    <Button
-                      label={formik.values.VehicleDocumentName}
-                      link
-                      onClick={handleHyperlink}
-                    />
-                  </div>
-                  <FileUpload
-                    mode="basic"
-                    chooseOptions={chooseOptions}
-                    url="/api/upload"
-                    maxFileSize={1000000}
-                    onSelect={onUploadDocument}
-                    chooseLabel={documentUrl}
-                    auto
-                    disabled={isView || !isCreate}
-                  />
-                  <Button
-                    icon="las la-times"
-                    disabled={isView || !isCreate}
-                    onClick={deleteDocuments}
-                  />
-                </div>
-              </div> */}
                   <FormFields
                     type={"checkbox"}
                     name={"IsExistingDriver"}
@@ -718,22 +681,7 @@ export const VisitorEntryForm = (props) => {
                     fldStyle={"col-12 md:col-3"}
                     formik={formik}
                   />
-                  {/* <FormFields
-                    type={"select"}
-                    name={"DriverId"}
-                    label={"Driver Name "}
-                    options={DriverList}
-                    show={changeField["DriverId"]?.show}
-                    required={false}
-                    disable={
-                      changeField["DriverId"]?.disable
-                    }
-                    optionLabel={"UserName"}
-                    optionValue={"UserId"}
-                    handleSelect={handleSelect}
-                    fldStyle={"col-12 md:col-3"}
-                    formik={formik}
-                  /> */}
+
                   <FormFields
                     type={"autocomplete"}
                     name={"DriverName"}
@@ -742,7 +690,6 @@ export const VisitorEntryForm = (props) => {
                     show={changeField["DriverName"]?.show}
                     required={false}
                     disable={changeField["DriverName"]?.disable}
-                    // disable={isCreate ? HideVehicleDD : true}
                     optionLabel={""}
                     optionValue={""}
                     handleSelect={""}
@@ -751,32 +698,16 @@ export const VisitorEntryForm = (props) => {
                     }
                     fldStyle={"col-12 md:col-3"}
                     formik={formik}
-                    autoSearch={FilterDriver} //filter Method
+                    autoSearch={FilterDriver}
                     autoCompleteRef={autoCompleteRef}
-                    autoSuggestions={DriverList} //Filtered List
+                    autoSuggestions={DriverList}
                     autoCompleteLbl={"UserName"}
                     field={"UserId"}
                     maxLength={30}
                     placeHolder={"Please Enter Driver"}
                     OnClear={FilterVehNoCleared}
                   />
-                  {/* <FormFields
-                    type={"text"}
-                    name={"DriverName"}
-                    label={"Driver Name "}
-                    options={""}
-                    show={changeField["DriverName"]?.show}
-                    required={false}
-                    disable={
-                      changeField["DriverName"]?.disable
-                    }
-                    optionLabel={""}
-                    optionValue={""}
-                    handleSelect={""}
-                    fldStyle={"col-12 md:col-3"}
-                    formik={formik}
-                    maxLength="50"
-                  /> */}
+
                   <FormFields
                     type={"Calendar"}
                     name={"EntryTime"}
@@ -831,7 +762,6 @@ export const VisitorEntryForm = (props) => {
                     show={changeField["NumberOfPassengers"]?.show}
                     required={changeField["NumberOfPassengers"]?.required}
                     disable={changeField["NumberOfPassengers"]?.disable}
-                    // disable={isCreate ? IsVehicleDetailsDisable : true}
                     optionLabel={""}
                     optionValue={""}
                     handleSelect={""}
@@ -884,9 +814,7 @@ export const VisitorEntryForm = (props) => {
                     options={PurposeList}
                     show={changeField["PurposeOfVisit"]?.show}
                     required={changeField["PurposeOfVisit"]?.required}
-                    disable={
-                      changeField["PurposeOfVisit"]?.disable
-                    }
+                    disable={changeField["PurposeOfVisit"]?.disable}
                     optionLabel={"MetaSubDescription"}
                     optionValue={"MetaSubId"}
                     handleSelect={handleSelect}
@@ -894,20 +822,7 @@ export const VisitorEntryForm = (props) => {
                     fldStyle={"col-12 md:col-3"}
                     filter={true}
                   />
-                  {/* <FormFields
-                type={""}
-                name={""}
-                label={""}
-                options={""}
-                show={true}
-                required={false}
-                disable={isView || !isCreate}
-                optionLabel={""}
-                optionValue={""}
-                handleSelect={""}
-                fldStyle={"col-12 md:col-3"}
-                formik={formik}
-              /> */}
+
                   <FormFields
                     type={"checkbox"}
                     name={"IsEwayBillNo"}
@@ -964,11 +879,19 @@ export const VisitorEntryForm = (props) => {
                     formik={formik}
                     fldStyle={"col-12 md:col-6"}
                     maxLength="500"
-                    style={{ minHeight: "50px",maxHeight: "50px", overflowY: "auto" }}
+                    style={{
+                      minHeight: "50px",
+                      maxHeight: "50px",
+                      overflowY: "auto",
+                    }}
                   />
                 </div>
 
-                <div className={`grid ${formik?.values?.VehicleTypeId == 128 ? "hidden" : ""}`}>
+                <div
+                  className={`grid ${
+                    formik?.values?.VehicleTypeId == 128 ? "hidden" : ""
+                  }`}
+                >
                   <div className="">
                     <div className={isView ? "p-disabled" : ""}>
                       <VisitorEntryRefDetailForm
@@ -996,11 +919,7 @@ export const VisitorEntryForm = (props) => {
 };
 export const VisitorEntryBelongingDetailForm = (props) => {
   const {
-    visitorEntryBelongingDetailForm,
-    formik,
     VisitorEntryBelongingDetailList,
-    TableHeader,
-    filters,
     isView,
     setVisitorEntryBelongingDetailList,
     toast,
@@ -1153,12 +1072,9 @@ export const VisitorEntryRefDetailForm = (props) => {
     isView,
     toast,
     RefTypeList,
-    IsRefDetailsShow,
     isCreate,
     refTableDisable,
   } = props;
-  
-  
 
   const AddAndDeleteTemplate: React.FC<any> = (rowData) => {
     const index = VisitorEntryRefDetailList.indexOf(rowData);
@@ -1262,8 +1178,6 @@ export const VisitorEntryRefDetailForm = (props) => {
     setVisitorEntryRefDetailList(updatedData);
   };
   const selectEditor = (rowData, rowIndex) => {
-    
-    
     return (
       <Dropdown
         value={rowData[rowIndex.field]}
@@ -1286,7 +1200,12 @@ export const VisitorEntryRefDetailForm = (props) => {
           handleInputChange(e, rowData, rowIndex);
         }}
         maxLength={20}
-        disabled={isView || !isCreate || rowData["RefTypeId"] == null || rowData["RefTypeId"] == ""}
+        disabled={
+          isView ||
+          !isCreate ||
+          rowData["RefTypeId"] == null ||
+          rowData["RefTypeId"] == ""
+        }
       />
     );
   };
@@ -1348,7 +1267,6 @@ export const VisitorEntryMaterialDetailForm = (props) => {
     isView,
     toast,
     MaterialList,
-    IsMaterialDetailsShow,
     isCreate,
   } = props;
   const AddAndDeleteTemplate: React.FC<any> = (rowData) => {
@@ -1525,9 +1443,7 @@ export const VisitorEntryMaterialDetailForm = (props) => {
   );
 };
 export const VisitorEntryDetailForm = (props) => {
-  const { visitorEntryDetailList, IsWorkerDetailsShow, isView, isCreate } =
-    props;
-  const chooseOptions = { icon: "las la-upload", iconOnly: true };
+  const { visitorEntryDetailList, IsWorkerDetailsShow, isView } = props;
   const DocumentHyperLink: any = (rowData: any) => {
     return (
       <a style={{ color: "blue" }} href={rowData.DocumentUrl} target="_blank">
@@ -1598,32 +1514,12 @@ const CVisitorEntryCreator = (props) => {
   const visEntryRef = useRef(null);
   const {
     toast,
-    tabConfig,
     visitorEntryFormik,
     isCreate,
     isView,
     loading,
     selectedData,
-    setShowEntryDetail,
-    setVisible,
     VisitorNameList,
-    visitorEntryDetailList,
-    setvisitorEntryDetailList,
-    setVisitorTypeList,
-    setIsPreBookingList,
-    setProofList,
-    setStatusList,
-    setTitleList,
-    setEmployeeList,
-    setDepartmentList,
-    setTempVisitorNameList,
-    setVisitorNameList,
-    setPartyTypeList,
-    setAreaList,
-    setRouteList,
-    setDriverList,
-    setVehicleList,
-    setMaterialList,
     setVisitorEntryBelongingDetailList,
     setList,
     visitorEntryForm,
@@ -1686,7 +1582,6 @@ const CVisitorEntryCreator = (props) => {
     initFldDisable,
     CreatePageOnLoadCVisitorEntry,
     resetAllForm,
-    IsWorkerDetailsShow,
     IsBelongingDetailsShow,
     VisitorEntryBelongingDetailList,
     VisitorEntryMaterialDetailList,
@@ -1699,7 +1594,6 @@ const CVisitorEntryCreator = (props) => {
     handlePoVSelect,
     setCheckedVehicle,
     checkedVehicle,
-    vehicleDetails,
     setVisitorShow,
     fetchAllData,
     visType,
@@ -1780,36 +1674,62 @@ const CVisitorEntryCreator = (props) => {
     FilterVehNoCleared,
     refTableDisable,
     switchDisable,
-    handleInputChange,
     changeEntryType,
     handleMobKeyPress,
-    handleMobBack
+    handleMobBack,
+    setVehData,
+    onChangeVeh,
+    selectedVeh,
+    setSelectedVeh,
+    handleVehicleNoChange,
+    enableScan,
+    addBtnClass,
+    isScanMode,
+    handleScanInput,
+    scanInputRef,
+    FilterVehNoWrapped,
+    vehMAxLen,
+    vehicleNoInputRef
   } = props;
 
-  const dispatch: any = useDispatch();
+  const vehicleNoRef = useRef(null);
 
-  // const [VisitorNameList, setVisitorNameList] = useState([]);
-  // const [visitorEntryDetailList, setvisitorEntryDetailList] = useState([]);
+  const [isScanning, setIsScanning] = useState(false);
+  const scanTimeout = useRef<any>(null);
+  const lastKeyTime = useRef(0);
 
-  //Unused
-  const [visitorDetailList, setVisitorDetailList] = useState([]);
-  const [VisitorEntryTypeList, setVisitorEntryTypeList] = useState([]);
-  const [VisitorEntryHeader, setVisitorEntryHeader] = useState<any>({});
-  const [VisitorEntryDetail, setVisitorEntryDetail] = useState([]);
-  const [VisitorEntryBelongingDetail, setVisitorEntryBelongingDetail] =
-    useState([]);
-  const [VisitorEntryList, setVisitorEntryList] = useState([]);
-  const [VisitorEntryCodeList, setVisitorEntryCodeList] = useState([]);
-  const [VisitorEmployeeList, setVisitorEmployeeList] = useState([]);
-  const [PreBookingList, setPreBookingList] = useState([]);
-  const [VisitorWorkerList, setVisitorWorkerList] = useState([]);
-  // X X X Unused
+  const handleScanVehNo = (e) => {
+      if (isScanMode) {
+      
+      const allowedKeys = ["Enter", "Tab"];
+      const isControl = allowedKeys.includes(e.key);
+
+      if (!isControl && e.key.length === 1) {
+        e.preventDefault();
+        return
+      }
+    }
+
+    // const currentTime = new Date().getTime();
+
+    // if (currentTime - lastKeyTime.current < 50) {
+    //   setIsScanning(true);
+    //   clearTimeout(scanTimeout.current);
+    //   scanTimeout.current = setTimeout(() => {
+    //     setIsScanning(false);
+    //   }, 300);
+    // } else {
+    //   setIsScanning(false);
+    // }
+
+    // lastKeyTime.current = currentTime;
+  };
 
   useEffect(() => {
     pageLoadScript();
   });
+
   useEffect(() => {
-    let VisitorEntryId: number = 0;
     if (isCreate == false) {
       setList();
     } else {
@@ -1841,7 +1761,7 @@ const CVisitorEntryCreator = (props) => {
                           }
                           name={"EntryType"}
                           onChange={(e) => {
-                            changeEntryType(e)
+                            changeEntryType(e);
                           }}
                           disabled={switchDisable}
                         />
@@ -1866,40 +1786,6 @@ const CVisitorEntryCreator = (props) => {
                     : "Visitor Entry"}
                 </h2>
               </div>
-              {/* <div className="md:col-6 text-right">
-								<div className="action-btn">
-									<>
-										<Button
-											label=""
-											title="Save"
-											icon="pi pi-save"
-											className="text-center"
-											type="submit"
-											disabled={isView || IsdisableSave}
-											onClick={visitorEntryFormik.handleSubmit}
-										/>
-										<Button
-											label=""
-											severity="danger"
-											icon="pi pi-trash"
-											title="Clear"
-											className="text-center"
-											disabled={isView || isCreate == false ? true : false}
-											onClick={() => resetAllForm()}
-										/>
-									</>
-									<Button
-										label=""
-										icon="pi pi-search"
-										title="Add"
-										className="p-button p-button-success text-center"
-										onClick={() => {
-											route.push("/home/vVisitorEntry");
-											setCameraOff(true);
-										}}
-									/>
-								</div>
-							</div> */}
             </div>
           </div>
         </div>
@@ -1929,6 +1815,7 @@ const CVisitorEntryCreator = (props) => {
                 EmployeeList={EmployeeList}
                 onChangeVisitor={onChangeVisitor}
                 ProofList={ProofList}
+                vehicleNoRef={vehicleNoRef}
                 onClickIsAppointmentBooking={onClickIsAppointmentBooking}
                 ValidFromDisable={ValidFromDisable}
                 ValidToDisable={ValidToDisable}
@@ -1998,6 +1885,18 @@ const CVisitorEntryCreator = (props) => {
                 FilterVehNoCleared={FilterVehNoCleared}
                 FilterDriver={FilterDriver}
                 refTableDisable={refTableDisable}
+                handleScanVehNo={handleScanVehNo}
+                setVehData={setVehData}
+                onChangeVeh={onChangeVeh}
+                handleVehicleNoChange={handleVehicleNoChange}
+                enableScan={enableScan}
+                addBtnClass={addBtnClass}
+                scanInputRef={scanInputRef}
+                handleScanInput={handleScanInput}
+                isScanMode={isScanMode}
+                FilterVehNoWrapped={FilterVehNoWrapped}
+                vehMAxLen={vehMAxLen}
+                vehicleNoInputRef={vehicleNoInputRef}
               />
 
               {IsVehicleDetailsDisable && isCurrentCreate ? (
@@ -2022,6 +1921,7 @@ const CVisitorEntryCreator = (props) => {
                   imageUrlVM={imageUrlVM}
                   handleOnChangeVM={handleOnChangeVM}
                   visitorFormVM={visitorFormVM}
+                  OnChangeVehNo={OnChangeVehNo}
                   visitorRefVM={visitorRefVM}
                   visitorFormikVM={visitorFormikVM}
                   onChangeVisitorTypeVM={onChangeVisitorTypeVM}
@@ -2062,13 +1962,6 @@ const CVisitorEntryCreator = (props) => {
                   handleMobBack={handleMobBack}
                 />
               ) : null}
-
-              {/* <VisitorEntryDetailForm
-                visitorEntryDetailList={visitorEntryDetailList}
-                setvisitorEntryDetailList={setvisitorEntryDetailList}
-                IsWorkerDetailsShow={IsWorkerDetailsShow}
-                isCreate={isCreate}
-              /> */}
               <div className="col-12 flex flex-row gap-3 md:col-12">
                 <div hidden={!IsBelongingDetailsShow}>
                   <div
@@ -2112,6 +2005,7 @@ const CVisitorEntryCreator = (props) => {
             <AppProgressSpinner />
           )}
         </div>
+
         <div className="widget-ftr text-center">
           <Button
             label="Save"
@@ -2123,25 +2017,25 @@ const CVisitorEntryCreator = (props) => {
               VisType != 66 ? saveVisitor : visitorEntryFormik.handleSubmit
             }
           />
+
           <Button
             label="Clear"
-            severity="danger"
-            className="preview-close"
             title="Clear"
             icon="pi pi-times-circle"
-            disabled={
-              isView || isCreate == false || IsDisableClear ? true : false
-            }
-            onClick={() =>
-              selectedData?.selectedType == 66
-                ? clearForm()
-                : resetAllForm()
-            }
+            severity="danger"
+            className="preview-close"
+            disabled={isView || isCreate === false || IsDisableClear}
+            onClick={() => {
+              if (selectedData?.selectedType === 66) {
+                clearForm();
+              } else {
+                resetAllForm();
+              }
+              CreatePageOnLoadCVisitorEntry(0);
+            }}
           />
         </div>
       </div>
-
-      {/* <AppAlert toast={toast} /> */}
     </div>
   );
 };

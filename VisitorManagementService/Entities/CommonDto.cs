@@ -9,4 +9,6 @@ namespace VisitorManagementMySQL.Entities
         public List<dynamic> CheckOutVisitors { get; set; }
         public ErrorContext tranStatus { get; set; }
     }
+
+    
 }

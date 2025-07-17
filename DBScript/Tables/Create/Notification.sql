@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS `Notification` (
     `Modified_By` INT NULL DEFAULT NULL,
     `Modified_On` DATETIME(6) NULL DEFAULT NULL,
     `Status` INT NULL DEFAULT NULL,
+    `Notification_Type` BIGINT NULL,
   PRIMARY KEY (`Notification_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

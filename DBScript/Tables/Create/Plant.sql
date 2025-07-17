@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS `Plant` (
   `URL_Token` LONGTEXT NULL DEFAULT NULL,
   `Check_Token` LONGTEXT NULL DEFAULT NULL,
   `Is_Automatic_Approve` boolean null,
+  `Alert_After_Mins` DECIMAL(5,2) DEFAULT NULL,
   PRIMARY KEY (`Plant_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

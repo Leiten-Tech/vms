@@ -48,7 +48,8 @@ values
 (42, N'Work Permit', N'/home/vWorkPermit' ,40,1,2,1,0,1,1,NOW(),1,NOW()),
 (43, N'CheckPoints Mapping', N'/home/vCheckPointMapping' ,1,1,17,1,0,1,1,NOW(),1,NOW()),
 (44, N'Feedback Report', N'/home/vFeedbackReport' ,37,1,2,1,0,1,1,NOW(),1,NOW()),
-(45, N'Appointments Calendar',N'/home/vAppointmentCalendar' ,3,1,5,1,0,1,1,NOW(),1,NOW())
+(45, N'Appointments Calendar',N'/home/vAppointmentCalendar' ,3,1,5,1,0,1,1,NOW(),1,NOW()),
+(46, N'Visitor Dashboard',N'/home/vVisitorDashboard' ,2,1,2,1,0,1,1,NOW(),1,NOW())
 ;
 
 update `function` set menu_Icon='las la-chart-bar'	 ,rel_link='dashboard' where function_id=2;

@@ -939,7 +939,7 @@ SELECT
 			ad.Is_Viewed IsViewed,
 			ad.Secondary_User_Id SecondaryUserId
 			from
-			Approval_Detail;
+			Approval_Detail ad;
 		end if;
 	end if;
 END//

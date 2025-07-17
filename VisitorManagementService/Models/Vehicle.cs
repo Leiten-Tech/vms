@@ -33,6 +33,7 @@ namespace VisitorManagementMySQL.Models
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public string Remarks { get; set; }
+        public int? PurposeOfVisit { get; set; }
 
         public virtual ICollection<VehicleDocumentDetail> VehicleDocumentDetails { get; set; }
     }

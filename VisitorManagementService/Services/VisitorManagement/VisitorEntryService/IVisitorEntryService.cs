@@ -30,6 +30,23 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
         Task<VisitorEntryDTO> CheckinCkeckoutPageLoad(JObject obj);
         Task<VisitorEntryDTO> OnChangeEntryDetail(JObject obj);
         Task<VisitorEntryDTO> ShowPass(JObject obj);
+        //*****START ANDROID
+        Task<VisitorEntryDTO> AndroidVisitorAppointmentPageOnLoad(JObject obj);
+        Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj, IFormFile webfile);
+        //Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj);
+        Task<VisitorEntryDTO> AndroidHostAppointmentDetails(JObject obj);
+        Task<VisitorEntryDTO> AndroidVisitorAppointmentDetails(JObject obj);
+        Task<VisitorEntryDTO> AndroidVisitorPassDetails(JObject obj);
+        Task<VisitorEntryDTO> AndroidCheckIn(JObject obj);
+        Task<VisitorEntryDTO> AndroidCheckOut(JObject obj);
+        Task<VisitorEntryDTO> AndroidDashBoard(JObject obj);
+        Task<VisitorEntryDTO> AndroidNotificationDetails(JObject obj);
+        Task<VisitorEntryDTO> AndroidVisitorRejected(JObject obj);
+        Task<VisitorEntryDTO> AndroidReschedule(JObject obj);
+        Task<VisitorEntryDTO> AndroidUpdateNotificationStatus(JObject obj);
+        Task<VisitorEntryDTO> AndroidMeetingClose(JObject obj);
+        Task<VisitorEntryDTO> AndroidSecurityDashBoard(JObject obj);
+        ///END ANDROID ******
 
     }
 }

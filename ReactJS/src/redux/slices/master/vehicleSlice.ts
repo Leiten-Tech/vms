@@ -81,6 +81,7 @@ const initialState = {
     EmployeeList: [],
     CompanyList: [],
     PlantList: [],
+    PurposeList: [],
     OnChangeCompanyList: [],
     VehicleList: [],
     VehicleDocumentDetailList:[],
@@ -130,6 +131,7 @@ const vehicleSlice = createSlice({
                 state.HdrTable = action.payload.HdrTable;
                 state.VehicleDetailList = action.payload.VehicleDocumentDetailList;
                 state.DriverList = action.payload.DriverList;
+             state.PurposeList = action.payload.PurposeList;
 
                 // state.OnChangeCompanyList = action.payload.OnChangeCompanyList;
                 //state.GateDetailList = action.payload.GateDetailList;

@@ -133,5 +133,6 @@ VALUES
 (130, N'REF', N'EWB', N'Reference Type', N'EWay Bill No', 1, NOW(), NULL, NULL, 1),
 (131, N'REF', N'EIN', N'Reference Type', N'EInvoice No', 1, NOW(), NULL, NULL, 1),
 (132, N'POVV', N'POV17', N'Purpose Of Visit', N'Work ', 1, NOW(), NULL, NULL, 1),
-(133, N'POVV', N'POV18', N'Purpose Of Visit', N'Pickup ', 1, NOW(), NULL, NULL, 1);
-;
+(133, N'POVV', N'POV18', N'Purpose Of Visit', N'Pickup ', 1, NOW(), NULL, NULL, 1),
+(134, N'NFT', N'NCO', N'Notifiction Type',	N'Not Checked Out',1, NOW(), NULL, NULL, 1),
+(135, N'NFT',N'VED', N'Notifiction Type',N'Visit Ended',1, NOW(), NULL, NULL, 1);

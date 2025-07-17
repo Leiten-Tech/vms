@@ -22,4 +22,7 @@ export const Update = (data) => {
 export const ChangeStatus = (data) => {
     return api.post("/Plant/ChangeStatus", data);
   };
+  export const OnChangeDepartment = (data) => {
+    return api.post("/Plant/OnChangeDepartment", data);
+  };
     
