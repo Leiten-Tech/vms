@@ -2,22 +2,21 @@ pipeline {
     agent any
 
     environment {
+        REACT_DIR = 'ReactJS'
         BUILD_DIR = 'build'
-        DEPLOY_DIR = 'C:\\IIS\\React_TestProject' // Ensure the path is properly escaped with double backslashes
+        DEPLOY_DIR = 'C:\\IIS\\VMS_Development\\Web'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Checkout code from GitHub repository
-                git branch: 'main', url: 'https://github.com/imdepak/React_Projects.git'
+                git branch: 'dev', url: 'https://github.com/Leiten-Tech/vms.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
-                script {
-                    // Install npm dependencies
+                dir("${REACT_DIR}") {
                     bat 'npm install --force'
                 }
             }
@@ -25,8 +24,7 @@ pipeline {
 
         stage('Build') {
             steps {
-                script {
-                    // Build the project
+                dir("${REACT_DIR}") {
                     bat 'npm run build'
                 }
             }
@@ -34,18 +32,14 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                script {
-                    // Ensure correct quoting of paths for robocopy
-                    bat """robocopy "${WORKSPACE}\\${BUILD_DIR}" "${DEPLOY_DIR}" /E /MIR"""
-                }
+                bat """robocopy "${WORKSPACE}\\${REACT_DIR}\\${BUILD_DIR}" "${DEPLOY_DIR}" /E /MIR"""
             }
         }
     }
 
     post {
         always {
-            echo 'Cleaning up...'
-            // Optional: Add cleanup steps here if needed
+            echo 'Build pipeline completed.'
         }
     }
 }
