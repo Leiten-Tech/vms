@@ -86,6 +86,7 @@ namespace VisitorManagementMySQL.Models
         public virtual DbSet<Visitor> Visitors { get; set; }
         public virtual DbSet<VisitorDetail> VisitorDetails { get; set; }
         public virtual DbSet<VisitorDetailLog> VisitorDetailLogs { get; set; }
+        public virtual DbSet<VisitorDocDetail> VisitorDocDetails { get; set; }
         public virtual DbSet<VisitorEntry> VisitorEntries { get; set; }
         public virtual DbSet<VisitorEntryAtvDetail> VisitorEntryAtvDetails { get; set; }
         public virtual DbSet<VisitorEntryBelongingDetail> VisitorEntryBelongingDetails { get; set; }
@@ -300,6 +301,8 @@ namespace VisitorManagementMySQL.Models
 
                 entity.Property(e => e.DocumentId).HasColumnName("Document_Id");
 
+                entity.Property(e => e.IsDepartmentSpecific).HasColumnName("Is_Department_Specific");
+
                 entity.Property(e => e.IsNotifyApprove1).HasColumnName("Is_Notify_Approve");
 
                 entity.Property(e => e.ModifiedBy).HasColumnName("Modified_By");
@@ -320,6 +323,10 @@ namespace VisitorManagementMySQL.Models
                 entity.Property(e => e.ApprovalConfigurationDetailId).HasColumnName("Approval_Configuration_Detail_Id");
 
                 entity.Property(e => e.ApprovalConfigurationId).HasColumnName("Approval_Configuration_Id");
+
+                entity.Property(e => e.DepartmentId)
+                    .HasColumnName("Department_Id")
+                    .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.LevelId).HasColumnName("Level_Id");
 
@@ -3079,6 +3086,44 @@ namespace VisitorManagementMySQL.Models
                     .HasForeignKey(d => d.VisitorLogId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_Visitor_Detail_Log_Visitor_Log_Id");
+            });
+
+            modelBuilder.Entity<VisitorDocDetail>(entity =>
+            {
+                entity.HasKey(e => e.VisitorDocId)
+                    .HasName("PRIMARY");
+
+                entity.ToTable("visitor_doc_detail");
+
+                entity.HasIndex(e => e.VisitorId, "fk_Visitor_Doc_Detail_Visitor_Id");
+
+                entity.Property(e => e.VisitorDocId).HasColumnName("Visitor_Doc_Id");
+
+                entity.Property(e => e.IdCardName)
+                    .HasMaxLength(100)
+                    .HasColumnName("Id_Card_Name");
+
+                entity.Property(e => e.IdCardNo)
+                    .IsRequired()
+                    .HasMaxLength(100)
+                    .HasColumnName("Id_Card_No");
+
+                entity.Property(e => e.IdCardType)
+                    .IsRequired()
+                    .HasMaxLength(50)
+                    .HasColumnName("Id_Card_Type");
+
+                entity.Property(e => e.IdCardUrl)
+                    .HasMaxLength(100)
+                    .HasColumnName("Id_Card_Url");
+
+                entity.Property(e => e.VisitorId).HasColumnName("Visitor_Id");
+
+                entity.HasOne(d => d.Visitor)
+                    .WithMany(p => p.VisitorDocDetails)
+                    .HasForeignKey(d => d.VisitorId)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("fk_Visitor_Doc_Detail_Visitor_Id");
             });
 
             modelBuilder.Entity<VisitorEntry>(entity =>

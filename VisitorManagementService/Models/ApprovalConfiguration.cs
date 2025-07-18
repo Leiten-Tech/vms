@@ -23,6 +23,8 @@ namespace VisitorManagementMySQL.Models
         public int? ModifiedBy { get; set; }
         public DateTime? ModifiedOn { get; set; }
         public bool? IsNotifyApprove { get; set; }
+        public bool? IsNotifyApprove1 { get; set; }
+        public bool? IsDepartmentSpecific { get; set; }
 
         public virtual ICollection<ApprovalConfigurationDetail> ApprovalConfigurationDetails { get; set; }
     }

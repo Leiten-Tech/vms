@@ -10,6 +10,7 @@ namespace VisitorManagementMySQL.Models
         public Visitor()
         {
             VisitorDetails = new HashSet<VisitorDetail>();
+            VisitorDocDetails = new HashSet<VisitorDocDetail>();
         }
 
         public long VisitorId { get; set; }
@@ -42,5 +43,6 @@ namespace VisitorManagementMySQL.Models
         public long? AadharNo { get; set; }
 
         public virtual ICollection<VisitorDetail> VisitorDetails { get; set; }
+        public virtual ICollection<VisitorDocDetail> VisitorDocDetails { get; set; }
     }
 }
