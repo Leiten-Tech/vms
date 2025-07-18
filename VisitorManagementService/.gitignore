@@ -1,4 +1,4 @@
 .qodo
-appsettings.json
-bin
-obj
+appsettings.json/
+bin/
+obj/
