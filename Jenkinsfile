@@ -12,7 +12,7 @@ pipeline {
 
         // .NET settings
         DOTNET_DIR = 'VisitorManagementService'
-        DOTNET_SOLUTION = 'VisitorManagementService.sln'
+        DOTNET_SOLUTION = 'VisitorManagementMySQL.sln'
         DOTNET_CONFIG = 'Release'
         DOTNET_PUBLISH_DIR = "${WORKSPACE}\\${DOTNET_DIR}\\bin\\${DOTNET_CONFIG}\\net8.0\\publish"
         DOTNET_DEPLOY_DIR = 'C:\\IIS\\VMS_Development\\Service'
