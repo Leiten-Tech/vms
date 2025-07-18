@@ -106,7 +106,7 @@ pipeline {
 
                 emailext(
                     from: 'info@leitensmartvms.com',
-                    to: 'deepak.v@leitenindia.com',
+                    to: 'deepak.v@leitenindia.com;jayabalan.ar@leitenindia.com',
                     subject: "Build ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                     body: """
                         <p><b>Status:</b> <span style='color:${currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red'};'>${currentBuild.currentResult}</span></p>
