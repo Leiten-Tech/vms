@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "E:\\TFS\\VisitorManagement\\General\\Dev-branch\\VisitorManagementService\\VisitorManagementMySQL.csproj": {}
+    "E:\\GitHub\\VMS\\VisitorManagementService\\VisitorManagementMySQL.csproj": {}
   },
   "projects": {
-    "E:\\TFS\\VisitorManagement\\General\\Dev-branch\\VisitorManagementService\\VisitorManagementMySQL.csproj": {
+    "E:\\GitHub\\VMS\\VisitorManagementService\\VisitorManagementMySQL.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "E:\\TFS\\VisitorManagement\\General\\Dev-branch\\VisitorManagementService\\VisitorManagementMySQL.csproj",
+        "projectUniqueName": "E:\\GitHub\\VMS\\VisitorManagementService\\VisitorManagementMySQL.csproj",
         "projectName": "VisitorManagementMySQL",
-        "projectPath": "E:\\TFS\\VisitorManagement\\General\\Dev-branch\\VisitorManagementService\\VisitorManagementMySQL.csproj",
+        "projectPath": "E:\\GitHub\\VMS\\VisitorManagementService\\VisitorManagementMySQL.csproj",
         "packagesPath": "C:\\Users\\leite\\.nuget\\packages\\",
-        "outputPath": "E:\\TFS\\VisitorManagement\\General\\Dev-branch\\VisitorManagementService\\obj\\",
+        "outputPath": "E:\\GitHub\\VMS\\VisitorManagementService\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\leite\\AppData\\Roaming\\NuGet\\NuGet.Config",

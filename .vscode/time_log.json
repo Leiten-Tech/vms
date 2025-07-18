@@ -182,5 +182,51 @@
         "timeSpent": 24
       }
     ]
+  },
+  "VMS": {
+    "VisitorManagementService\\Templates\\CheckinCheckoutReport.cshtml__virtual.html": [
+      {
+        "date": "2025-07-18T05:52:39.015Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 76
+      }
+    ],
+    "VisitorManagementService\\.gitignore.git": [
+      {
+        "date": "2025-07-18T05:52:45.407Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-18T05:52:46.902Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-18T05:53:37.745Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 51
+      },
+      {
+        "date": "2025-07-18T05:53:42.545Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 5
+      }
+    ]
   }
 }

@@ -7,4 +7,4 @@ build_property.PublishSingleFile =
 build_property.IncludeAllContentForSelfExtract = 
 build_property._SupportedPlatformList = Android,iOS,Linux,macOS,Windows
 build_property.RootNamespace = VisitorManagementMySQL
-build_property.ProjectDir = E:\TFS\VisitorManagement\General\Dev-branch\VisitorManagementService\
+build_property.ProjectDir = E:\GitHub\VMS\VisitorManagementService\
