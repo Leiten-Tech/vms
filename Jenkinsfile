@@ -113,7 +113,7 @@ pipeline {
                         <p><b>Triggered By:</b> ${authors.join(', ')}</p>
                         <p><b>Changed Files:</b><br><ul><li>${changedFiles.join('</li><li>')}</li></ul></p>
                         <p><a href="${env.BUILD_URL}">View Build Console</a></p>
-                    """,
+                    """, 
                     mimeType: 'text/html'
                 )
             }
