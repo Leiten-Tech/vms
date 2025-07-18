@@ -4,17 +4,18 @@ pipeline {
     environment {
         GIT_REPO = 'https://github.com/Leiten-Tech/vms.git'
         BRANCH = 'dev'
-        
-        // React
+
+        // React settings
         REACT_DIR = 'ReactJS'
         REACT_BUILD_DIR = 'dist'
         REACT_DEPLOY_DIR = 'C:\\IIS\\VMS_Development\\Web'
 
-        // .NET
-        DOTNET_SOLUTION = 'VisitorManagementMySQL.sln'
+        // .NET settings
+        DOTNET_DIR = 'VisitorManagementService'
+        DOTNET_SOLUTION = 'VisitorManagementService.sln'
         DOTNET_CONFIG = 'Release'
+        DOTNET_PUBLISH_DIR = "${WORKSPACE}\\${DOTNET_DIR}\\bin\\${DOTNET_CONFIG}\\net8.0\\publish"
         DOTNET_DEPLOY_DIR = 'C:\\IIS\\VMS_Development\\Service'
-        DOTNET_PUBLISH_DIR = "${WORKSPACE}\\bin\\${DOTNET_CONFIG}\\net8.0\\publish"
     }
 
     stages {
@@ -24,7 +25,6 @@ pipeline {
             }
         }
 
-        // React Build & Deploy
         stage('Build React') {
             steps {
                 dir("${REACT_DIR}") {
@@ -43,16 +43,19 @@ pipeline {
             }
         }
 
-        // .NET Build & Deploy
         stage('Build .NET') {
             steps {
-                bat "dotnet build ${DOTNET_SOLUTION} --configuration ${DOTNET_CONFIG}"
+                dir("${DOTNET_DIR}") {
+                    bat "dotnet build ${DOTNET_SOLUTION} --configuration ${DOTNET_CONFIG}"
+                }
             }
         }
 
         stage('Publish .NET') {
             steps {
-                bat "dotnet publish ${DOTNET_SOLUTION} --configuration ${DOTNET_CONFIG} --output \"${DOTNET_PUBLISH_DIR}\""
+                dir("${DOTNET_DIR}") {
+                    bat "dotnet publish ${DOTNET_SOLUTION} --configuration ${DOTNET_CONFIG} --output \"${DOTNET_PUBLISH_DIR}\""
+                }
             }
         }
 
@@ -68,7 +71,7 @@ pipeline {
                     if (fileExists(DOTNET_PUBLISH_DIR)) {
                         bat "xcopy /E /I /H /Y \"${DOTNET_PUBLISH_DIR}\\*\" \"${DOTNET_DEPLOY_DIR}\\\""
                     } else {
-                        error "Publish output folder not found: ${DOTNET_PUBLISH_DIR}"
+                        error "Publish folder missing: ${DOTNET_PUBLISH_DIR}"
                     }
                 }
             }
@@ -83,42 +86,33 @@ pipeline {
 
     post {
         always {
-            echo 'Build pipeline completed.'
+            echo 'Build and Deployment pipeline completed.'
 
             script {
-                def changeAuthors = [] as Set
-                def changeFiles = []
+                def authors = [] as Set
+                def changedFiles = []
 
                 for (changeSet in currentBuild.changeSets) {
                     for (entry in changeSet.items) {
-                        changeAuthors << entry.author.fullName
+                        authors << entry.author.fullName
                         for (file in entry.affectedFiles) {
                             def path = file.path
-                            if (!path.toLowerCase().matches("(?i).*(/|\\\\)(bin|obj|.vs|.git|.idea|node_modules)(/|\\\\).*")) {
-                                changeFiles << path
+                            if (!path.toLowerCase().matches("(?i).*(/|\\\\)(bin|obj|.git|.vs|node_modules)(/|\\\\).*")) {
+                                changedFiles << path
                             }
                         }
                     }
                 }
 
-                def authors = changeAuthors ? changeAuthors.join(', ') : 'Unknown (manual/scheduled)'
-                def files = changeFiles ? "<ul><li>${changeFiles.join('</li><li>')}</li></ul>" : "<i>No relevant files changed</i>"
-
                 emailext(
                     from: 'info@leitensmartvms.com',
                     to: 'deepak.v@leitenindia.com',
-                    replyTo: 'info@leitensmartvms.com',
                     subject: "Build ${currentBuild.currentResult}: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
                     body: """
-                        <p><strong>Build Result:</strong> 
-                        <span style="color:${currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red'};">
-                            ${currentBuild.currentResult}
-                        </span></p>
-
-                        <p><strong>Triggered By:</strong> ${authors}</p>
-                        <p><strong>Files Changed:</strong><br>${files}</p>
-
-                        <p><a href="${env.BUILD_URL}">Click here</a> to view full console output.</p>
+                        <p><b>Status:</b> <span style='color:${currentBuild.currentResult == 'SUCCESS' ? 'green' : 'red'};'>${currentBuild.currentResult}</span></p>
+                        <p><b>Triggered By:</b> ${authors.join(', ')}</p>
+                        <p><b>Changed Files:</b><br><ul><li>${changedFiles.join('</li><li>')}</li></ul></p>
+                        <p><a href="${env.BUILD_URL}">View Build Console</a></p>
                     """,
                     mimeType: 'text/html'
                 )
