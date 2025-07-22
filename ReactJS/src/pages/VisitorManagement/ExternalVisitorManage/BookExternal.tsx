@@ -101,6 +101,7 @@ const BookExternal = (props) => {
   const [isWarningPop, setIsWarningPop] = useState(false);
   const [currVisData, setCurrVisData] = useState({});
   const [currMobNo, setCurrMobNo] = useState<string>();
+  const [VisitorDocDetailList, setVisitorDocDetailList] = useState([]);
 
   // const [TempVisitorNameList, setTempVisitorNameList] = useState([]);
   const [TempEmployeeList, setTempEmployeeList] = useState([]);
@@ -1132,6 +1133,25 @@ const BookExternal = (props) => {
     matobj.Uom = null;
     matobj.Qty = "";
     setVisitorEntryMaterialDetailList([matobj]);
+
+    let aadobj: any = {
+      VisitorDocId: 0,
+      VisitorId: 0,
+      IdCardType: "Aadhar Card",
+      IdCardNo: "",
+      IdCardUrl: "",
+      Status: 1,
+    };
+    let dlobj: any = {
+      VisitorDocId: 0,
+      VisitorId: 0,
+      IdCardType: "Driving Licence",
+      IdCardNo: "",
+      IdCardUrl: "",
+      Status: 1,
+    };
+    setVisitorDocDetailList([aadobj, dlobj]);
+
     setVisitorEntryMaterialDetailList([]);
     setVisitorEntryPovDetail([]);
     setPhoto(null);
@@ -1291,6 +1311,7 @@ const BookExternal = (props) => {
       setPartyNameList([]);
       setVisitorEntryMaterialDetailList([]);
       setVisitorEntryBelongingDetailList([]);
+      setVisitorDocDetailList([]);
       // setvisitorEntryDetailList([]);
       let mobobj: any = {};
       let lapobj: any = {};
@@ -1303,6 +1324,25 @@ const BookExternal = (props) => {
       lapobj.DeviceNo = "";
       lapobj.DeviceName = "Laptop";
       setVisitorEntryBelongingDetailList([mobobj, lapobj]);
+
+      let aadobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Aadhar Card",
+        IdCardNo: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+      let dlobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Driving Licence",
+        IdCardNo: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+      setVisitorDocDetailList([aadobj, dlobj]);
+
       let matobj: any = {};
       matobj.VisitorEntryMaterialDetailId = 0;
       matobj.VisitorEntryId = 0;
@@ -1504,8 +1544,28 @@ const BookExternal = (props) => {
             res.payload.VisitorEntryHeader != null
           ) {
             let vData = res.payload.VisitorEntryHeader;
+            let vDocData = res.payload.VisitorDocDetailsList;
+
+
             setCurrVisData(vData);
             loadVisData(vData);
+            if (vDocData && vDocData.length) {
+              vDocData.forEach((doc, index) => {
+                doc.FileName = doc.IdCardUrl
+                // doc.LocalPreviewUrl = doc.LocalPreviewUrl
+              });
+              loadVisDocData(vDocData);
+            } else {
+              loadVisDocData([
+                {
+                  VisitorDocId: 0,
+                  VisitorId: 0,
+                  IdCardType: "",
+                  IdCardNo: "",
+                  IdCardUrl: "",
+                },
+              ]);
+            }
             setPageTypeTogg(false);
           }
           // else {
@@ -1524,6 +1584,7 @@ const BookExternal = (props) => {
   };
 
   const loadVisData = (vData) => {
+    visitorFormik.setFieldValue("VisitorId", vData.VisitorId);
     visitorFormik.setFieldValue("FirstName", vData.PersonName);
     visitorFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorFormik.setFieldValue("MobileNo", vData.MobileNo);
@@ -1534,7 +1595,7 @@ const BookExternal = (props) => {
     visitorFormik.setFieldValue("IsTermsAgreed", vData.IsTermsAgreed);
     visitorFormik.setFieldValue("DigitalSignName", vData.DigitalSignName);
     visitorFormik.setFieldValue("DigitalSignUrl", vData.DigitalSignUrl);
-    if (vData.IsTermsAgreed &&isTermsNeeded) {
+    if (vData.IsTermsAgreed && isTermsNeeded) {
       console.log(vData.DigitalSignUrl);
       if (vData.DigitalSignUrl != null) {
         setSignedUrl(vData.DigitalSignUrl);
@@ -1556,6 +1617,7 @@ const BookExternal = (props) => {
       return;
     }
 
+    visitorEntryFormik.setFieldValue("VisitorId", vData.VisitorId);
     visitorEntryFormik.setFieldValue("FirstName", vData.PersonName);
     visitorEntryFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorEntryFormik.setFieldValue("MailId", vData.MailId);
@@ -1563,6 +1625,22 @@ const BookExternal = (props) => {
     visitorEntryFormik.setFieldValue("IdProofType", vData.IdCardType);
     visitorEntryFormik.setFieldValue("IdProofNo", vData.IdCardNo);
     visitorEntryFormik.setFieldValue("TagNo", vData.TagNo);
+  };
+
+  const loadVisDocData = (vDocData) => {
+    if (vDocData && vDocData.length) {
+      setVisitorDocDetailList(vDocData);
+    } else {
+      setVisitorDocDetailList([
+        {
+          VisitorDocId: 0,
+          VisitorId: 0,
+          IdCardType: "",
+          IdCardNo: "",
+          IdCardUrl: "",
+        },
+      ]);
+    }
   };
 
   const onChangeVisitorType = (name, other, value) => {
@@ -2702,13 +2780,43 @@ const BookExternal = (props) => {
         values.MobileNo = values.MobileNo;
         values.CompanyId = accessData && accessData?.CompanyId;
         values.PlantId = visitorEntryFormik.values.PlantId;
+
+        // let VisitorDocDetailList: any[] = [];
+        //   let object: any = {};
+        //   object.VisitorDocId = 0;
+        //   object.VisitorId = 0;
+        //   object.IdCardType = values.IdCardType;
+        //   object.IdCardNo = values.IdCardNo;
+        //   object.IdCardUrl= values.File;
+        //   VisitorDocDetailList.push(object);
+
+        if (values.IdCardNo && values.IdCardUrl) {
+          const docDetail = {
+            VisitorDocId: 0,
+            VisitorId: 0,
+            IdCardType: values.IdCardType,
+            IdCardNo: values.IdCardNo,
+            IdCardUrl: values.FileName,
+          };
+          VisitorDocDetailList.push(docDetail);
+        }
         let obj = {
           Visitor: values,
           VisitorDetail: VDList,
+          VisitorDocDetails: VisitorDocDetailList ?? [],
           IsMultiple: false,
         };
         let input: string = JSON.stringify(obj);
         formData.append("input", input);
+
+        VisitorDocDetailList.forEach((item) => {
+          if (item.RawFile) {
+            formData.append("webfiles", item.RawFile);
+          }
+        });
+        VisitorDocDetailList.forEach((item) => {
+          delete item.UploadedImage, delete item.LocalPreviewUrl;
+        });
 
         if (isCreate == false) {
           if (!VisitorHeaderVM.VisitorDocumentUrl) {
@@ -3274,6 +3382,7 @@ const BookExternal = (props) => {
         DigitalSignName: "",
         DigitalSignUrl: "",
       });
+      loadVisDocData([]);
       setIsdisableSave(true);
       setSignedUrl(null);
     }
@@ -3453,6 +3562,8 @@ const BookExternal = (props) => {
                     VisitorEntryBelongingDetailList={
                       VisitorEntryBelongingDetailList
                     }
+                    VisitorDocDetailList={VisitorDocDetailList}
+                    setVisitorDocDetailList={setVisitorDocDetailList}
                     pageType={pageType}
                     cameraOff={cameraOff}
                     setCameraOff={setCameraOff}
@@ -3478,6 +3589,7 @@ const BookExternal = (props) => {
                     setVisitorEntryBelongingDetailList={
                       setVisitorEntryBelongingDetailList
                     }
+                    setVisitorDocDetailList={setVisitorDocDetailList}
                     setList={setList}
                     visitorEntryForm
                     VisitorEntryValidationSchema
@@ -3546,6 +3658,7 @@ const BookExternal = (props) => {
                     VisitorEntryBelongingDetailList={
                       VisitorEntryBelongingDetailList
                     }
+                    VisitorDocDetailList={VisitorDocDetailList}
                     VisitorEntryMaterialDetailList={
                       VisitorEntryMaterialDetailList
                     }

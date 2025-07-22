@@ -86,6 +86,7 @@ const ApprovalForm = (props) => {
     handlePlantSelect,
     onNotiFyApproveChange,
     onDepartmentSpecificChange,
+    isDepartmentSpecificEnabled
   } = props;
 
   return (
@@ -160,7 +161,7 @@ const ApprovalForm = (props) => {
               <FormFields
                 type={"checkbox"}
                 name={"IsNotifyApprove"}
-                label={"Is Only Notification"}
+                label={"Is Only Notification ?"}
                 show={true}
                 disable={isView ? true : false}
                 required={false}
@@ -171,9 +172,9 @@ const ApprovalForm = (props) => {
               <FormFields
                 type={"checkbox"}
                 name={"IsDepartmentSpecific"}
-                label={"Is Department Specific"}
+                label={"Is Department Specific ?"}
                 show={true}
-                disable={isView ? true : false}
+                disable={isView || isDepartmentSpecificEnabled ? true : false}
                 required={false}
                 fldStyle="col-12 md:col-3"
                 formik={formik}
@@ -223,8 +224,10 @@ const ApprovalDetailForm = (props) => {
     setApprovalDetailList,
     rowselect,
     onClickSelfHostCheck,
-
+    deptType,
     isHostChecked,
+    isPrimaryEnabled,
+    isDeptEnabled,
     isDepartmentSpecificChecked,
     isHostEnabled,
     setIsHostEnabled,
@@ -272,41 +275,46 @@ const ApprovalDetailForm = (props) => {
     }
   };
 
-    const renderPrimaryUserDropdown = (rowData, rowIndex) => {
-      if (rowData.DepartmentId === 0) {
-        return <span>Host</span>;
-      }
+  const renderPrimaryUserDropdown = (rowData, rowIndex) => {
+    if (rowData.DepartmentId === 0) {
+      return <span>Host</span>;
+    }
 
-      const departmentUsers = tempUserList.filter(
-        (u) => u.DepartmentId === rowData.DepartmentId
-      );
+    const departmentUsers = rowData.availableUsers && 
+    rowData.availableUsers.length > 0 &&
+    rowData.availableUsers.filter(
+      (u) => u.DeptId === rowData.DepartmentId
+    );
 
-      const usedUserIdsInSameDept = approvalDetailList
-        .filter(
-          (item, i) =>
-            i !== rowIndex &&
-            item.DepartmentId === rowData.DepartmentId &&
-            item.PrimaryUserId !== 0
-        )
-        .map((item) => item.PrimaryUserId);
+    const usedUserIdsInSameDept = approvalDetailList
+      ?.filter(
+        (item, i) =>
+          i !== rowIndex &&
+          item.DepartmentId === rowData.DepartmentId &&
+          item.PrimaryUserId !== 0
+      )
+      .map((item) => item.PrimaryUserId);
 
-      const availableUsers = departmentUsers.filter(
-        (u) => !usedUserIdsInSameDept.includes(u.UserId)
-      );
+    const availableUsers = departmentUsers?.filter(
+      (u) => !usedUserIdsInSameDept.includes(u.UserId)
+    );
 
-      return (
-        <Dropdown
-          value={rowData.PrimaryUserId}
-          options={availableUsers}
-          optionLabel="UserName"
-          optionValue="UserId"
-          onChange={(e) => handleUserChange(e, rowIndex, "PrimaryUserId")}
-          placeholder="Select User"
-        />
-      );
-    };
-
-
+    return (
+      <Dropdown
+        value={rowData.PrimaryUserId}
+        options={availableUsers}
+        style={{
+          maxWidth: "15rem",
+          width: "15rem",
+          minWidth: "15rem",
+        }}
+        optionLabel="UserName"
+        optionValue="UserId"
+        onChange={(e) => handleUserChange(e, rowIndex, "PrimaryUserId")}
+        placeholder="Select User"
+      />
+    );
+  };
 
   return (
     <Formik
@@ -348,7 +356,7 @@ const ApprovalDetailForm = (props) => {
                 label={"Is Host User"}
                 show={true}
                 required={false}
-                disable={isView || rowselect ? true : false}
+                disable={isView || rowselect || !isHostEnabled ? true : false}
                 handleChange={onClickSelfHostCheck}
                 fldStyle={"col-12 md:col-3"}
                 formik={formik}
@@ -369,13 +377,13 @@ const ApprovalDetailForm = (props) => {
               /> */}
 
               <FormFields
-                type={"multi_select"}
+                type={deptType}
                 name={"DeptId"}
                 label={"Department Name"}
                 options={DepartmentList}
                 show={true}
                 required={true}
-                disable={isView || isHostChecked || isDepartmentSpecificChecked}
+                disable={isView || isHostChecked || !isDeptEnabled}
                 optionLabel={"DepartmentName"}
                 optionValue={"DepartmentId"}
                 handleSelect={handleDepartmentSelect}
@@ -387,21 +395,21 @@ const ApprovalDetailForm = (props) => {
                 name={"PrimaryUserId"}
                 label={"Primary User Name"}
                 options={tempUserList}
-                show={true}
+                show={isPrimaryEnabled ? true : false}
                 required={true}
-                disable={isView || isHostChecked || isDepartmentSpecificChecked}
+                disable={isView || isHostChecked}
                 optionLabel={"UserName"}
                 optionValue={"UserId"}
                 handleSelect={handlePrimaryUserSelect}
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
               />
-              {/* <FormFields
+              <FormFields
                 type={"select"}
                 name={"SecondaryUserId"}
                 label={"Secondary User Name"}
                 options={tempUserListSecondary}
-                show={true}
+                show={false}
                 required={false}
                 disable={isView || isHostChecked ? true : false}
                 optionLabel={"UserName"}
@@ -409,7 +417,7 @@ const ApprovalDetailForm = (props) => {
                 handleSelect={handleDSelect}
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
-              /> */}
+              /> 
             </div>
             <div className="text-center mb-3">
               <Button
@@ -448,8 +456,8 @@ const ApprovalDetailForm = (props) => {
               ]}
               header={TableHeader}
               emptyMessage="No Data Found."
-              rows={5}
-              rowsPerPageOptions={[5, 10, 25, 50]}
+              rows={10}
+              rowsPerPageOptions={[10, 25, 50]}
               tableStyle={{ minWidth: "50rem" }}
               // onRowDoubleClick={(e) => onRowSelect(e)}
             >
@@ -471,12 +479,18 @@ const ApprovalDetailForm = (props) => {
               ></Column>
               <Column field="LevelName" header="Level"></Column>
               {/* <Column field="RoleName" header="Role"></Column> */}
-              <Column field="DepartmentName" header="Department"></Column>
+              <Column field="DepartmentName" header="Department"
+              
+              ></Column>
               {/* <Column field="UserName" header="Primary User"></Column> */}
               <Column
                 field="PrimaryUserId"
                 header="Primary User"
-                style={{ minWidth: "5px" }}
+                style={{
+                   minWidth: "30rem", 
+                   width: "30rem",
+                   maxWidth: "30rem",
+                   }}
                 body={(rowData, options) =>
                   renderPrimaryUserDropdown(rowData, options.rowIndex)
                 }
@@ -504,7 +518,14 @@ const CApproval = () => {
   const [isHostChecked, setIsHostChecked] = useState(false);
   const [isDepartmentSpecificChecked, setIsDepartmentSpecificChecked] =
     useState(false);
+  const [isDepartmentSpecificEnabled, setIsDepartmentSpecificEnabled] =
+    useState(true);
   const [isHostEnabled, setIsHostEnabled] = useState(false);
+  const [isDeptEnabled, setIsDeptEnabled] = useState(true);
+  const [isPrimaryEnabled, setIsPrimaryEnabled] = useState(true);
+  const [deptType, setDeptType] = useState("select");
+  const [triggerEffect, setTriggerEffect] = useState(0);
+  
   const {
     isCreate,
     isView,
@@ -535,14 +556,84 @@ const CApproval = () => {
   }, [PrimaryUserList]);
 
   useEffect(() => {
-    if (isHostChecked || isDepartmentSpecificChecked) {
-      approvalDetailFormik.setFieldValue("DeptId", []);
-    } else if (DepartmentList.length > 0) {
-      const deptIds = DepartmentList.map((d) => d.DepartmentId);
-      approvalDetailFormik.setFieldValue("DeptId", deptIds);
-      handleDepartmentSelect("DeptId", {}, deptIds);
+  // Small defer to batch updates
+  const timeout = setTimeout(() => {
+    setTriggerEffect((prev) => prev + 1);
+  }, 0);
+  return () => clearTimeout(timeout);
+}, [isHostChecked, isDepartmentSpecificChecked, DepartmentList]);
+
+useEffect(() => {
+  if (isHostChecked) {
+    // approvalDetailFormik.setFieldValue("DeptId", []);
+  } else if (isDepartmentSpecificChecked && DepartmentList && DepartmentList.length > 0) {
+    const deptIds = DepartmentList.map((d) => d.DepartmentId);
+    approvalDetailFormik.setFieldValue("DeptId", deptIds);
+    allDeptSelect(deptIds);
+  }
+}, [triggerEffect]);
+
+  const allDeptSelect = async (deptids) => {
+    let allUsers: any[] = [];
+
+    const payload = {
+      DepartmentIds: deptids,
+      PlantId: approvalFormik.values.PlantId,
+    };
+
+    try {
+      const res = await dispatch(OnChangeDepartment(payload));
+
+      if (res.payload?.transtatus?.result === true) {
+        const primaryUsers = res.payload.PrimaryUserList || [];
+        const usersWithDepts = primaryUsers.map((u) => ({
+          ...u,
+          DepartmentIds: deptids, 
+        }));
+        allUsers.push(...usersWithDepts);
+        // deptids &&
+        //   deptids.length > 0 &&
+        //   deptids.forEach((element) => {
+        //     // Optional: assign department ID to each user to track
+        //     const usersWithDept = primaryUsers.map((u) => ({
+        //       ...u,
+        //       DepartmentId: element,
+        //     }));
+
+        //     allUsers.push(...usersWithDept);
+        //   });
+      } else {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail:
+            res.payload.transtatus.lstErrorItem[0]?.Message || "Fetch failed",
+        });
+      }
+      setTempUserList((prev) => {
+        const merged = [...prev];
+
+        allUsers.forEach((newUser) => {
+          const alreadyExists = prev.some(
+            (u) =>
+              u.UserId === newUser.UserId &&
+              u.DepartmentId === newUser.DepartmentId
+          );
+          if (!alreadyExists) {
+            merged.push(newUser);
+          }
+        });
+
+        return merged;
+      });
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error Message",
+        detail: `Error loading department ${deptids}: ${JSON.stringify(error)}`,
+      });
     }
-  }, [isHostChecked, isDepartmentSpecificChecked, DepartmentList]);
+  };
 
   useEffect(() => {
     if (isCreate == true) {
@@ -567,6 +658,7 @@ const CApproval = () => {
         obj.DepartmentId = x.DepartmentId;
         obj.PrimaryUserId = x.PrimaryUserId;
         obj.SecondaryUserId = x.SecondaryUserId;
+        obj.availableUsers = PrimaryUserList;
         obj.LevelName = LevelList.find(
           (f) => f.MetaSubId == x.LevelId
         ).MetaSubDescription;
@@ -609,7 +701,7 @@ const CApproval = () => {
     PlantId: HdrTable != null ? HdrTable.PlantId : +localStorage["PlantId"],
     DocumentId: HdrTable != null ? HdrTable.DocumentId : null,
     ApprovalActivityId: HdrTable != null ? HdrTable.ApprovalActivityId : 70,
-    IsNotifyApprove: HdrTable != null ? HdrTable.IsNotifyApprove : null,
+    IsNotifyApprove: HdrTable != null ? HdrTable.IsNotifyApprove : false,
     IsDepartmentSpecific:
       HdrTable != null ? HdrTable.IsDepartmentSpecific : null,
     Status: HdrTable != null ? HdrTable.Status : 1,
@@ -624,7 +716,10 @@ const CApproval = () => {
     IsHost: false,
     LevelId: 67 || 68 || 69,
     RoleId: null,
-    DepartmentId: DepartmentList.map((d) => d.DepartmentId),
+    DepartmentId:
+      DepartmentList &&
+      DepartmentList.length > 0 &&
+      DepartmentList.map((d) => d.DepartmentId),
     PrimaryUserId: null,
     SecondaryUserId: null,
     Status: null,
@@ -728,11 +823,24 @@ const CApproval = () => {
     setTempUserList([]);
     setTempUserListSecondary([]);
     setApprovalDetailList([]);
+    setIsDepartmentSpecificEnabled(true)
+    setDeptType("select")
   };
+
   const approvalDetailFormik: any = useFormik({
     initialValues: approvalDetailForm,
     validationSchema: ApprovalDetailValidationSchema,
     onSubmit: (values: any, { resetForm }) => {
+      
+      if (approvalFormik.values.DocumentId == null || !approvalFormik.values.DocumentId) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Warning",
+          detail: "Please select Document.",
+          life: 4000,
+        });
+        return;
+      }
       const isDeptSpecific = approvalFormik.values.IsDepartmentSpecific;
 
       if (!values.IsHost && !isDeptSpecific && !values.DeptId) {
@@ -766,10 +874,10 @@ const CApproval = () => {
           SecUserName: "",
         });
       } else if (isDeptSpecific) {
-        (values.DepartmentId || []).forEach((deptId) => {
+        (Array.isArray(values.DepartmentId) ? values.DepartmentId : values.DeptId).forEach((deptId) => {
           const dept = DepartmentList.find((d) => d.DepartmentId === deptId);
 
-          const hasUsers = tempUserList.some((u) => u.DepartmentId === deptId);
+          const hasUsers = tempUserList.some((u) => u.DeptId === deptId);
           if (!hasUsers) return;
 
           rowsToAdd.push({
@@ -780,13 +888,17 @@ const CApproval = () => {
             RoleId: values.RoleId,
             DepartmentId: deptId,
             DepartmentName: dept?.DepartmentName ?? "",
+            availableUsers: tempUserList,
             PrimaryUserId: 0,
             UserName: "",
             SecondaryUserId: 0,
             SecUserName: "",
           });
         });
-      } else {
+      } else if(
+        (values.DeptId && values.DeptId != null)||
+        (values.PrimaryUserId && values.PrimaryUserId != null) || 
+       values.SecondaryUserId && values.SecondaryUserId!= null) {
         const dept = DepartmentList.find(
           (d) => d.DepartmentId === values.DeptId
         );
@@ -809,6 +921,7 @@ const CApproval = () => {
           UserName: user?.UserName ?? "",
           SecondaryUserId: values.SecondaryUserId,
           SecUserName: secUser?.UserName ?? "",
+          availableUsers: tempUserList,
         });
       }
 
@@ -850,21 +963,24 @@ const CApproval = () => {
           if (isSameUserUsedInSameDept) {
             toast.current?.show({
               severity: "warn",
-               summary: "Warning Message",
+              summary: "Warning Message",
               detail: `User already assigned for this department at another level.`,
             });
             return;
           }
         }
-
-      }   
+      }
 
       setApprovalDetailList([...approvalDetailList, ...rowsToAdd]);
 
       if (values.IsHost) setIsHostEnabled(false);
       setIsHostChecked(false);
+      approvalDetailFormik.setFieldValue("IsHost", false);
       setIsDepartmentSpecificChecked(false);
-      OnClear();
+      if(approvalDetailList && approvalDetailList.length > 0) {
+        let lastLvlId = approvalDetailList[approvalDetailList.length - 1].LevelId
+        handleDSelect("LevelId", {}, lastLvlId != 69 ? lastLvlId + 1 : 119);
+      }
       setRowSelect(false);
 
       const nextLevel = values.LevelId != 69 ? values.LevelId + 1 : 119;
@@ -872,20 +988,45 @@ const CApproval = () => {
     },
   });
 
-
-
   const OnClear = () => {
-    approvalDetailFormik.resetForm();
-    // setApprovalDetailList([]);
-    // setTempUserList([]);
-    // setTempUserListSecondary([]);
-  };
+    setIsHostEnabled(true)
+    const currDeptIds = approvalDetailFormik.values.DeptId;
+    if(approvalFormik.values.IsDepartmentSpecific) {
 
+      approvalDetailFormik.resetForm({
+        values: {
+          ...approvalDetailFormik.initialValues,
+          DeptId: currDeptIds,
+        },
+      });
+    }
+    else {
+      approvalDetailFormik.resetForm()
+    }
+
+    if(approvalDetailList && approvalDetailList.length > 0) {
+      let lastLvlId = approvalDetailList[approvalDetailList.length - 1].LevelId
+      handleDSelect("LevelId", {}, lastLvlId != 69 ? lastLvlId + 1 : 119);
+    }
+    else {
+      handleDSelect("LevelId", {}, 67);
+    }
+    // // setApprovalDetailList([]);
+    setTempUserList([]);
+    setTempUserListSecondary([]);
+  };
 
   const handleSelect = (name, other, value) => {
     approvalFormik.setFieldValue(name, value);
     if (name == "DocumentId") {
       if (value == 34) {
+        setIsDepartmentSpecificEnabled(false)
+        if(isDepartmentSpecificChecked){
+          setDeptType("multi_select");
+        }
+        else {
+          setDeptType("select");
+        }
         if (
           approvalDetailList &&
           approvalDetailList.length > 0 &&
@@ -901,6 +1042,12 @@ const CApproval = () => {
         }
       } else {
         setIsHostEnabled(false);
+        // setIsDepartmentSpecificEnabled(true)
+        // setIsDepartmentSpecificChecked(false)
+        setDeptType("select");
+        onDepartmentSpecificChange({
+          checked: false
+        })
       }
     }
   };
@@ -975,7 +1122,7 @@ const CApproval = () => {
   const handleDepartmentSelect = async (
     name,
     other,
-    value, // this can now be a single DepartmentId or an array of DepartmentIds
+    value,
     type?: number,
     typevalue?: number
   ) => {
@@ -986,60 +1133,64 @@ const CApproval = () => {
 
     let allUsers: any[] = [];
 
-    for (const deptId of selectedDeptIds) {
-      const payload = {
-        DepartmentId: deptId,
-        PlantId: approvalFormik.values.PlantId,
-      };
+    // for (const deptId of selectedDeptIds) {
+    const payload = {
+      DepartmentIds: selectedDeptIds,
+      PlantId: approvalFormik.values.PlantId,
+    };
 
-      try {
-        const res = await dispatch(OnChangeDepartment(payload));
+    try {
+      const res = await dispatch(OnChangeDepartment(payload));
 
-        if (res.payload?.transtatus?.result === true) {
-          const primaryUsers = res.payload.PrimaryUserList || [];
-
-          // Optional: assign department ID to each user to track
-          const usersWithDept = primaryUsers.map((u) => ({
-            ...u,
-            DepartmentId: deptId,
-          }));
-
-          allUsers.push(...usersWithDept);
-
-          // If called with a special type (used somewhere in your logic)
-          if (type) {
-            handlePrimaryUserSelect(
-              "PrimaryUserId",
-              {},
-              typevalue,
-              res.payload.PrimaryUserList
-            );
-          }
-        } else {
-          toast.current?.show({
-            severity: "error",
-            summary: "Error",
-            detail:
-              res.payload.transtatus.lstErrorItem[0]?.Message || "Fetch failed",
+      if (res.payload?.transtatus?.result === true) {
+        const primaryUsers = res.payload.PrimaryUserList || [];
+        let usersWithDept = [];
+        selectedDeptIds &&
+          selectedDeptIds.length > 0 &&
+          selectedDeptIds.forEach((element) => {
+            // Optional: assign department ID to each user to track
+            usersWithDept = primaryUsers.map((u) => ({
+              ...u,
+              DepartmentId: element,
+            }));
           });
+
+        allUsers.push(...usersWithDept);
+
+        // If called with a special type (used somewhere in your logic)
+        if (type) {
+          handlePrimaryUserSelect(
+            "PrimaryUserId",
+            {},
+            typevalue,
+            res.payload.PrimaryUserList
+          );
         }
-      } catch (error) {
+      } else {
         toast.current?.show({
           severity: "error",
-          summary: "Error Message",
-          detail: `Error loading department ${deptId}: ${JSON.stringify(
-            error
-          )}`,
+          summary: "Error",
+          detail:
+            res.payload.transtatus.lstErrorItem[0]?.Message || "Fetch failed",
         });
       }
+    } catch (error) {
+      toast.current?.show({
+        severity: "error",
+        summary: "Error Message",
+        detail: `Error loading departments: ${JSON.stringify(error)}`,
+      });
     }
-
+    // }
+    setTempUserList([])
     setTempUserList((prev) => {
       const merged = [...prev];
 
       allUsers.forEach((newUser) => {
         const alreadyExists = prev.some(
-          (u) => u.UserId === newUser.UserId && u.DepartmentId === newUser.DepartmentId
+          (u) =>
+            u.UserId === newUser.UserId &&
+            u.DepartmentId === newUser.DepartmentId
         );
         if (!alreadyExists) {
           merged.push(newUser);
@@ -1048,8 +1199,6 @@ const CApproval = () => {
 
       return merged;
     });
-
-
 
     // setTempUserListSecondary([]);
   };
@@ -1060,7 +1209,33 @@ const CApproval = () => {
   const onDepartmentSpecificChange = (e) => {
     const isChecked = e.checked;
     setIsDepartmentSpecificChecked(isChecked);
+    setIsHostEnabled(true)
     approvalFormik.setFieldValue("IsDepartmentSpecific", isChecked);
+    if(isChecked){
+      setDeptType("multi_select")
+      setIsPrimaryEnabled(false)
+      // allDeptSelect(DepartmentList.map(item => item.DepartmentId));
+    }
+    else {
+      setIsPrimaryEnabled(true)
+      setDeptType("select")
+    }
+    if(isChecked && approvalDetailList && approvalDetailList.length > 0) {
+      setApprovalDetailList([])
+      OnClear()
+    }
+    if(isChecked) {
+      approvalDetailFormik.setFieldValue("DeptId", DepartmentList.map(item => item.DepartmentId));
+      setIsDeptEnabled(false)
+    }
+    else {
+      setIsDeptEnabled(true)
+      setApprovalDetailList([])
+    }
+    approvalDetailFormik.resetForm();
+    handleDSelect("LevelId", {}, 67);
+    setTempUserList([]);
+    setTempUserListSecondary([]);
   };
 
   const onClickSelfHostCheck = (value) => {
@@ -1174,6 +1349,7 @@ const CApproval = () => {
                   handlePlantSelect={handlePlantSelect}
                   onNotiFyApproveChange={onNotiFyApproveChange}
                   onDepartmentSpecificChange={onDepartmentSpecificChange}
+                  isDepartmentSpecificEnabled={isDepartmentSpecificEnabled}
                 />
                 <ApprovalDetailForm
                   isCreate={isCreate}
@@ -1209,6 +1385,9 @@ const CApproval = () => {
                   isDepartmentSpecificChecked={isDepartmentSpecificChecked}
                   isHostEnabled={isHostEnabled}
                   setIsHostEnabled={setIsHostEnabled}
+                  deptType={deptType}
+                  isDeptEnabled={isDeptEnabled}
+                  isPrimaryEnabled={isPrimaryEnabled}
                 />
               </div>
             </>

@@ -1163,7 +1163,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.WorkPermitService
                 jsonObject.type = "template";
 
                 dynamic template = new JObject();
-                template.name = "visitor_pass_redirect_template";
+                template.name = "versuni_pass";
                 template.language = "en";
 
                 JArray components = new JArray();

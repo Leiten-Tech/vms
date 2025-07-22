@@ -25,7 +25,8 @@ namespace VisitorManagementMySQL.Entities
         public List<Metadatum> RefList { get; set; }
         public List<Metadatum> ProofList { get; set; }
         public List<Metadatum> VisitorEntryTypeList { get; set; }
-        public dynamic VisitorEntryHeader { get; set; }
+        public dynamic VisitorEntryHeader { get; set; } 
+        public List<dynamic> VisitorDocDetailsList { get; set; }
         public List<dynamic> VisitorEntryDetails { get; set; }
         public List<dynamic> VISENT { get; set; }
         public List<VisitorEntryDetail> VisitorEntryDetail { get; set; }

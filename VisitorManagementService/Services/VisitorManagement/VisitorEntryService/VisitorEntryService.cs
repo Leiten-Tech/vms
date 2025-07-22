@@ -2230,7 +2230,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "bks_approval";
+                template.name = "versuni_approval";
                 template.language = "en";
 
                 JArray components = new JArray();

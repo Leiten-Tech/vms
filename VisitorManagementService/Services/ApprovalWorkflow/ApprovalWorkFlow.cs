@@ -62,7 +62,8 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             FileUploadService _uploadService,
             IConfiguration Configuration,
             IWebHostEnvironment webHostEnvironment,
-            ICommonService _commonService
+            ICommonService _commonService,
+              IFirebaseService _firebaseService
         )
         {
             dbContext = _dbContext;
@@ -71,6 +72,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             _webHostEnvironment = webHostEnvironment; // has ContentRootPath property
             this.mailService = mailService;
             this.whatsAppService = whatsAppService;
+              this.FirebaseService = _firebaseService;
             _mailSettings = mailSettings.Value;
             uploadService = _uploadService;
             _Configuration = Configuration;
@@ -1948,7 +1950,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     }
 
 
-                    if (workflowheader.IsNotifyApprove == false)
+                    if (workflowheader.IsNotifyApprove == false || workflowheader.IsNotifyApprove == null)
                     {
 
                     if (dto.tranStatus.lstErrorItem.Count == 0)
@@ -3501,7 +3503,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     jsonObject.type = "template";
 
                     dynamic template = new JObject();
-                    template.name = "bks_pass";
+                    template.name = "versuni_pass";
                     template.language = "en";
 
                     JArray components = new JArray();
@@ -3888,7 +3890,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                         // Execute the stored procedure with all parameters
                         var spCall = await dapperContext.ExecuteStoredProcedureAsync(
-                            "SP_ANDROID_APPROVAL_WORKFLOW_UPDATE",
+                            "SP_APPROVAL_WORKFLOW_UPDATE",
                             new
                             {
                                 CompanyId = request.companyid,
@@ -4455,7 +4457,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     Image = imageUrl
                 };
 
-                // await FirebaseService.SendPushNotificationAsync(notification);
+                await FirebaseService.SendPushNotificationAsync(notification);
             }
             
         }

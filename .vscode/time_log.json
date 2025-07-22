@@ -337,6 +337,56 @@
         },
         "timeSpent": 3
       }
+    ],
+    "ReactJS\\src\\pages\\Reports\\RptCheckInCheckOut.tsx.git": [
+      {
+        "date": "2025-07-22T06:36:22.867Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 14
+      },
+      {
+        "date": "2025-07-22T06:36:24.716Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-22T06:36:40.745Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 16
+      },
+      {
+        "date": "2025-07-22T06:37:39.259Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 59
+      },
+      {
+        "date": "2025-07-22T06:56:39.029Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1140
+      },
+      {
+        "date": "2025-07-22T06:57:32.815Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 54
+      }
     ]
   }
 }

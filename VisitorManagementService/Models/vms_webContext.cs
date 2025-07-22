@@ -112,7 +112,7 @@ namespace VisitorManagementMySQL.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseMySQL("Server=192.168.10.141;Port=3306;Database=vms_web;Uid=VMS;Pwd=Leiten@2024*;");
+                optionsBuilder.UseMySQL("Server=192.168.10.192;Port=3306;Database=vms_web;Uid=VMS;Pwd=Leiten@2024*;");
             }
         }
 
@@ -1438,10 +1438,7 @@ namespace VisitorManagementMySQL.Models
 
                 entity.ToView("mob_android_users_view");
 
-                entity.Property(e => e.CompanyId)
-                    .IsRequired()
-                    .HasMaxLength(20)
-                    .HasDefaultValueSql("''");
+                entity.Property(e => e.CompanyId).HasMaxLength(20);
 
                 entity.Property(e => e.CompanyName).HasMaxLength(255);
 
@@ -3098,10 +3095,6 @@ namespace VisitorManagementMySQL.Models
                 entity.HasIndex(e => e.VisitorId, "fk_Visitor_Doc_Detail_Visitor_Id");
 
                 entity.Property(e => e.VisitorDocId).HasColumnName("Visitor_Doc_Id");
-
-                entity.Property(e => e.IdCardName)
-                    .HasMaxLength(100)
-                    .HasColumnName("Id_Card_Name");
 
                 entity.Property(e => e.IdCardNo)
                     .IsRequired()

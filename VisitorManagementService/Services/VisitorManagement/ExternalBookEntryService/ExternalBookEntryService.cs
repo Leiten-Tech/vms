@@ -185,6 +185,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
 
                 string Scheme =
                     $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host.Value.ToString()}/upload/VisitorDigSigns/";
+                string SchemeDoc =
+                    $"{httpContextAccessor.HttpContext.Request.Scheme}://{httpContextAccessor.HttpContext.Request.Host.Value.ToString()}/upload/VisitorDocDetail/";
 
                 string Type = "OnEnterMobileNo";
                 using (dapperContext)
@@ -196,6 +198,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             Type,
                             MobileNo,
                             Scheme,
+                            SchemeDoc,
                             CompanyId,
                             PlantId,
                             RoleId,
@@ -203,6 +206,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                     );
 
                     dto.VisitorEntryHeader = (await spcall.ReadAsync<dynamic>()).SingleOrDefault();
+                    dto.VisitorDocDetailsList = (await spcall.ReadAsync<dynamic>()).ToList();
                 }
                 dto.tranStatus.result = true;
                 dto.tranStatus.lstErrorItem.Add(new ErrorItem { ErrorNo = "VMS000", Message = "" });
@@ -1047,9 +1051,13 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                         {
                                             var workflowdetail = dbContext.ApprovalConfigurationDetails.SingleOrDefault(A =>
                                                 A.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId &&
-                                                A.LevelId == 67 && 
-                                                A.DepartmentId == VisitedEmp.DeptId
+                                                A.LevelId == 67 &&
+                                                (
+                                                    (A.PrimaryUserId == 0 || A.SecondaryUserId == 0) ||
+                                                    A.DepartmentId == VisitedEmp.DeptId
+                                                )
                                             );
+
                                            var selectedUserId = (workflowdetail?.PrimaryUserId == 0)
                                                 ? VisitedEmp.UserId
                                                 : (workflowdetail?.PrimaryUserId ?? VisitedEmp.UserId);
@@ -1257,7 +1265,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "bks_approval";
+                template.name = "versuni_approval";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -1287,17 +1295,16 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 fiParam.type = "text";
 
                 hParam.image = new JObject();
-                string Scheme = "https://vmstestservice.leitenindia.com" + "/upload/VisitorEntry/";
-                string SchemeUpload = "https://vmstestservice.leitenindia.com";
-                // string Scheme =
-                //     httpContextAccessor.HttpContext.Request.Scheme
-                //     + "://"
-                //     + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
-                //     + "/upload/VisitorEntry/";
-                // string SchemeUpload =
-                //     httpContextAccessor.HttpContext.Request.Scheme
-                //     + "://"
-                //     + httpContextAccessor.HttpContext.Request.Host.Value.ToString();
+          
+                string Scheme =
+                    httpContextAccessor.HttpContext.Request.Scheme
+                    + "://"
+                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
+                    + "/upload/VisitorEntry/";
+                string SchemeUpload =
+                    httpContextAccessor.HttpContext.Request.Scheme
+                    + "://"
+                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString();
                 if (visitorEntry.IsInternalAppointment)
                 {
                     string BrandLogoBig = "/upload/Logo/avatar.png";

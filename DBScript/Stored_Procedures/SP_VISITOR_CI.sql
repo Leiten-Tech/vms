@@ -91,23 +91,36 @@ begin
     
     if type='CheckVisitorExists'
 	then
-		SELECT	
-			distinct ved.Mobile_No MobileNo
-		FROM
-			visitor_entry ve
-		INNER JOIN 
-			visitor_entry_detail ved ON ved.Visitor_Entry_Id = ve.Visitor_Entry_Id
-		LEFT JOIN 
-			visitor_entry_log vel ON vel.Visitor_Entry_Code = ve.Visitor_Entry_Code
-		WHERE 
-        (MobileNosl IS NULL OR MobileNosl = '' OR FIND_IN_SET(ve.Mobile_No, MobileNosl))
-		AND 
-			EXISTS (
-				SELECT 1 
-				FROM visitor_entry_log vel_inner 
-				WHERE vel_inner.Visitor_Entry_Code = ve.Visitor_Entry_Code 
-				AND vel_inner.Checked_Out IS NULL
-			);
+		-- SELECT	
+-- 			distinct ved.Mobile_No MobileNo
+-- 		FROM
+-- 			visitor_entry ve
+-- 		INNER JOIN 
+-- 			visitor_entry_detail ved ON ved.Visitor_Entry_Id = ve.Visitor_Entry_Id
+-- 		LEFT JOIN 
+-- 			visitor_entry_log vel ON vel.Visitor_Entry_Code = ve.Visitor_Entry_Code
+-- 		WHERE 
+--         (MobileNosl IS NULL OR MobileNosl = '' OR FIND_IN_SET(ve.Mobile_No, MobileNosl))
+-- 		AND 
+-- 			EXISTS (
+-- 				SELECT 1 
+-- 				FROM visitor_entry_log vel_inner 
+-- 				WHERE vel_inner.Visitor_Entry_Code = ve.Visitor_Entry_Code 
+-- 				AND vel_inner.Checked_Out IS NULL
+-- 			);
+
+SELECT DISTINCT ved.Mobile_No AS MobileNo
+FROM visitor_entry ve
+INNER JOIN visitor_entry_detail ved ON ved.Visitor_Entry_Id = ve.Visitor_Entry_Id
+LEFT JOIN visitor_entry_log vel ON vel.Visitor_Entry_Code = ve.Visitor_Entry_Code
+WHERE 
+  (MobileNosl IS NULL OR MobileNosl = '' OR ve.Mobile_No = MobileNosl COLLATE utf8mb4_general_ci)
+AND EXISTS (
+  SELECT 1 
+  FROM visitor_entry_log vel_inner
+  WHERE vel_inner.Visitor_Entry_Code = ve.Visitor_Entry_Code 
+  AND vel_inner.Checked_Out IS NULL
+);
 		
 	end if;
     

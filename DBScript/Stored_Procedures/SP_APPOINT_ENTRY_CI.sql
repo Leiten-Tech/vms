@@ -7,7 +7,8 @@ create procedure SP_APPOINT_ENTRY_CI
     IN PlantId BIGINT,
     IN CompanyId BIGINT,
     IN RoleId BIGINT,
-    IN Scheme VARCHAR(500)
+    IN Scheme VARCHAR(500),
+    IN SchemeDoc VARCHAR(500)
 )
 
 begin
@@ -88,6 +89,23 @@ if Type="OnEnterMobileNo" then
 		where v.Status = 75 and vd.Mobile_No = MobileNo and v.Company_Id = CompanyId and v.Plant_Id = PlantId
 		order by ifnull(v.Modified_On,v.Created_On) desc
         LIMIT 1;
+        
+        -- Visitor Doc Detail List
+        
+		select
+        vd.Visitor_Doc_Id AS VisitorDocId
+        ,vd.Visitor_Id AS VisitorId
+        ,vd.Id_Card_Type AS IdCardType
+        ,vd.Id_Card_No AS IdCardNo
+        ,vd.Id_Card_Url AS IdCardUrl
+        ,CONCAT(SchemeDoc, vd.Id_Card_Url) AS LocalPreviewUrl
+        ,vd.Status AS Status
+        from
+        visitor v
+        Inner Join visitor_doc_detail vd on vd.Visitor_Id = v.Visitor_Id
+        Inner Join visitor_entry ve on ve.Mobile_No = MobileNo
+        where ve.status = 75 and v.Mobile_No = MobileNo and ve.Company_Id = CompanyId and ve.Plant_Id = PlantId
+		order by ifnull(v.Modified_On,v.Created_On) desc;
     end if;
 	
 end//

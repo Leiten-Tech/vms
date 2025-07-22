@@ -12,6 +12,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
     {
         Task<object> ApprovalWorkFlowInsert(ApprovalRequest request);
         Task<object> ApprovalWorkFlowUpdate(JObject obj);
+        Task<object> AndroidApprovalWorkFlowUpdate(JObject obj);
         Task<ApprovalWorkFlowDTO> Popupfetch(JObject obj);
         Task<ApprovalWorkFlowDTO> checkOutTimer(JObject obj);
         Task<ApprovalWorkFlowDTO> poppupupdate(JObject obj);

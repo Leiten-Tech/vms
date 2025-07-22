@@ -113,7 +113,8 @@ BEGIN
             INNER JOIN
                 Approval_Configuration ac ON ac.Document_Id = a.Document_Id AND ac.Plant_Id = RequestPlantId
             INNER JOIN
-                Approval_Configuration_Details acd ON acd.Approval_Configuration_Id = ac.Approval_Configuration_Id AND acd.Level_Id = levelid AND acd.Department_Id = RequestDeptId
+                Approval_Configuration_Details acd ON acd.Approval_Configuration_Id = ac.Approval_Configuration_Id 
+				AND acd.Level_Id = levelid AND acd.Department_Id = RequestDeptId
             WHERE
                 a.Document_Id = documentid AND a.Document_No = documentno AND a.Approval_Activity_Id = documentactivityid
             

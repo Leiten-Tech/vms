@@ -1,8 +1,10 @@
-CREATE DEFINER=`VMS`@`%` PROCEDURE `SP_APPROVALCONFIGURATION_CI`(
+DROP PROCEDURE IF EXISTS SP_APPROVALCONFIGURATION_CI;
+DELIMITER //
+CREATE procedure `SP_APPROVALCONFIGURATION_CI`(
     IN Type VARCHAR(255),
     IN ApprovalConfigurationId BIGINT,
     IN RoleId BIGINT,
-    IN DeptId BIGINT,
+    IN DeptId VARCHAR(255),
     IN PrimaryUserId BIGINT,
     IN CompanyId BIGINT,
     IN PlantId BIGINT
@@ -29,7 +31,9 @@ BEGIN
     END IF;
     
     IF (Type = 'OnChangeDepartment') THEN
-        SELECT * FROM Users u WHERE u.Dept_Id = DeptId AND u.Status = 1 AND u.Plant_Id = PlantId;
+        SELECT * FROM Users u WHERE
+         (DeptId IS NULL OR DeptId = '' OR FIND_IN_SET(u.Dept_Id, DeptId))
+        AND u.Status = 1 AND u.Plant_Id = PlantId;
     END IF;
     
     IF (Type = 'SearchInitialize') THEN

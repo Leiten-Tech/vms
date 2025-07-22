@@ -123,8 +123,10 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
         {
             try
             {
-                long DeptId = obj["DepartmentId"].ToObject<long>();
                 long PlantId = obj["PlantId"].ToObject<long>();
+                // string DepartmentId = obj["DepartmentId"].ToString();
+                List<int?> DepartmentIds = obj["DepartmentIds"].ToObject<List<int?>>();
+                string DeptId = string.Join(",", DepartmentIds);
                 string Type = "OnChangeDepartment";
                 using (dapperContext)
                 {

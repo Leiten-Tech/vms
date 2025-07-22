@@ -89,6 +89,12 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                             new JTokenReader(_EmployeeJSON["VisitorDetail"]),
                             typeof(List<VisitorDetail>)
                         );
+
+                visitor.VisitorDocDetails = (List<VisitorDocDetail>)serializer.Deserialize(
+                    new JTokenReader(_EmployeeJSON["VisitorDocDetails"]),
+                                typeof(List<VisitorDocDetail>)
+                            );
+
                 bool IsMultiple = (bool)
                     serializer.Deserialize(
                         new JTokenReader(_EmployeeJSON["IsMultiple"]),
@@ -174,6 +180,14 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                         );
                         return dto;
                     }
+                };
+
+                if (visitor.VisitorId != null ||visitor.VisitorId != 0)
+                {
+                    var visitorDocs = dbContext.VisitorDocDetails
+                        .Where(x => x.VisitorId == visitor.VisitorId)
+                        .ToList();
+                    dbContext.VisitorDocDetails.RemoveRange(visitorDocs);
                 }
 
                 var blackListedVisitor = false;
@@ -235,7 +249,7 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                 {
                     var resturnstring = uploadService.UploadFile(webfile, "Visitor");
                     var resturnstring1 = uploadService.UploadFile(webfile1, "Visitordoc");
-                    var resturnstrings = uploadService.UploadFiles(webfiles, "VisitorDetail");
+                    var resturnstrings = uploadService.UploadFiles(webfiles, "VisitorDocDetail");
 
                     // Check if the visitor already exists based on MobileNo and Status
                     var visitorExists = dbContext

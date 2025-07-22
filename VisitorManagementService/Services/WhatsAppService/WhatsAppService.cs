@@ -140,7 +140,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "approval_template_vms";
+                template.name = "versuni_app_info_template";
                 template.language = "en";
 
                 JArray components = new JArray();

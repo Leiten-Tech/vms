@@ -238,6 +238,7 @@ const BookExternalMultiple = (props) => {
     useState<any>([]);
   const [VisitorEntryMaterialDetailList, setVisitorEntryMaterialDetailList] =
     useState([]);
+  const [VisitorDocDetailList, setVisitorDocDetailList] = useState([]);
   const [MaterialList, setMaterialList] = useState([]);
   const [documentUrl, setDocumentUrl] = useState("");
   const [InvoiceNumberDisable, setInvoiceNumberDisable] = useState(true);
@@ -471,6 +472,7 @@ const BookExternalMultiple = (props) => {
       let List1: any[] = visitorEntryDetailList;
       let List2: any[] = VisitorEntryBelongingDetailList;
       let List3: any[] = VisitorEntryMaterialDetailList;
+      let List4: any[] = VisitorDocDetailList;
       if (values.VisitorTypeId == 35) {
         List3 = [];
         // List1 = [];
@@ -1033,6 +1035,25 @@ const BookExternalMultiple = (props) => {
     matobj.Uom = null;
     matobj.Qty = "";
     setVisitorEntryMaterialDetailList([matobj]);
+
+    let aadobj: any = {
+      VisitorDocId: 0,
+      VisitorId: 0,
+      IdCardType: "Aadhar Card",
+      IdCard_No: "",
+      IdCardUrl: "",
+      Status: 1,
+    };
+    let dlobj: any = {
+      VisitorDocId: 0,
+      VisitorId: 0,
+      IdCardType: "Driving Licence",
+      IdCardNo: "",
+      IdCardUrl: "",
+      Status: 1,
+    };
+    setVisitorDocDetailList([aadobj, dlobj]);
+
     setVisitorEntryMaterialDetailList([]);
     setVisitorEntryPovDetail([]);
     setPhoto(null);
@@ -1193,6 +1214,8 @@ const BookExternalMultiple = (props) => {
       setPartyNameList([]);
       setVisitorEntryMaterialDetailList([]);
       setVisitorEntryBelongingDetailList([]);
+      setVisitorDocDetailList([]);
+
       // setvisitorEntryDetailList([]);
       let mobobj: any = {};
       let lapobj: any = {};
@@ -1205,6 +1228,25 @@ const BookExternalMultiple = (props) => {
       lapobj.DeviceNo = "";
       lapobj.DeviceName = "Laptop";
       setVisitorEntryBelongingDetailList([mobobj, lapobj]);
+
+      let aadobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Aadhar Card",
+        IdCard_No: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+      let dlobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Driving Licence",
+        IdCardNo: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+      setVisitorDocDetailList([aadobj, dlobj]);
+
       let matobj: any = {};
       matobj.VisitorEntryMaterialDetailId = 0;
       matobj.VisitorEntryId = 0;
@@ -2004,18 +2046,47 @@ const BookExternalMultiple = (props) => {
     return true;
   };
 
-  const saveVisitor = () => {
-    // const checkVisValidations = checkVisMasterValidation(visitorFormik.values);
-    // if (checkVisValidations == true) {
+  //  const saveVisitor = () => {
+  //   // Optional: run master-level validations
+  //   // const checkVisValidations = checkVisMasterValidation(visitorFormik.values);
+  //   // if (checkVisValidations == true) {
+  //   if (
+  //     !visitorEntryFormik.values.ValidTo &&
+  //     visitorEntryFormik.values.VisitorTypeId == 36
+  //   ) {
+  //     return toastValidation("Please Select To Date");
+  //   }
+  //   const finalPayload = {
+  //     ...visitorFormik.values,
+  //     VisitorDocDetails: VisitorDocDetailList,
+  //   };
+  //   multiVisSave(finalPayload);
+  //   // }
+  // };
 
-    // visitorFormik.handleSubmit();
+  const saveVisitor = async () => {
     if (
       !visitorEntryFormik.values.ValidTo &&
-      visitorEntryFormik.values.VisitorTypeId == 36
-    )
+      visitorEntryFormik.values.VisitorTypeId === 36
+    ) {
       return toastValidation("Please Select To Date");
-    multiVisSave(visitorFormik.values);
-    // }
+    }
+
+    const updatedDocDetails = VisitorDocDetailList.map((doc) => {
+      return {
+        ...doc,
+        IdCardUrl: doc.FileName || "",
+      };
+    });
+
+    const finalPayload = {
+      ...visitorFormik.values,
+      VisitorDocDetails: updatedDocDetails,
+    };
+
+    console.log("Final Payload:", finalPayload);
+
+    multiVisSave(finalPayload);
   };
 
   // VIS MASTER
@@ -3156,6 +3227,7 @@ const BookExternalMultiple = (props) => {
     visitorEntryFormik.setFieldValue("TagNo", vData.TagNo);
   };
 
+
   const handleMobKeyPress = (event) => {
     visitorFormik.setFieldValue("MobileNo", event?.target?.value);
     setCurrMobNo(event?.target?.value);
@@ -3181,6 +3253,7 @@ const BookExternalMultiple = (props) => {
         IdCardNo: "",
         TagNo: "",
       });
+      loadVisDocData([]);
     }
   };
 
@@ -3287,6 +3360,7 @@ const BookExternalMultiple = (props) => {
                     VisitorEntryBelongingDetailList={
                       VisitorEntryBelongingDetailList
                     }
+                    VisitorDocDetailList={VisitorDocDetailList}
                     pageType={pageType}
                     cameraOff={cameraOff}
                     setCameraOff={setCameraOff}
@@ -3298,6 +3372,7 @@ const BookExternalMultiple = (props) => {
                     TitleList={TitleList}
                     handleMobKeyPress={handleMobKeyPress}
                     handleMobBack={handleMobBack}
+                    setVisitorDocDetailList={setVisitorDocDetailList}
                   />
                 ) : (
                   <BookExternalMultipleVisitorEntry
@@ -3384,6 +3459,7 @@ const BookExternalMultiple = (props) => {
                     VisitorEntryBelongingDetailList={
                       VisitorEntryBelongingDetailList
                     }
+                    VisitorDocDetailList={VisitorDocDetailList}
                     VisitorEntryMaterialDetailList={
                       VisitorEntryMaterialDetailList
                     }

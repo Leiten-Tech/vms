@@ -13,7 +13,6 @@ namespace VisitorManagementMySQL.Models
         public string IdCardNo { get; set; }
         public string IdCardUrl { get; set; }
         public int Status { get; set; }
-        public string IdCardName { get; set; }
 
         public virtual Visitor Visitor { get; set; }
     }
