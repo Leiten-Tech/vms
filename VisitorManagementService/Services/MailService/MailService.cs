@@ -156,7 +156,7 @@ namespace VisitorManagementMySQL.Services.MailService
                     <p style='font-size: 16px; color: #333;'>Dear {UserName},</p>
                     <p style='font-size: 16px; color: #333;'>Your One-Time Password (OTP) is:</p>
                     <p style='font-size: 32px; font-weight: bold; color: #4CAF50; margin: 10px 0;'>{otp}</p>
-                    <p style='font-size: 14px; color: #666;'>This OTP is valid for <strong>5 minutes</strong>. It will expire at <strong>{expirytime:hh:mm tt}</strong>.</p>
+                    <p style='font-size: 14px; color: #666;'>This OTP is valid for <strong>1 minutes</strong>. It will expire at <strong>{expirytime:hh:mm tt}</strong>.</p>
                     <p style='font-size: 14px; color: #666;'>Please do not share this code with anyone.</p>
                     <p style='font-size: 14px; color: #666;'>Thank you</p>
                     <hr>
@@ -220,7 +220,7 @@ namespace VisitorManagementMySQL.Services.MailService
 
                     // 2. Generate OTP and expiry
                     string otp = new Random().Next(1000, 9999).ToString();
-                    DateTime expiry = DateTime.Now.AddMinutes(5);
+                    DateTime expiry = DateTime.Now.AddMinutes(1);
 
                     string UserName = DbContext.AndroidUsers
                         .Where(a => a.Emailid == email)

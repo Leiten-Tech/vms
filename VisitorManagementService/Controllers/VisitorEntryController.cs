@@ -280,6 +280,18 @@ namespace VisitorManagementMySQL.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+                 [HttpPost("AndroidHostPersonDetails")]
+        public async Task<IActionResult> AndroidHostPersonDetails(JObject input)
+        {
+            try
+            {
+                return Ok(await IVisitorEntryService.AndroidHostPersonDetails(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         // [HttpPost("AndroidVisitorAppointmentEntry")]
         // public async Task<IActionResult> AndroidVisitorAppointmentEntry(JObject input)
         // {

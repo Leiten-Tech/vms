@@ -18,6 +18,12 @@ CREATE TABLE IF NOT EXISTS `Plant` (
   `Check_Token` LONGTEXT NULL DEFAULT NULL,
   `Is_Automatic_Approve` boolean null,
   `Alert_After_Mins` DECIMAL(5,2) DEFAULT NULL,
+  `Is_Notification` tinyint default null,
+  `Report_Timer` DECIMAL(5,2) DEFAULT NULL,
+  `To_Mail` LONGTEXT NULL DEFAULT NULL,
+  `Cc_Mail` LONGTEXT NULL DEFAULT NULL,
+  `Is_Doc_Mandatory` bool null,
+  `Is_File_Mandatory` bool null,
   PRIMARY KEY (`Plant_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4

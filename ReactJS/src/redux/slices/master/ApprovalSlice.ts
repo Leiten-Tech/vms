@@ -67,6 +67,18 @@ export const OnChangeRole = createAsyncThunk(
     }
   }
 );
+export const OnChangeDepartment = createAsyncThunk(
+  "Approval/OnChangeDepartment",
+  async (data: any, thunkAPI) => {
+    try {
+      const Approvals = await ApprovalService.OnChangeDepartment(data);
+      return Approvals.data;
+    } catch (err) {
+      return thunkAPI.rejectWithValue(err.message);
+    }
+  }
+);
+
 export const sendPass = createAsyncThunk(
   "Approval/sendPass",
   async (data: any, thunkAPI) => {
@@ -94,6 +106,7 @@ const initialState = {
   ApprovalList: [],
   transtatus: [],
   RoleList: [],
+  DepartmentList: [],
   PrimaryUserList: [],
   SecondaryUserList: [],
   SendPassHeader: [],
@@ -140,6 +153,7 @@ const approvalSlice = createSlice({
         state.HdrTable = action.payload.HdrTable;
         state.DetailList = action.payload.DetailList;
         state.RoleList = action.payload.RoleList;
+        state.DepartmentList = action.payload.DepartmentList;
         state.PrimaryUserList = action.payload.PrimaryUserList;
       })
       .addCase(createInit.rejected, (state, action) => {
@@ -188,6 +202,18 @@ const approvalSlice = createSlice({
         state.PrimaryUserList = action.payload.PrimaryUserList;
       })
       .addCase(OnChangeRole.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(OnChangeDepartment.pending, (state) => {
+        state.loading = false;
+        state.error = null;
+      })
+      .addCase(OnChangeDepartment.fulfilled, (state, action: any) => {
+        state.loading = false;
+        state.PrimaryUserList = action.payload.PrimaryUserList;
+      })
+      .addCase(OnChangeDepartment.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

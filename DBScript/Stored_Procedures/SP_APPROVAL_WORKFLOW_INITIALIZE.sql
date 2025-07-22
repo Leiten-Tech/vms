@@ -25,19 +25,26 @@ BEGIN
     DECLARE LevelId INT;
 	DECLARE WORKFLOW INT;
     DECLARE WORKFLOWSTAGE INT;
+    DECLARE RequestDeptId BIGINT;
+
 
     SET RequestPlantId = plantid;
+    
+    SET RequestDeptId = (
+		SELECT Dept_Id FROM Users WHERE UserId = userid LIMIT 1
+	);
         
 	SET LevelId = (
         SELECT COALESCE(MIN(ad.Level_Id), 0) FROM Approval_Configuration_Details ad 
         INNER JOIN Approval_Configuration a ON a.Approval_Configuration_Id = ad.Approval_Configuration_Id AND a.Plant_Id = RequestPlantId
-        WHERE a.Document_Id = documentid AND a.Approval_Activity_Id = documentactivityid AND a.Status = 1
+        WHERE a.Document_Id = documentid AND a.Approval_Activity_Id = documentactivityid AND a.Status = 1 AND ad.Department_Id = RequestDeptId
 	);
  
     SET WORKFLOW = (
         SELECT COUNT(1) FROM Approval_Configuration_Details DTB   
         INNER JOIN Approval_Configuration DS ON DS.Approval_Configuration_Id = DTB.Approval_Configuration_Id  
         WHERE DS.Document_Id = documentid AND DTB.Level_Id = LevelId AND DS.Approval_Activity_Id = documentactivityid AND DS.Plant_Id = RequestPlantId
+        AND DTB.Department_Id = RequestDeptId
         AND DS.Status = 1
     );
 
@@ -49,7 +56,7 @@ BEGIN
         SELECT COUNT(1) FROM Approval_Configuration_Details DTB     
         INNER JOIN Approval_Configuration DS ON DS.Approval_Configuration_Id = DTB.Approval_Configuration_Id    
         WHERE DS.Document_Id = documentid AND DS.Approval_Activity_Id = documentactivityid AND DTB.Level_Id = levelid AND DS.Plant_Id = RequestPlantId  
-        AND DS.Status = 1 AND DTB.Primary_User_Id IS NOT NULL
+        AND DS.Status = 1 AND DTB.Department_Id = RequestDeptId AND DTB.Primary_User_Id IS NOT NULL
     );
 
     IF documentid != 0 and WORKFLOW != 0 THEN
@@ -106,9 +113,10 @@ BEGIN
             INNER JOIN
                 Approval_Configuration ac ON ac.Document_Id = a.Document_Id AND ac.Plant_Id = RequestPlantId
             INNER JOIN
-                Approval_Configuration_Details acd ON acd.Approval_Configuration_Id = ac.Approval_Configuration_Id AND acd.Level_Id = levelid
+                Approval_Configuration_Details acd ON acd.Approval_Configuration_Id = ac.Approval_Configuration_Id AND acd.Level_Id = levelid AND acd.Department_Id = RequestDeptId
             WHERE
                 a.Document_Id = documentid AND a.Document_No = documentno AND a.Approval_Activity_Id = documentactivityid
+            
 			GROUP BY
 			a.Approval_Id,
 			a.Document_Id,

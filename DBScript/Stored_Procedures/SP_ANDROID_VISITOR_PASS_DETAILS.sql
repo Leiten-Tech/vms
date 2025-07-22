@@ -25,7 +25,10 @@ BEGIN
         H.status,
         CASE WHEN CICO.Checked_In IS NOT NULL THEN TRUE ELSE FALSE END AS CheckIn,
         CASE WHEN CICO.Checked_Out IS NOT NULL THEN TRUE ELSE FALSE END AS CheckOut,
-          CONCAT(serviceurl, H.Visitor_Image_Url) AS Visitor_Image_Url
+          CONCAT(serviceurl, H.Visitor_Image_Url) AS Visitor_Image_Url,
+        DATE_FORMAT(CICO.Checked_In, '%d-%m-%Y %h:%i %p') AS CheckedInDate,
+        DATE_FORMAT(CICO.Checked_Out, '%d-%m-%Y %h:%i %p') AS CheckedOutDate
+          
     FROM visitor_entry H 
     INNER JOIN android_users A ON A.user_id = H.Visitor_Id AND H.is_android_visitor = 1
     INNER JOIN users HO ON HO.User_Id = H.Visited_Employee_Id

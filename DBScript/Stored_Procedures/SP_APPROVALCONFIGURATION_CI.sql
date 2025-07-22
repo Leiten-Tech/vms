@@ -1,10 +1,8 @@
-DELIMITER //
-DROP PROCEDURE IF EXISTS SP_APPROVALCONFIGURATION_CI;
-
-CREATE PROCEDURE SP_APPROVALCONFIGURATION_CI (
+CREATE DEFINER=`VMS`@`%` PROCEDURE `SP_APPROVALCONFIGURATION_CI`(
     IN Type VARCHAR(255),
     IN ApprovalConfigurationId BIGINT,
     IN RoleId BIGINT,
+    IN DeptId BIGINT,
     IN PrimaryUserId BIGINT,
     IN CompanyId BIGINT,
     IN PlantId BIGINT
@@ -17,6 +15,7 @@ BEGIN
         SELECT * FROM Metadata WHERE Meta_Type_Code = 'ATY';
         SELECT * FROM Metadata WHERE Meta_Type_Code = 'LVL';
         SELECT * FROM Role r WHERE r.Status = 1 and r.Company_Id = CompanyId and r.Plant_Id = PlantId;
+        SELECT * FROM Department d WHERE d.Status = 1 and d.Company_Id = CompanyId and d.Plant_Id = PlantId;
         
         IF (ApprovalConfigurationId > 0) THEN
             SELECT * FROM Users u where u.Company_Id = CompanyId and u.Plant_Id = PlantId;
@@ -27,6 +26,10 @@ BEGIN
     
     IF (Type = 'OnChangeRole') THEN
         SELECT * FROM Users u WHERE u.Default_Role_Id = RoleId AND u.Status = 1 AND u.Plant_Id = PlantId;
+    END IF;
+    
+    IF (Type = 'OnChangeDepartment') THEN
+        SELECT * FROM Users u WHERE u.Dept_Id = DeptId AND u.Status = 1 AND u.Plant_Id = PlantId;
     END IF;
     
     IF (Type = 'SearchInitialize') THEN
@@ -69,5 +72,4 @@ BEGIN
         ORDER BY
             COALESCE(a.Modified_On, a.Created_On) DESC;
     END IF;
-END//
-DELIMITER ;
+END

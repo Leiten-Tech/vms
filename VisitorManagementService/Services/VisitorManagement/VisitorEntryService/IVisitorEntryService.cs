@@ -32,6 +32,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
         Task<VisitorEntryDTO> ShowPass(JObject obj);
         //*****START ANDROID
         Task<VisitorEntryDTO> AndroidVisitorAppointmentPageOnLoad(JObject obj);
+        Task<VisitorEntryDTO> AndroidHostPersonDetails(JObject obj);
         Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj, IFormFile webfile);
         //Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj);
         Task<VisitorEntryDTO> AndroidHostAppointmentDetails(JObject obj);

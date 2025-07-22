@@ -41,6 +41,19 @@ namespace VisitorManagementMySQL.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+
+        [HttpPost("OnChangeDepartment")]
+        public async Task<IActionResult> OnChangeDepartment(JObject input)
+        {
+            try
+            {
+                return Ok(await approvalService.OnChangeDepartment(input));
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         
         [HttpPost("SearchInitialize")]
         public async Task<IActionResult> SearchInitialize(JObject input)

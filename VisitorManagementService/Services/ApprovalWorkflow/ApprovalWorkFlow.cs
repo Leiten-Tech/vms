@@ -21,11 +21,9 @@ using QRCoder;
 using SkiaSharp;
 using Svg.Skia;
 using VisitorManagementMySQL.ContextHelper;
-using VisitorManagementMySQL.DTOs;
 using VisitorManagementMySQL.Entities;
 using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.Common;
-using VisitorManagementMySQL.Services.FirebaseService;
 using VisitorManagementMySQL.Services.MailService;
 using VisitorManagementMySQL.Services.Master.FileUploadService;
 using VisitorManagementMySQL.Services.WhatsAppService;
@@ -50,8 +48,6 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
         private readonly ApprovalWorkFlowDTO dto;
         private readonly ICommonService commonService;
 
-        private readonly IFirebaseService FirebaseService;
-
         public ApprovalWorkFlow(
             DbContextHelper _dbContext,
             IDapperContext _dapperContext,
@@ -62,8 +58,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             FileUploadService _uploadService,
             IConfiguration Configuration,
             IWebHostEnvironment webHostEnvironment,
-            ICommonService _commonService,
-              IFirebaseService _firebaseService
+            ICommonService _commonService
         )
         {
             dbContext = _dbContext;
@@ -89,9 +84,9 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                 using (dapperContext)
                 {
 
-
+                   
                     var spCall = await dapperContext.ExecuteStoredProcedureAsync(
-                        spName: "SP_APPROVAL_WORKFLOW_INITIALIZE",
+                        spName: "SP_APPROVAL_WORKFLOW_INITIALIZE", 
                         new
                         {
                             companyId = request.companyid,
@@ -113,7 +108,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             requesttodate = request.requesttodate,
                         }
 
-
+                      
                     );
                     dto.VisitorEntryHeader =
                         (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
@@ -129,114 +124,114 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             }
             return dto;
 
-            //     // using (var command = dbContext.Database.GetDbConnection().CreateCommand())
-            //     // {
-            //     //     try
-            //     //     {
-            //     //         command.CommandText = "SP_APPROVAL_WORKFLOW_INITIALIZE";
-            //     //         command.CommandType = CommandType.StoredProcedure;
-            //     //         command.Parameters.AddRange(request.GetCommandParams(command).ToArray());
-            //     //         dbContext.Database.OpenConnection();
-            //     //         if (dbContext.Database.CurrentTransaction != null)
-            //     //         {
-            //     //             command.Transaction =
-            //     //                 dbContext.Database.CurrentTransaction.GetDbTransaction();
-            //     //             var dataReader = command.ExecuteReader();
-            //     //             dataReader.Close();
-            //     //         }
-            //     //         else
-            //     //         {
-            //     //             command.Transaction = GetTransaction().GetDbTransaction();
-            //     //             var dataReader = command.ExecuteReader();
-            //     //             dataReader.Close();
-            //     //             command.Transaction.Commit();
-            //     //         }
-            //     //         dbContext.Database.CloseConnection();
-            //     //         dto.tranStatus.result = true;
-            //     //     }
-            //     //     catch (Exception ex)
-            //     //     {
-            //     //         dbContext.Database.CloseConnection();
-            //     //         dto.tranStatus.result = false;
-            //     //         dto.tranStatus.lstErrorItem.Add(
-            //     //             new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
-            //     //         );
-            //     //     }
-            //     // }
-            //     // return dto;
-        }
+        //     // using (var command = dbContext.Database.GetDbConnection().CreateCommand())
+        //     // {
+        //     //     try
+        //     //     {
+        //     //         command.CommandText = "SP_APPROVAL_WORKFLOW_INITIALIZE";
+        //     //         command.CommandType = CommandType.StoredProcedure;
+        //     //         command.Parameters.AddRange(request.GetCommandParams(command).ToArray());
+        //     //         dbContext.Database.OpenConnection();
+        //     //         if (dbContext.Database.CurrentTransaction != null)
+        //     //         {
+        //     //             command.Transaction =
+        //     //                 dbContext.Database.CurrentTransaction.GetDbTransaction();
+        //     //             var dataReader = command.ExecuteReader();
+        //     //             dataReader.Close();
+        //     //         }
+        //     //         else
+        //     //         {
+        //     //             command.Transaction = GetTransaction().GetDbTransaction();
+        //     //             var dataReader = command.ExecuteReader();
+        //     //             dataReader.Close();
+        //     //             command.Transaction.Commit();
+        //     //         }
+        //     //         dbContext.Database.CloseConnection();
+        //     //         dto.tranStatus.result = true;
+        //     //     }
+        //     //     catch (Exception ex)
+        //     //     {
+        //     //         dbContext.Database.CloseConnection();
+        //     //         dto.tranStatus.result = false;
+        //     //         dto.tranStatus.lstErrorItem.Add(
+        //     //             new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+        //     //         );
+        //     //     }
+        //     // }
+        //     // return dto;
+         }
 
-        //         public async Task<object> ApprovalWorkFlowInsert(ApprovalRequest request)
-        // {
-        //     try
-        //     {
-        //         using var connection = new MySqlConnection(dapperContext.ConnectionString);
-        //         await connection.OpenAsync();
+//         public async Task<object> ApprovalWorkFlowInsert(ApprovalRequest request)
+// {
+//     try
+//     {
+//         using var connection = new MySqlConnection(dapperContext.ConnectionString);
+//         await connection.OpenAsync();
 
-        //         using var transaction = await connection.BeginTransactionAsync();
+//         using var transaction = await connection.BeginTransactionAsync();
 
-        //         try
-        //         {
-        //             var spCall = await connection.QueryMultipleAsync(
-        //                 sql: "SP_APPROVAL_WORKFLOW_INITIALIZE",
-        //                 param: new
-        //                 {
-        //                     companyId = request.companyid,
-        //                     plantId = request.plantid,
-        //                     requesterid = request.requesterid,
-        //                     documentno = request.documentno,
-        //                     documentid = request.documentid,
-        //                     documentactivityid = request.documentactivityid,
-        //                     documentdetailid = request.documentdetailid,
-        //                     status = request.status,
-        //                     approverid = request.approverid,
-        //                     levelid = request.levelid,
-        //                     alternateuser = request.alternateuser,
-        //                     remarks1 = request.remarks1,
-        //                     remarks2 = request.remarks2,
-        //                     parentid = request.parentid,
-        //                     userid = request.userid,
-        //                     requestfromdate = request.requestfromdate,
-        //                     requesttodate = request.requesttodate,
-        //                 },
-        //                 commandType: CommandType.StoredProcedure,
-        //                 transaction: transaction
-        //             );
+//         try
+//         {
+//             var spCall = await connection.QueryMultipleAsync(
+//                 sql: "SP_APPROVAL_WORKFLOW_INITIALIZE",
+//                 param: new
+//                 {
+//                     companyId = request.companyid,
+//                     plantId = request.plantid,
+//                     requesterid = request.requesterid,
+//                     documentno = request.documentno,
+//                     documentid = request.documentid,
+//                     documentactivityid = request.documentactivityid,
+//                     documentdetailid = request.documentdetailid,
+//                     status = request.status,
+//                     approverid = request.approverid,
+//                     levelid = request.levelid,
+//                     alternateuser = request.alternateuser,
+//                     remarks1 = request.remarks1,
+//                     remarks2 = request.remarks2,
+//                     parentid = request.parentid,
+//                     userid = request.userid,
+//                     requestfromdate = request.requestfromdate,
+//                     requesttodate = request.requesttodate,
+//                 },
+//                 commandType: CommandType.StoredProcedure,
+//                 transaction: transaction
+//             );
 
-        //             dto.VisitorEntryHeader =
-        //                 (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
+//             dto.VisitorEntryHeader =
+//                 (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
 
-        //             await transaction.CommitAsync();
-        //             dto.tranStatus.result = true;
-        //         }
-        //         catch (Exception innerEx)
-        //         {
-        //             await transaction.RollbackAsync();
-        //             dto.tranStatus.result = false;
-        //             dto.tranStatus.lstErrorItem.Add(new ErrorItem
-        //             {
-        //                 ErrorNo = "VMS001",
-        //                 Message = "Transaction failed: " + innerEx.Message
-        //             });
-        //         }
-        //     }
-        //     catch (Exception ex)
-        //     {
-        //         dto.tranStatus.result = false;
-        //         dto.tranStatus.lstErrorItem.Add(new ErrorItem
-        //         {
-        //             ErrorNo = "VMS000",
-        //             Message = "Connection failed: " + ex.Message
-        //         });
-        //     }
+//             await transaction.CommitAsync();
+//             dto.tranStatus.result = true;
+//         }
+//         catch (Exception innerEx)
+//         {
+//             await transaction.RollbackAsync();
+//             dto.tranStatus.result = false;
+//             dto.tranStatus.lstErrorItem.Add(new ErrorItem
+//             {
+//                 ErrorNo = "VMS001",
+//                 Message = "Transaction failed: " + innerEx.Message
+//             });
+//         }
+//     }
+//     catch (Exception ex)
+//     {
+//         dto.tranStatus.result = false;
+//         dto.tranStatus.lstErrorItem.Add(new ErrorItem
+//         {
+//             ErrorNo = "VMS000",
+//             Message = "Connection failed: " + ex.Message
+//         });
+//     }
 
-        //     return dto;
-        // }
+//     return dto;
+// }
 
 
         // Send To Approval Update:
         public async Task<object> ApprovalWorkFlowUpdate(JObject obj)
-        {
+         {
             ApprovalRequest request = obj["ApprovalRequest"].ToObject<ApprovalRequest>();
             // using (var command = dbContext.Database.GetDbConnection().CreateCommand())
             // {
@@ -247,6 +242,9 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                 company = dbContext
                     .Companies.Where(x => x.CompanyId == request.companyid)
                     .SingleOrDefault();
+
+                
+
                 using (dapperContext)
                 {
                     var workflowheader = dbContext.ApprovalConfigurations
@@ -275,7 +273,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             });
                         }
 
-                        if (workflowheader.IsNotifyApprove == true)
+                        if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == false)
                         {
                             var nextLevelUsers = dbContext.ApprovalConfigurationDetails
                                 .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
@@ -300,22 +298,22 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
 
                                         VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
-                                        Approval approvalHeader = new Approval();
-                                        ApprovalDetail approvalDetail = new ApprovalDetail();
+                                         Approval approvalHeader = new Approval();
+                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
                                         approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno && x.Status == 74);
 
                                         User VisitEmp = new User();
-                                        Role VisitedEmpRole = new Role();
+                                        Department VisitedEmpDept = new Department();
 
-                                        if (VisEntry.VisitorTypeId != 66)
-                                        {
-                                            VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
-                                            VisitedEmpRole = dbContext.Roles.FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
-                                        }
+                                            if (VisEntry.VisitorTypeId != 66)
+                                            {
+                                                VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                                VisitedEmpDept = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == VisitEmp.DeptId);
+                                            }
 
                                         DateTime? visitDate = request.status != 145 ? VisEntry.ValidFrom : VisEntry.RescheduledDateTime;
-
+                                       
                                         if (request.status == 75 && VisEntry.Status == 74)
                                         {
                                             var VisEntryDetail = dbContext.VisitorEntryDetails
@@ -360,7 +358,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
                                                 $"🏢 Visitor Company: {visitorCompany}\n" +
                                                 $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
-                                                $"👤 To Meet: {VisitEmp?.UserName} ({VisitedEmpRole?.RoleName})\n\n" +
+                                                $"👤 To Meet: {VisitEmp?.UserName} ({VisitedEmpDept?.DepartmentName})\n\n" +
                                                 $"Please stay alert for further notifications.";
 
                                             var whatsJson = new JObject
@@ -410,8 +408,8 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             await dbContext.SaveChangesAsync();
 
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpRole?.RoleName);
-                                            var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
 
                                             dto.tranStatus.result = true;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
@@ -430,8 +428,8 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             approvalHeader.Status = (int)request.status;
                                             dbContext.Approvals.Update(approvalHeader);
 
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company, VisitEmp?.UserName, VisitedEmpRole?.RoleName);
-                                            var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company , VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
 
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
@@ -440,10 +438,9 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 Message = "Rejected Successfully."
                                             });
                                         }
-                                        else if (request.status == 145)
-                                        {
+                                        else if (request.status == 145){
 
-                                            approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno);
+                                            approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno );
 
                                             VisEntry.Status = (int)request.status;
                                             dbContext.VisitorEntries.Update(VisEntry);
@@ -452,8 +449,210 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             approvalHeader.Status = VisEntry.Status;
                                             dbContext.Approvals.Update(approvalHeader);
 
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpRole?.RoleName);
-                                            var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company , VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+
+                                            dto.tranStatus.result = false;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Rescheduled Successfully."
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == true)
+                        {
+
+                            User user1 = new User();
+                            user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                            Department department = new Department();
+                            department = dbContext.Departments
+                                .Where(x => x.DepartmentId == user1.DeptId)
+                                .SingleOrDefault();
+
+                            var nextLevelUsers = dbContext.ApprovalConfigurationDetails
+                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId 
+                                    && x.DepartmentId == user1.DeptId)
+                                .OrderBy(x => x.LevelId)
+                                .Skip(1)
+                                .ToList();
+
+                            foreach (var user in nextLevelUsers)
+                            {
+                                var notifyUserId = user.PrimaryUserId;
+                                if (notifyUserId > 0)
+                                {
+                                    var notifyUser = dbContext.Users.FirstOrDefault(x => x.UserId == notifyUserId);
+                                    if (notifyUser != null && !string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                    {
+                                        string BrandLogo = Path.Combine(Directory.GetCurrentDirectory(), "upload", "Logo", "app-logo.png");
+                                        string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+                                        string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "VisitorEntryNotifyTemplate.html");
+                                        string MailText = await File.ReadAllTextAsync(FilePath);
+                                        string PassFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "VisitorPass.html");
+                                        string PassMailText = await File.ReadAllTextAsync(PassFilePath);
+
+
+                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                         Approval approvalHeader = new Approval();
+                                         ApprovalDetail approvalDetail = new ApprovalDetail();
+                                        approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
+                                        approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno && x.Status == 74);
+
+                                        // User VisitEmp = new User();
+                                        // Department VisitedEmpDept = new Department();
+
+                                            if (VisEntry.VisitorTypeId != 66)
+                                            {
+                                                user1 = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                                department = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == user1.DeptId);
+                                            }
+
+                                        DateTime? visitDate = request.status != 145 ? VisEntry.ValidFrom : VisEntry.RescheduledDateTime;
+                                       
+                                        if (request.status == 75 && VisEntry.Status == 74)
+                                        {
+                                            var VisEntryDetail = dbContext.VisitorEntryDetails
+                                                .Where(x => x.VisitorEntryId == VisEntry.VisitorEntryId)
+                                                .ToList();
+
+                                            VisEntry.VisitorEntryDetails = VisEntryDetail;
+                                            var purpose = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
+                                            var visitorCompany = company.CompanyName;
+
+
+                                            // Replace email placeholders
+                                            MailText = MailText
+                                                .Replace("[WhomToVisit]", user1?.UserName ?? "-")
+                                                .Replace("[Department]", department?.DepartmentName ?? "-")
+                                                .Replace("[Visitor]", VisEntry.PersonName)
+                                                .Replace("[VisitDate]", visitDate?.ToString("dd-MM-yyyy"))
+                                                .Replace("[VisitTime]", visitDate?.ToString("hh:mm tt"))
+                                                .Replace("[VisitorCompany]", visitorCompany)
+                                                .Replace("[PurposeOfVisit]", purpose?.MetaSubDescription ?? "-")
+                                                .Replace("[approveLevels]", "")
+                                                .Replace("{{serviceURL}}", _mailSettings.Service)
+                                                .Replace("{{siteURL}}", _mailSettings.Website)
+                                                .Replace("{{Logo}}", BrandLogo)
+                                                .Replace("{{BrandLogoBig}}", BrandLogoBig);
+
+                                            // Send Email
+                                            var emailObj = new
+                                            {
+                                                FromID = "reply-no@visitorManagement.com",
+                                                ToID = notifyUser.UserEmail,
+                                                Subject = $"Visitor Pass Notification: {VisEntry.PersonName} scheduled on {visitDate?.ToString("dd-MM-yyyy")}",
+                                                Template = MailText
+                                            };
+
+                                            JObject convertObj = (JObject)JToken.FromObject(emailObj);
+                                            await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+
+                                            // Send WhatsApp Notification
+                                            string notifyMessage = $"Dear {notifyUser.UserName},\n" +
+                                                $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
+                                                $"🏢 Visitor Company: {visitorCompany}\n" +
+                                                $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
+                                                $"👤 To Meet: {user1?.UserName} ({department?.DepartmentName})\n\n" +
+                                                $"Please stay alert for further notifications.";
+
+                                            var whatsJson = new JObject
+                                            {
+                                                ["to_contact"] = "91" + notifyUser.UserTelNo,
+                                                ["type"] = "text",
+                                                ["text"] = new JObject { ["body"] = notifyMessage }
+                                            };
+
+                                            var whatsRes = await whatsAppService.SendApprovalReqWhatsApp(JsonConvert.SerializeObject(whatsJson));
+
+                                            JObject whatsResponse = JObject.Parse(whatsRes?.ToString() ?? "{}");
+                                            bool isFailed = whatsResponse?["status"]?.Value<bool>() == false;
+
+                                            if (isFailed)
+                                            {
+                                                dynamic jsonObject = new JObject();
+                                                jsonObject.to_contact = "91" + Convert.ToString(user1.UserTelNo);
+                                                jsonObject.type = "template";
+
+                                                dynamic template = new JObject();
+                                                template.name = "approval_notify_template";
+                                                template.language = "en";
+
+                                                jsonObject.template = template;
+
+                                                await whatsAppService.SendApprovalReqWhatsApp(JsonConvert.SerializeObject(jsonObject));
+                                            }
+
+                                            WhatsAppLogSaveOut(
+                                                whatsJson,
+                                                (int)VisEntry.CompanyId,
+                                                (int)VisEntry.PlantId,
+                                                (int)VisEntry.VisitedEmployeeId,
+                                                "917358112529",
+                                                "91" + notifyUser.UserTelNo,
+                                                DateTime.Now,
+                                                "notify_text_vms",
+                                                VisEntry.VisitorEntryCode);
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = (int)request.status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = (int)request.status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            await dbContext.SaveChangesAsync();
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+
+                                            dto.tranStatus.result = true;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Notification Sent Successfully."
+                                            });
+                                        }
+                                        else if (request.status == 76 && VisEntry.Status == 74)
+                                        {
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = (int)request.status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = (int)request.status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company , user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
+
+                                            dto.tranStatus.result = false;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Rejected Successfully."
+                                            });
+                                        }
+                                        else if (request.status == 145){
+
+                                            approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno );
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = VisEntry.Status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = VisEntry.Status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company , user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
 
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
@@ -472,267 +671,290 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     if (workflowheader.IsNotifyApprove == false)
                     {
 
-                        if (dto.tranStatus.lstErrorItem.Count == 0)
-                        {
-                            request.Isviewed = 1;
+                    if (dto.tranStatus.lstErrorItem.Count == 0)
+                    {
+                        request.Isviewed = 1;
 
-                            // Execute the stored procedure with all parameters
-                            var spCall = await dapperContext.ExecuteStoredProcedureAsync(
-                                "SP_APPROVAL_WORKFLOW_UPDATE",
-                                new
-                                {
-                                    CompanyId = request.companyid,
-                                    PlantId = request.plantid,
-                                    RequesterId = request.requesterid,
-                                    DocumentNo = request.documentno,
-                                    DocumentId = request.documentid,
-                                    DocumentActivityId = request.documentactivityid,
-                                    DocumentDetailId = request.documentdetailid,
-                                    Status = request.status,
-                                    ApproverId = request.approverid,
-                                    LevelId = request.levelid,
-                                    AlternateUser = request.alternateuser,
-                                    Remarks1 = request.remarks1,
-                                    Remarks2 = request.remarks2,
-                                    ParentId = request.parentid,
-                                    UserId = request.userid,
-                                    RequestFromDate = request.requestfromdate,
-                                    RequestToDate = request.requesttodate,
-                                    IsViewed = request.Isviewed,
-                                }
-                            );
-
-                            dto.ConditionExists = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            dto.CurrLvlSts = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            if (dto.ConditionExists == 1)
+                        // Execute the stored procedure with all parameters
+                        var spCall = await dapperContext.ExecuteStoredProcedureAsync(
+                            "SP_APPROVAL_WORKFLOW_UPDATE",
+                            new
                             {
-                                dto.ConditionList =
-                                    (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
-                                var tempapprovalDetail = dbContext
-                                    .ApprovalDetails.Where(x =>
-                                        x.DocumentNo == request.documentno
-                                        && x.PrimaryUserId == request.approverid
-                                    )
-                                    .SingleOrDefault();
+                                CompanyId = request.companyid,
+                                PlantId = request.plantid,
+                                RequesterId = request.requesterid,
+                                DocumentNo = request.documentno,
+                                DocumentId = request.documentid,
+                                DocumentActivityId = request.documentactivityid,
+                                DocumentDetailId = request.documentdetailid,
+                                Status = request.status,
+                                ApproverId = request.approverid,
+                                LevelId = request.levelid,
+                                AlternateUser = request.alternateuser,
+                                Remarks1 = request.remarks1,
+                                Remarks2 = request.remarks2,
+                                ParentId = request.parentid,
+                                UserId = request.userid,
+                                RequestFromDate = request.requestfromdate,
+                                RequestToDate = request.requesttodate,
+                                IsViewed = request.Isviewed,
+                            }
+                        );
+
+                        dto.ConditionExists = (await spCall.ReadFirstOrDefaultAsync<int>());
+                        dto.CurrLvlSts = (await spCall.ReadFirstOrDefaultAsync<int>());
+                        if (dto.ConditionExists == 1)
+                        {
+                            dto.ConditionList =
+                                (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
+                            var tempapprovalDetail = dbContext
+                                .ApprovalDetails.Where(x =>
+                                    x.DocumentNo == request.documentno
+                                    && x.PrimaryUserId == request.approverid
+                                )
+                                .SingleOrDefault();
+                            dto.tranStatus.result = false;
+                            if (tempapprovalDetail.Status == 75)
+                            {
+                                dto.tranStatus.lstErrorItem.Add(
+                                    new ErrorItem
+                                    {
+                                        ErrorNo = "VMS000",
+                                        Message =
+                                            $"{tempapprovalDetail.DocumentNo} Already in Approved Status",
+                                    }
+                                );
+                            }
+                            if (tempapprovalDetail.Status == 76)
+                            {
                                 dto.tranStatus.result = false;
-                                if (tempapprovalDetail.Status == 75)
+                                dto.tranStatus.lstErrorItem.Add(
+                                    new ErrorItem
+                                    {
+                                        ErrorNo = "VMS000",
+                                        Message =
+                                            $"{tempapprovalDetail.DocumentNo} Already in Rejected Status",
+                                    }
+                                );
+                            }
+                        }
+                        else if (dto.CurrLvlSts == 74)
+                        {
+                            dto.UpdatedApprovalDetailList = (
+                                await spCall.ReadAsync<dynamic>()
+                            ).ToList();
+                            dto.StatusSP = (await spCall.ReadFirstOrDefaultAsync<int>());
+                            dto.NextStageCountSP = (await spCall.ReadFirstOrDefaultAsync<int>());
+                            if (dto.StatusSP != 76)
+                            {
+                                if (dto.NextStageCountSP != 0)
                                 {
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message =
-                                                $"{tempapprovalDetail.DocumentNo} Already in Approved Status",
-                                        }
-                                    );
+                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
+                                    dto.ApprovalDetailList = (
+                                        await spCall.ReadAsync<dynamic>()
+                                    ).ToList();
+                                    dto.NextApprovalDetail = (
+                                        await spCall.ReadAsync<ApprovalDetail>()
+                                    ).SingleOrDefault();
                                 }
-                                if (tempapprovalDetail.Status == 76)
+                                else
                                 {
-                                    dto.tranStatus.result = false;
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message =
-                                                $"{tempapprovalDetail.DocumentNo} Already in Rejected Status",
-                                        }
-                                    );
+                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
+                                    dto.ApprovalDetailList = (
+                                        await spCall.ReadAsync<dynamic>()
+                                    ).ToList();
+                                    dto.NextApprovalDetail = (
+                                        await spCall.ReadAsync<ApprovalDetail>()
+                                    ).SingleOrDefault();
+                                    if (request.documentid == 42)
+                                    {
+                                        // WorkPermit workPermit = new WorkPermit();
+                                        // workPermit = dbContext
+                                        //     .WorkPermits.Where(x =>
+                                        //         x.VisitorEntryCode == request.documentno
+                                        //     )
+                                        //     .SingleOrDefault();
+                                        // var VisEntryDetail = dbContext
+                                        //     .VisitorEntryDetails.Where(x =>
+                                        //         x.VisitorEntryId == VisEntry.VisitorEntryId
+                                        //     )
+                                        //     .ToList();
+                                        // VisEntry.VisitorEntryDetails = VisEntryDetail;
+
+                                        // SendPassInternal(VisEntry, "true", company);
+                                        // dto.tranStatus.result = true;
+
+                                        // dto.tranStatus.lstErrorItem.Add(
+                                        //     new ErrorItem
+                                        //     {
+                                        //         ErrorNo = "VMS000",
+                                        //         Message = "Pass Sent Successfully.",
+                                        //     }
+                                        // );
+                                    }
                                 }
                             }
-                            else if (dto.CurrLvlSts == 74)
+
+                            // var approvalHeader = dbContext
+                            //     .Approvals.Where(x => x.DocumentNo == request.documentno)
+                            //     .SingleOrDefault();
+
+                            if (request.documentid == 34 )
                             {
-                                dto.UpdatedApprovalDetailList = (
-                                    await spCall.ReadAsync<dynamic>()
-                                ).ToList();
-                                dto.StatusSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                                dto.NextStageCountSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                                if (dto.StatusSP != 76)
+                                VisEntry = dbContext
+                                    .VisitorEntries.Where(x =>
+                                        x.VisitorEntryCode == request.documentno
+                                    )
+                                    .SingleOrDefault();
+                                var VisEntryDetail = dbContext
+                                    .VisitorEntryDetails.Where(x =>
+                                        x.VisitorEntryId == VisEntry.VisitorEntryId
+                                    )
+                                    .ToList();
+                                VisEntry.VisitorEntryDetails = VisEntryDetail;
+
+                                if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP != 76)
                                 {
-                                    if (dto.NextStageCountSP != 0)
+                                    // if (approvalHeader.Status == 74)
+                                    // {
+                                    if (
+                                        dto.ApprovalDetailList != null
+                                        && dto.ApprovalDetailList.Count > 0
+                                    )
                                     {
-                                        dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                        dto.ApprovalDetailList = (
-                                            await spCall.ReadAsync<dynamic>()
-                                        ).ToList();
-                                        dto.NextApprovalDetail = (
-                                            await spCall.ReadAsync<ApprovalDetail>()
-                                        ).SingleOrDefault();
-                                    }
-                                    else
-                                    {
-                                        dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                        dto.ApprovalDetailList = (
-                                            await spCall.ReadAsync<dynamic>()
-                                        ).ToList();
-                                        dto.NextApprovalDetail = (
-                                            await spCall.ReadAsync<ApprovalDetail>()
-                                        ).SingleOrDefault();
-                                        if (request.documentid == 42)
+
+                                        // Assign PrimaryUserId if it's missing
+                                        foreach (var item in dto.ApprovalDetailList)
                                         {
-                                            // WorkPermit workPermit = new WorkPermit();
-                                            // workPermit = dbContext
-                                            //     .WorkPermits.Where(x =>
-                                            //         x.VisitorEntryCode == request.documentno
-                                            //     )
-                                            //     .SingleOrDefault();
-                                            // var VisEntryDetail = dbContext
-                                            //     .VisitorEntryDetails.Where(x =>
-                                            //         x.VisitorEntryId == VisEntry.VisitorEntryId
-                                            //     )
-                                            //     .ToList();
-                                            // VisEntry.VisitorEntryDetails = VisEntryDetail;
-
-                                            // SendPassInternal(VisEntry, "true", company);
-                                            // dto.tranStatus.result = true;
-
-                                            // dto.tranStatus.lstErrorItem.Add(
-                                            //     new ErrorItem
-                                            //     {
-                                            //         ErrorNo = "VMS000",
-                                            //         Message = "Pass Sent Successfully.",
-                                            //     }
-                                            // );
+                                            long? primaryUserIds = VisEntry.VisitedEmployeeId;
+                                             object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
+                                            if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
+                                            {
+                                                item.PrimaryUserId = valueToSet;
+                                            }
                                         }
-                                    }
-                                }
 
-                                // var approvalHeader = dbContext
-                                //     .Approvals.Where(x => x.DocumentNo == request.documentno)
-                                //     .SingleOrDefault();
+                                        // Get approver detail based on request.approverid
+                                        long approverIdToCheck = request.approverid != 0 
+                                            ? request.approverid 
+                                            : dto.ApprovalDetailList.FirstOrDefault()?.PrimaryUserId ?? 0;
 
-                                if (request.documentid == 34)
-                                {
-                                    VisEntry = dbContext
-                                        .VisitorEntries.Where(x =>
-                                            x.VisitorEntryCode == request.documentno
-                                        )
-                                        .SingleOrDefault();
-                                    var VisEntryDetail = dbContext
-                                        .VisitorEntryDetails.Where(x =>
-                                            x.VisitorEntryId == VisEntry.VisitorEntryId
-                                        )
-                                        .ToList();
-                                    VisEntry.VisitorEntryDetails = VisEntryDetail;
+                                        var tempapprovalDetail = dto.ApprovalDetailList
+                                            .FirstOrDefault(x => x.PrimaryUserId == approverIdToCheck);
 
-                                    if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP != 76)
-                                    {
-                                        // if (approvalHeader.Status == 74)
-                                        // {
+
                                         if (
-                                            dto.ApprovalDetailList != null
-                                            && dto.ApprovalDetailList.Count > 0
+                                            tempapprovalDetail != null
+                                            && 
+                                            tempapprovalDetail.Status == 75
                                         )
                                         {
 
-                                            // Assign PrimaryUserId if it's missing
+
+                                            User users = new User();
+                                            Department departments = new Department();
+
                                             foreach (var item in dto.ApprovalDetailList)
                                             {
-                                                long? primaryUserIds = VisEntry.VisitedEmployeeId;
-                                                object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
-                                                if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
-                                                {
-                                                    item.PrimaryUserId = valueToSet;
-                                                }
+                                            long? primaryUserIds = VisEntry.VisitedEmployeeId;
+                                             object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
+                                            if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
+                                            {
+                                                item.PrimaryUserId = valueToSet;
+                                            }
                                             }
 
-                                            // Get approver detail based on request.approverid
-                                            long approverIdToCheck = request.approverid != 0
-                                                ? request.approverid
-                                                : dto.ApprovalDetailList.FirstOrDefault()?.PrimaryUserId ?? 0;
-
-                                            var tempapprovalDetail = dto.ApprovalDetailList
-                                                .FirstOrDefault(x => x.PrimaryUserId == approverIdToCheck);
 
 
-                                            if (
-                                                tempapprovalDetail != null
-                                                &&
-                                                tempapprovalDetail.Status == 75
-                                            )
-                                            {
-
-                                                User VisitedEmp = new User();
-                                                Role VisitedEmpRole = new Role();
-                                                if (VisEntry.VisitorTypeId != 66)
+                                            if (VisEntry.VisitorTypeId != 66)
                                                 {
-                                                    VisitedEmp = dbContext
+                                            users = dbContext
                                                         .Users.Where(x =>
                                                             x.UserId
-                                                            == dto.NextApprovalDetail.PrimaryUserId
+                                                            == approverIdToCheck
                                                         )
                                                         .SingleOrDefault();
-                                                    VisitedEmpRole = dbContext
-                                                        .Roles.Where(x =>
-                                                            x.RoleId == VisitedEmp.DefaultRoleId
-                                                        )
-                                                        .SingleOrDefault();
+                                            departments = dbContext.Departments
+                                                .Where(x => x.DepartmentId == users.DeptId)
+                                                .SingleOrDefault();
                                                 }
 
-                                                if (dto.NextApprovalDetail.Status == 74)
+                                           
+
+                                               
+
+                                            if (dto.NextApprovalDetail.Status == 74)
+                                            {
+                                                // MAIL APPROVAL
+                                                var approvedLink = "";
+
+                                                string BrandLogo =
+                                                    Directory.GetCurrentDirectory()
+                                                    + "\\upload\\Logo\\app-logo.png";
+                                                string BrandLogoBig =
+                                                    "/upload/Logo/app-logo-big.png";
+                                                string FilePath =
+                                                    Directory.GetCurrentDirectory()
+                                                    + "\\Templates\\VisitorEntryEmailTemplate.html";
+                                                StreamReader str = new StreamReader(FilePath);
+                                                string MailText = str.ReadToEnd();
+                                                Company companyEmailConfig = new Company();
+                                                VisitorEntry visitorEntryUpdated =
+                                                    new VisitorEntry();
+
+                                                if(dto.NextApprovalDetail.PrimaryUserId == 0)
                                                 {
-                                                    // MAIL APPROVAL
-                                                    var approvedLink = "";
+                                                    dto.NextApprovalDetail.PrimaryUserId = (long)VisEntry.VisitedEmployeeId;
+                                                }
 
-                                                    string BrandLogo =
-                                                        Directory.GetCurrentDirectory()
-                                                        + "\\upload\\Logo\\app-logo.png";
-                                                    string BrandLogoBig =
-                                                        "/upload/Logo/app-logo-big.png";
-                                                    string FilePath =
-                                                        Directory.GetCurrentDirectory()
-                                                        + "\\Templates\\VisitorEntryEmailTemplate.html";
-                                                    StreamReader str = new StreamReader(FilePath);
-                                                    string MailText = str.ReadToEnd();
-                                                    Company companyEmailConfig = new Company();
-                                                    VisitorEntry visitorEntryUpdated =
-                                                        new VisitorEntry();
-                                                    var primeUser = dbContext
-                                                        .Users.Where(x =>
-                                                            x.UserId
-                                                            == dto.NextApprovalDetail.PrimaryUserId
-                                                        )
-                                                        .SingleOrDefault();
 
-                                                    companyEmailConfig = dbContext
-                                                        .Companies.Where(x =>
-                                                            x.CompanyId == VisEntry.CompanyId
-                                                        )
-                                                        .SingleOrDefault();
-                                                    // var userData = dbContext.Users.AsNoTracking(x => x.UserId == primaryUserId);
+                                                var primeUser = dbContext
+                                                    .Users.Where(x =>
+                                                        x.UserId
+                                                        == dto.NextApprovalDetail.PrimaryUserId
+                                                    )
+                                                    .SingleOrDefault();
+                                               
+                                                companyEmailConfig = dbContext
+                                                    .Companies.Where(x =>
+                                                        x.CompanyId == VisEntry.CompanyId
+                                                    )
+                                                    .SingleOrDefault();
+                                               // var userData = dbContext.Users.AsNoTracking(x => x.UserId == primaryUserId);
 
-                                                    var userApproverData = dbContext
-                                                        .Users.AsNoTracking()
-                                                        .FirstOrDefault(x => x.UserId == dto.NextApprovalDetail.PrimaryUserId);
+                                                var userApproverData = dbContext
+                                                    .Users.AsNoTracking()
+                                                    .FirstOrDefault(x => x.UserId == dto.NextApprovalDetail.PrimaryUserId);
 
-                                                    var approveLink = GenerateMailToken(
-                                                        "ENCRYPT",
-                                                        "",
-                                                        "APPROVE",
-                                                        $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                    );
-                                                    var rejectLink = GenerateMailToken(
-                                                        "ENCRYPT",
-                                                        "",
-                                                        "REJECT",
-                                                        $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                    );
-                                                    var rescheduleLink = GenerateMailToken(
-                                                       "ENCRYPT",
-                                                       "",
-                                                       "RESCHEDULE",
-                                                       $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
-                                                   );
+                                                var approveLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "APPROVE",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                );
+                                                var rejectLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "REJECT",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                );
+                                                 var rescheduleLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "RESCHEDULE",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
+                                                );
 
-                                                    string resultHtml = "";
-                                                    string resultWhatsapp = "";
-                                                    StringBuilder approvalBuilder = new StringBuilder();
-                                                    StringBuilder whatsappBuilder = new StringBuilder();
+                                                string resultHtml = "";
+                                                string resultWhatsapp = "";
+                                                StringBuilder approvalBuilder = new StringBuilder();
+                                                StringBuilder whatsappBuilder = new StringBuilder();
 
-                                                    if (dto.UpdatedApprovalDetailList?.Count > 0)
-                                                    {
-                                                        int levelCount = 1;
+                                                if (dto.UpdatedApprovalDetailList?.Count > 0)
+                                                {
+                                                    int levelCount = 1;
 
-                                                        approvalBuilder.Append(@"
+                                                    approvalBuilder.Append(@"
                                                         <table style='
                                                             font-family: Arial, sans-serif;
                                                             font-size: 16px;
@@ -751,63 +973,63 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                         <tbody>
                                                     ");
 
-                                                        foreach (var level in dto.UpdatedApprovalDetailList)
+                                                    foreach (var level in dto.UpdatedApprovalDetailList)
+                                                    {
+                                                        long primaryUserId = Convert.ToInt64(level.PrimaryUserId);
+                                                        long levelId = Convert.ToInt64(level.LevelId);
+                                                        string documentNo = level.DocumentNo;
+
+                                                        User userData = new User();
+
+
+                                                        if (primaryUserId == 0)
                                                         {
-                                                            long primaryUserId = Convert.ToInt64(level.PrimaryUserId);
-                                                            long levelId = Convert.ToInt64(level.LevelId);
-                                                            string documentNo = level.DocumentNo;
+                                                            var visitorData = dbContext.VisitorEntries
+                                                                .FirstOrDefault(x => x.VisitorEntryCode == documentNo);
+                                                            userData = dbContext.Users
+                                                                .FirstOrDefault(x => x.UserId == visitorData.VisitedEmployeeId);
+                                                        }
+                                                        else
+                                                        {
+                                                            userData = dbContext.Users
+                                                                .FirstOrDefault(x => x.UserId == primaryUserId);
+                                                        }
 
-                                                            User userData = new User();
-
-
-                                                            if (primaryUserId == 0)
-                                                            {
-                                                                var visitorData = dbContext.VisitorEntries
-                                                                    .FirstOrDefault(x => x.VisitorEntryCode == documentNo);
-                                                                userData = dbContext.Users
-                                                                    .FirstOrDefault(x => x.UserId == visitorData.VisitedEmployeeId);
-                                                            }
-                                                            else
-                                                            {
-                                                                userData = dbContext.Users
-                                                                    .FirstOrDefault(x => x.UserId == primaryUserId);
-                                                            }
-
-                                                            // var userData = dbContext.Users
-                                                            //  .FirstOrDefault(x => x.UserId == primaryUserId);
+                                                        // var userData = dbContext.Users
+                                                        //  .FirstOrDefault(x => x.UserId == primaryUserId);
 
 
-                                                            var metaLevelData = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == levelId);
-                                                            var deptData = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == userData.DeptId);
-                                                            var roleData = dbContext.Roles.FirstOrDefault(x => x.RoleId == userData.DefaultRoleId);
+                                                        var metaLevelData = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == levelId);
+                                                        var deptData = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == userData.DeptId);
+                                                        var roleData = dbContext.Roles.FirstOrDefault(x => x.RoleId == userData.DefaultRoleId);
 
-                                                            var userName = userData?.UserName ?? "Unknown";
-                                                            var department = deptData?.DepartmentName ?? "Unknown";
-                                                            var roleName = roleData?.RoleName ?? "Unknown";
-                                                            var levelName = metaLevelData?.MetaSubDescription ?? $"Level {levelCount}";
+                                                        var userName = userData?.UserName ?? "Unknown";
+                                                        var departmentss = deptData?.DepartmentName ?? "Unknown";
+                                                        var roleName = roleData?.RoleName ?? "Unknown";
+                                                        var levelName = metaLevelData?.MetaSubDescription ?? $"Level {levelCount}";
 
-                                                            // HTML row
-                                                            approvalBuilder.AppendFormat(@"
+                                                        // HTML row
+                                                        approvalBuilder.AppendFormat(@"
                                                             <tr>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{0}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{1}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{2}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{3}</td>
                                                             </tr>
-                                                        ", levelName, userName, department, roleName);
+                                                        ", levelName, userName, departmentss, roleName);
 
-                                                            // WhatsApp line
-                                                            whatsappBuilder.AppendLine($"Level: *{levelName}*");
-                                                            whatsappBuilder.AppendLine($"Approver: *{userName}*");
-                                                            whatsappBuilder.AppendLine($"Department: *{department}*");
-                                                            whatsappBuilder.AppendLine($"Role: *{roleName}*");
-                                                            whatsappBuilder.AppendLine();
+                                                        // WhatsApp line
+                                                        whatsappBuilder.AppendLine($"Level: *{levelName}*");
+                                                        whatsappBuilder.AppendLine($"Approver: *{userName}*");
+                                                        whatsappBuilder.AppendLine($"Department: *{departmentss}*");
+                                                        whatsappBuilder.AppendLine($"Role: *{roleName}*");
+                                                        whatsappBuilder.AppendLine();
 
-                                                            levelCount++;
-                                                        }
+                                                        levelCount++;
+                                                    }
 
-                                                        // Close HTML table
-                                                        approvalBuilder.Append(@"
+                                                    // Close HTML table
+                                                    approvalBuilder.Append(@"
                                                         </tbody>
                                                         <tfoot>
                                                             <tr>
@@ -824,263 +1046,263 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                         </tfoot>
                                                     </table>");
 
-                                                        // WhatsApp footer
-                                                        whatsappBuilder.AppendLine("Status: *Approved*");
-                                                    }
-
-                                                    // Final values
-                                                    resultHtml = approvalBuilder.ToString();
-                                                    resultWhatsapp = whatsappBuilder.ToString().Trim();
-
-                                                    visitorEntryUpdated = VisEntry;
-                                                    dto.VisitorEntryHeader = visitorEntryUpdated;
-                                                    var PurposeName = dbContext
-                                                        .Metadata.Where(x =>
-                                                            x.MetaSubId == VisEntry.PurposeOfVisit
-                                                        )
-                                                        .SingleOrDefault();
-                                                    var visitorCompany = VisEntryDetail[0].VisitorCompany;
-                                                    MailText = MailText
-                                                        .Replace(
-                                                            "[WhomToVisit]",
-                                                            Convert.ToString(VisitedEmp?.UserName)
-                                                        )
-                                                        .Replace(
-                                                            "[Visitor]",
-                                                            Convert.ToString(VisEntry.PersonName)
-                                                        )
-                                                        .Replace(
-                                                            "[approveLevels]",
-                                                            Convert.ToString(resultHtml ?? "")
-                                                        )
-                                                        .Replace(
-                                                            "[VisitDate]",
-                                                            Convert.ToString(
-                                                                VisEntry.ValidFrom.Value.ToShortDateString()
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "[VisitTime]",
-                                                            Convert.ToString(
-                                                                VisEntry.ValidFrom.Value.ToShortTimeString()
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "[VisitorCompany]",
-                                                            Convert.ToString(visitorCompany ?? "-")
-                                                        )
-                                                        .Replace(
-                                                            "[PurposeOfVisit]",
-                                                            Convert.ToString(
-                                                                PurposeName.MetaSubDescription
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "{{ApproveLink}}",
-                                                            Convert.ToString(approveLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{RejectLink}}",
-                                                            Convert.ToString(rejectLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{RescheduleLink}}",
-                                                            Convert.ToString(rescheduleLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{serviceURL}}",
-                                                            _mailSettings.Service
-                                                        )
-                                                        .Replace("{{siteURL}}", _mailSettings.Website)
-                                                        .Replace("{{Logo}}", BrandLogo)
-                                                        .Replace("{{BrandLogoBig}}", BrandLogoBig);
-                                                    object emailObj = new
-                                                    {
-                                                        FromID = "reply-no@visitorManagement.com",
-                                                        ToID = VisitedEmp.UserEmail,
-                                                        Subject = $"Pending Approval for Visitor {VisEntry.PersonName} on {VisEntry.ValidFrom.Value.ToLongDateString()} {VisEntry.ValidFrom.Value.ToLongTimeString()} from {Convert.ToString(visitorCompany)} for {PurposeName.MetaSubDescription}",
-                                                        Template = MailText,
-                                                    };
-
-                                                    JObject convertObj = (JObject)
-                                                        JToken.FromObject(emailObj);
-                                                    var mail = mailService.SendApprovalReqEmail(
-                                                        convertObj,
-                                                        (long)dto.VisitorEntryHeader.CompanyId,
-                                                        companyEmailConfig
-                                                    );
-
-                                                    var whatsApp = whatsAppService.SendWhatsAppApproval(
-                                                            VisEntryDetail,
-                                                            dto.VisitorEntryHeader,
-                                                            PurposeName,
-                                                            visitorCompany,
-                                                            VisitedEmp,
-                                                            approveLink,
-                                                            rejectLink,
-                                                            // rescheduleLink,
-                                                            resultWhatsapp
-                                                        );
-
-                                                    approvedLink = approveLink.Result;
-                                                    dto.tranStatus.result = true;
-
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Approved Successfully.",
-                                                        }
-                                                    );
+                                                    // WhatsApp footer
+                                                    whatsappBuilder.AppendLine("Status: *Approved*");
                                                 }
-                                                else if (
-                                                    VisEntry != null
-                                                    && dto.NextApprovalDetail.Status == 75
-                                                )
-                                                {
-                                                    SendPassInternal(VisEntry, "true", company, VisitedEmp?.UserName, VisitedEmpRole?.RoleName);
 
-                                                    JObject jObject = new JObject(
-                                                        new JProperty(
-                                                            "UserId",
-                                                            VisEntry.VisitedEmployeeId
-                                                        ),
-                                                        new JProperty(
-                                                            "VisitorEntryCode",
-                                                            VisEntry.VisitorEntryCode
-                                                        ),
-                                                        new JProperty(
-                                                            "VisitorEntryDetailId",
-                                                            VisEntryDetail[0].VisitorEntryDetailId
-                                                        ),
-                                                        new JProperty("Checkintime", DateTime.Now),
-                                                        new JProperty("type", "")
-                                                    );
-                                                    if (
-                                                        VisEntry.ValidFrom.HasValue
-                                                        && VisEntry.ValidFrom.Value.Date
-                                                            == DateTime.Today
-                                                        && VisEntry.ValidFrom.Value.TimeOfDay
-                                                            <= DateTime.Now.TimeOfDay
-                                                        && VisEntry.IsInternalAppointment == false
+                                                // Final values
+                                                resultHtml = approvalBuilder.ToString();
+                                                resultWhatsapp = whatsappBuilder.ToString().Trim();
+
+                                                visitorEntryUpdated = VisEntry;
+                                                dto.VisitorEntryHeader = visitorEntryUpdated;
+                                                var PurposeName = dbContext
+                                                    .Metadata.Where(x =>
+                                                        x.MetaSubId == VisEntry.PurposeOfVisit
                                                     )
-                                                    {
-                                                        await CheckIn(jObject);
-                                                    }
-                                                    dto.tranStatus.result = true;
+                                                    .SingleOrDefault();
+                                                var visitorCompany = VisEntryDetail[0].VisitorCompany;
+                                                MailText = MailText
+                                                    .Replace(
+                                                        "[WhomToVisit]",
+                                                        Convert.ToString(users?.UserName)
+                                                    )
+                                                    .Replace(
+                                                        "[Visitor]",
+                                                        Convert.ToString(VisEntry.PersonName)
+                                                    )
+                                                    .Replace(
+                                                        "[approveLevels]",
+                                                        Convert.ToString(resultHtml ?? "")
+                                                    )
+                                                    .Replace(
+                                                        "[VisitDate]",
+                                                        Convert.ToString(
+                                                            VisEntry.ValidFrom.Value.ToShortDateString()
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "[VisitTime]",
+                                                        Convert.ToString(
+                                                            VisEntry.ValidFrom.Value.ToShortTimeString()
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "[VisitorCompany]",
+                                                        Convert.ToString(visitorCompany ?? "-")
+                                                    )
+                                                    .Replace(
+                                                        "[PurposeOfVisit]",
+                                                        Convert.ToString(
+                                                            PurposeName.MetaSubDescription
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "{{ApproveLink}}",
+                                                        Convert.ToString(approveLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{RejectLink}}",
+                                                        Convert.ToString(rejectLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{RescheduleLink}}",
+                                                        Convert.ToString(rescheduleLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{serviceURL}}",
+                                                        _mailSettings.Service
+                                                    )
+                                                    .Replace("{{siteURL}}", _mailSettings.Website)
+                                                    .Replace("{{Logo}}", BrandLogo)
+                                                    .Replace("{{BrandLogoBig}}", BrandLogoBig);
+                                                object emailObj = new
+                                                {
+                                                    FromID = "reply-no@visitorManagement.com",
+                                                    ToID = users.UserEmail,
+                                                    Subject = $"Pending Approval for Visitor {VisEntry.PersonName} on {VisEntry.ValidFrom.Value.ToLongDateString()} {VisEntry.ValidFrom.Value.ToLongTimeString()} from {Convert.ToString(visitorCompany)} for {PurposeName.MetaSubDescription}",
+                                                    Template = MailText,
+                                                };
 
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Approved Successfully.",
-                                                        }
+                                                JObject convertObj = (JObject)
+                                                    JToken.FromObject(emailObj);
+                                                var mail = mailService.SendApprovalReqEmail(
+                                                    convertObj,
+                                                    (long)dto.VisitorEntryHeader.CompanyId,
+                                                    companyEmailConfig
+                                                );
+
+                                                var whatsApp = whatsAppService.SendWhatsAppApproval(
+                                                        VisEntryDetail,
+                                                        dto.VisitorEntryHeader,
+                                                        PurposeName,
+                                                        visitorCompany,
+                                                        users,
+                                                        approveLink,
+                                                        rejectLink,
+                                                        // rescheduleLink,
+                                                        resultWhatsapp
                                                     );
-                                                }
-                                                else if (
-                                                    VisEntry != null
-                                                    && dto.NextApprovalDetail.Status == 76
+
+                                                approvedLink = approveLink.Result;
+                                                dto.tranStatus.result = true;
+
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Approved Successfully.",
+                                                    }
+                                                );
+                                            }
+                                            else if (
+                                                VisEntry != null
+                                                && dto.NextApprovalDetail.Status == 75
+                                            )
+                                            {
+                                                SendPassInternal(VisEntry, "true", company, users?.UserName, departments?.DepartmentName );
+
+                                                JObject jObject = new JObject(
+                                                    new JProperty(
+                                                        "UserId",
+                                                        VisEntry.VisitedEmployeeId
+                                                    ),
+                                                    new JProperty(
+                                                        "VisitorEntryCode",
+                                                        VisEntry.VisitorEntryCode
+                                                    ),
+                                                    new JProperty(
+                                                        "VisitorEntryDetailId",
+                                                        VisEntryDetail[0].VisitorEntryDetailId
+                                                    ),
+                                                    new JProperty("Checkintime", DateTime.Now),
+                                                    new JProperty("type", "")
+                                                );
+                                                if (
+                                                    VisEntry.ValidFrom.HasValue
+                                                    && VisEntry.ValidFrom.Value.Date
+                                                        == DateTime.Today
+                                                    && VisEntry.ValidFrom.Value.TimeOfDay
+                                                        <= DateTime.Now.TimeOfDay
+                                                    && VisEntry.IsInternalAppointment == false
                                                 )
                                                 {
-                                                    dto.tranStatus.result = true;
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Rejected Successfully.",
-                                                        }
-                                                    );
+                                                    await CheckIn(jObject);
                                                 }
+                                                dto.tranStatus.result = true;
+
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Approved Successfully.",
+                                                    }
+                                                );
+                                            }
+                                            else if (
+                                                VisEntry != null
+                                                && dto.NextApprovalDetail.Status == 76
+                                            )
+                                            {
+                                                dto.tranStatus.result = true;
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Rejected Successfully.",
+                                                    }
+                                                );
                                             }
                                         }
-                                        // }
-                                        // else if (approvalHeader.Status == 75)
-                                        // {
-                                        //     dto.tranStatus.result = true;
-
-                                        //     dto.tranStatus.lstErrorItem.Add(
-                                        //         new ErrorItem
-                                        //         {
-                                        //             ErrorNo = "VMS000",
-                                        //             Message = "Approved Successfully.",
-                                        //         }
-                                        //     );
-                                        // }
-                                        // else if (approvalHeader.Status == 76)
-                                        // {
-                                        //     dto.tranStatus.result = false;
-
-                                        //     dto.tranStatus.lstErrorItem.Add(
-                                        //         new ErrorItem
-                                        //         {
-                                        //             ErrorNo = "VMS000",
-                                        //             Message = "Rejected Successfully.",
-                                        //         }
-                                        //     );
-                                        // }
                                     }
-                                    else if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP == 76)
+                                    // }
+                                    // else if (approvalHeader.Status == 75)
+                                    // {
+                                    //     dto.tranStatus.result = true;
+
+                                    //     dto.tranStatus.lstErrorItem.Add(
+                                    //         new ErrorItem
+                                    //         {
+                                    //             ErrorNo = "VMS000",
+                                    //             Message = "Approved Successfully.",
+                                    //         }
+                                    //     );
+                                    // }
+                                    // else if (approvalHeader.Status == 76)
+                                    // {
+                                    //     dto.tranStatus.result = false;
+
+                                    //     dto.tranStatus.lstErrorItem.Add(
+                                    //         new ErrorItem
+                                    //         {
+                                    //             ErrorNo = "VMS000",
+                                    //             Message = "Rejected Successfully.",
+                                    //         }
+                                    //     );
+                                    // }
+                                }
+                                else if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP == 76)
+                                {
+                                    // MAIL REJECTION
+                                    string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+                                    string FilePath = Directory.GetCurrentDirectory() + "\\Templates\\RejectMail.html";
+                                    string MailText = System.IO.File.ReadAllText(FilePath);
+
+                                    Company companyEmailConfig = dbContext.Companies
+                                        .FirstOrDefault(x => x.CompanyId == VisEntry.CompanyId);
+
+                                    User VisitEmp = new User();
+                                    Role VisitedEmpRole = new Role();
+                                    if (VisEntry.VisitorTypeId != 66)
                                     {
-                                        // MAIL REJECTION
-                                        string BrandLogoBig = "/upload/Logo/app-logo-big.png";
-                                        string FilePath = Directory.GetCurrentDirectory() + "\\Templates\\RejectMail.html";
-                                        string MailText = System.IO.File.ReadAllText(FilePath);
+                                        VisitEmp = dbContext.Users
+                                            .FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                        VisitedEmpRole = dbContext.Roles
+                                            .FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
+                                    }
 
-                                        Company companyEmailConfig = dbContext.Companies
-                                            .FirstOrDefault(x => x.CompanyId == VisEntry.CompanyId);
+                                    var visitorCompany = VisEntryDetail[0].VisitorCompany;
+                                    var purposeName = dbContext.Metadata
+                                        .FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
 
-                                        User VisitEmp = new User();
-                                        Role VisitedEmpRole = new Role();
-                                        if (VisEntry.VisitorTypeId != 66)
-                                        {
-                                            VisitEmp = dbContext.Users
-                                                .FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
-                                            VisitedEmpRole = dbContext.Roles
-                                                .FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
-                                        }
+                                    // Replace placeholders in RejectMail.html
+                                    MailText = MailText
+                                        .Replace("{{PersonName}}", VisEntry.PersonName)
+                                        .Replace("{{UserName}}", VisitEmp?.UserName ?? "")
+                                        .Replace("{{RoleName}}", VisitedEmpRole?.RoleName ?? "")
+                                        .Replace("{{serviceURL}}", _mailSettings.Service)
+                                        .Replace("{{BrandLogoBig}}", BrandLogoBig);
 
-                                        var visitorCompany = VisEntryDetail[0].VisitorCompany;
-                                        var purposeName = dbContext.Metadata
-                                            .FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
+                                    object emailObj = new
+                                    {
+                                        FromID = "reply-no@visitorManagement.com",
+                                        ToID = VisitEmp.UserEmail, // or whoever should receive the rejection
+                                        Subject = $"Gate Pass Rejected for {VisEntry.PersonName} on {VisEntry.ValidFrom?.ToLongDateString()}",
+                                        Template = MailText,
+                                    };
 
-                                        // Replace placeholders in RejectMail.html
-                                        MailText = MailText
-                                            .Replace("{{PersonName}}", VisEntry.PersonName)
-                                            .Replace("{{UserName}}", VisitEmp?.UserName ?? "")
-                                            .Replace("{{RoleName}}", VisitedEmpRole?.RoleName ?? "")
-                                            .Replace("{{serviceURL}}", _mailSettings.Service)
-                                            .Replace("{{BrandLogoBig}}", BrandLogoBig);
+                                    JObject convertObj = (JObject)JToken.FromObject(emailObj);
+                                    var mail = mailService.SendApprovalReqEmail(convertObj, companyEmailConfig.CompanyId , companyEmailConfig);
 
-                                        object emailObj = new
-                                        {
-                                            FromID = "reply-no@visitorManagement.com",
-                                            ToID = VisitEmp.UserEmail, // or whoever should receive the rejection
-                                            Subject = $"Gate Pass Rejected for {VisEntry.PersonName} on {VisEntry.ValidFrom?.ToLongDateString()}",
-                                            Template = MailText,
-                                        };
+                                    // WhatsApp text (simple message)
+                                    string whatsappMessage = $"Dear *{VisEntry.PersonName}*,\n\n" +
+                                                            "We regret to inform you that your recent gate pass application has been *rejected*.\n\n" +
+                                                            $"Regards,\n{VisitEmp?.UserName}\n{VisitedEmpRole?.RoleName}";
 
-                                        JObject convertObj = (JObject)JToken.FromObject(emailObj);
-                                        var mail = mailService.SendApprovalReqEmail(convertObj, companyEmailConfig.CompanyId, companyEmailConfig);
-
-                                        // WhatsApp text (simple message)
-                                        string whatsappMessage = $"Dear *{VisEntry.PersonName}*,\n\n" +
-                                                                "We regret to inform you that your recent gate pass application has been *rejected*.\n\n" +
-                                                                $"Regards,\n{VisitEmp?.UserName}\n{VisitedEmpRole?.RoleName}";
-
-                                        // Send WhatsApp message (example call — replace with actual WhatsApp service code)
-                                        if (VisEntryDetail != null && VisEntryDetail.Count > 0)
-                                        {
-                                            SendPassWhatsApp(
-                                                VisEntryDetail,
-                                                VisEntry,
-                                                "",
-                                                "false"
-                                            );
-                                        }
-                                        else
-                                        {
-                                            // Manually create a minimal VisitorEntryDetail list for fallback
-                                            var fallbackVisitorEntryDetail = new List<VisitorEntryDetail>
+                                    // Send WhatsApp message (example call — replace with actual WhatsApp service code)
+                                    if (VisEntryDetail != null && VisEntryDetail.Count > 0)
+                                    {
+                                        SendPassWhatsApp(
+                                            VisEntryDetail,
+                                            VisEntry,
+                                            "",
+                                            "false"
+                                        );
+                                    }
+                                    else
+                                    {
+                                        // Manually create a minimal VisitorEntryDetail list for fallback
+                                        var fallbackVisitorEntryDetail = new List<VisitorEntryDetail>
                                         {
                                             new VisitorEntryDetail
                                             {
@@ -1089,74 +1311,74 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             }
                                         };
 
-                                            SendPassWhatsApp(
-                                                fallbackVisitorEntryDetail,
-                                                VisEntry,
-                                                "",
-                                                "false"
-                                            );
-                                        }
-
-
-                                        dto.tranStatus.result = true;
-                                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
-                                        {
-                                            ErrorNo = "VMS001",
-                                            Message = "Rejected mail and WhatsApp sent successfully."
-                                        });
+                                        SendPassWhatsApp(
+                                            fallbackVisitorEntryDetail,
+                                            VisEntry,
+                                            "",
+                                            "false"
+                                        );
                                     }
 
+
+                                    dto.tranStatus.result = true;
+                                    dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                    {
+                                        ErrorNo = "VMS001",
+                                        Message = "Rejected mail and WhatsApp sent successfully."
+                                    });
                                 }
-                                else
+
+                            }
+                            else
+                            {
+                                dto.tranStatus.result = true;
+                                if (request.status == 75)
+                                {
+                                    dto.tranStatus.lstErrorItem.Add(
+                                        new ErrorItem
+                                        {
+                                            ErrorNo = "VMS000",
+                                            Message = "Approved Successfully.",
+                                        }
+                                    );
+                                }
+                                if (request.status == 76)
                                 {
                                     dto.tranStatus.result = true;
-                                    if (request.status == 75)
-                                    {
-                                        dto.tranStatus.lstErrorItem.Add(
-                                            new ErrorItem
-                                            {
-                                                ErrorNo = "VMS000",
-                                                Message = "Approved Successfully.",
-                                            }
-                                        );
-                                    }
-                                    if (request.status == 76)
-                                    {
-                                        dto.tranStatus.result = true;
-                                        dto.tranStatus.lstErrorItem.Add(
-                                            new ErrorItem
-                                            {
-                                                ErrorNo = "VMS000",
-                                                Message = "Rejected Successfully.",
-                                            }
-                                        );
-                                    }
+                                    dto.tranStatus.lstErrorItem.Add(
+                                        new ErrorItem
+                                        {
+                                            ErrorNo = "VMS000",
+                                            Message = "Rejected Successfully.",
+                                        }
+                                    );
                                 }
                             }
-                            else if (dto.CurrLvlSts == 75)
-                            {
-                                dto.tranStatus.result = false;
-
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message = $"{request.documentno} Already in Approved Status",
-                                    }
-                                );
-                            }
-                            else if (dto.CurrLvlSts == 76)
-                            {
-                                dto.tranStatus.result = false;
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message = $"{request.documentno} Already in Rejected Status",
-                                    }
-                                );
-                            }
                         }
+                        else if (dto.CurrLvlSts == 75)
+                        {
+                            dto.tranStatus.result = false;
+
+                            dto.tranStatus.lstErrorItem.Add(
+                                new ErrorItem
+                                {
+                                    ErrorNo = "VMS000",
+                                    Message = $"{request.documentno} Already in Approved Status",
+                                }
+                            );
+                        }
+                        else if (dto.CurrLvlSts == 76)
+                        {
+                            dto.tranStatus.result = false;
+                            dto.tranStatus.lstErrorItem.Add(
+                                new ErrorItem
+                                {
+                                    ErrorNo = "VMS000",
+                                    Message = $"{request.documentno} Already in Rejected Status",
+                                }
+                            );
+                        }
+                    }
                     }
                 }
             }
@@ -1285,7 +1507,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
         }
 
         public async Task<ApprovalWorkFlowDTO> UserWorkFlowUpdateAsync(JObject obj)
-        {
+         {
             ApprovalRequest request = obj["ApprovalRequest"].ToObject<ApprovalRequest>();
             // using (var command = dbContext.Database.GetDbConnection().CreateCommand())
             // {
@@ -1296,12 +1518,15 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                 company = dbContext
                     .Companies.Where(x => x.CompanyId == request.companyid)
                     .SingleOrDefault();
+
+                
+
                 using (dapperContext)
                 {
                     var workflowheader = dbContext.ApprovalConfigurations
                         .Where(x => x.DocumentId == request.documentid
                             && x.PlantId == request.plantid
-                            && x.ApprovalActivityId == request.documentactivityid
+                            && (request.documentactivityid == null || x.ApprovalActivityId == request.documentactivityid)
                             && x.Status == 1)
                         .SingleOrDefault();
 
@@ -1324,7 +1549,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             });
                         }
 
-                        if (workflowheader.IsNotifyApprove == true)
+                        if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == false)
                         {
                             var nextLevelUsers = dbContext.ApprovalConfigurationDetails
                                 .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
@@ -1349,20 +1574,22 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
 
                                         VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
-                                        Approval approvalHeader = new Approval();
-                                        ApprovalDetail approvalDetail = new ApprovalDetail();
+                                         Approval approvalHeader = new Approval();
+                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
                                         approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno && x.Status == 74);
 
                                         User VisitEmp = new User();
-                                        Role VisitedEmpRole = new Role();
+                                        Department VisitedEmpDept = new Department();
 
-                                        if (VisEntry.VisitorTypeId != 66)
-                                        {
-                                            VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
-                                            VisitedEmpRole = dbContext.Roles.FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
-                                        }
+                                            if (VisEntry.VisitorTypeId != 66)
+                                            {
+                                                VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                                VisitedEmpDept = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == VisitEmp.DeptId);
+                                            }
 
+                                        DateTime? visitDate = request.status != 145 ? VisEntry.ValidFrom : VisEntry.RescheduledDateTime;
+                                       
                                         if (request.status == 75 && VisEntry.Status == 74)
                                         {
                                             var VisEntryDetail = dbContext.VisitorEntryDetails
@@ -1374,13 +1601,12 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             var visitorCompany = company.CompanyName;
 
 
-
                                             // Replace email placeholders
                                             MailText = MailText
                                                 .Replace("[WhomToVisit]", VisitEmp?.UserName ?? "-")
                                                 .Replace("[Visitor]", VisEntry.PersonName)
-                                                .Replace("[VisitDate]", VisEntry.ValidFrom?.ToString("dd-MM-yyyy"))
-                                                .Replace("[VisitTime]", VisEntry.ValidFrom?.ToString("hh:mm tt"))
+                                                .Replace("[VisitDate]", visitDate?.ToString("dd-MM-yyyy"))
+                                                .Replace("[VisitTime]", visitDate?.ToString("hh:mm tt"))
                                                 .Replace("[VisitorCompany]", visitorCompany)
                                                 .Replace("[PurposeOfVisit]", purpose?.MetaSubDescription ?? "-")
                                                 .Replace("[approveLevels]", "")
@@ -1394,7 +1620,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             {
                                                 FromID = "reply-no@visitorManagement.com",
                                                 ToID = notifyUser.UserEmail,
-                                                Subject = $"Visitor Pass Notification: {VisEntry.PersonName} scheduled on {VisEntry.ValidFrom?.ToString("dd-MM-yyyy")}",
+                                                Subject = $"Visitor Pass Notification: {VisEntry.PersonName} scheduled on {visitDate?.ToString("dd-MM-yyyy")}",
                                                 Template = MailText
                                             };
 
@@ -1404,11 +1630,11 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             // Send WhatsApp Notification
                                             string notifyMessage = $"Dear {notifyUser.UserName},\n" +
                                                 $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
-                                                $"📅 Visit Date: {VisEntry.ValidFrom?.ToString("dd-MM-yyyy")}\n" +
-                                                $"🕒 Visit Time: {VisEntry.ValidFrom?.ToString("hh:mm tt")}\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
                                                 $"🏢 Visitor Company: {visitorCompany}\n" +
                                                 $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
-                                                $"👤 To Meet: {VisitEmp?.UserName} ({VisitedEmpRole?.RoleName})\n\n" +
+                                                $"👤 To Meet: {VisitEmp?.UserName} ({VisitedEmpDept?.DepartmentName})\n\n" +
                                                 $"Please stay alert for further notifications.";
 
                                             var whatsJson = new JObject
@@ -1458,8 +1684,8 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             await dbContext.SaveChangesAsync();
 
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpRole?.RoleName);
-                                            var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
 
                                             dto.tranStatus.result = true;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
@@ -1478,14 +1704,237 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             approvalHeader.Status = (int)request.status;
                                             dbContext.Approvals.Update(approvalHeader);
 
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company, VisitEmp?.UserName, VisitedEmpRole?.RoleName);
-                                            var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company , VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
 
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
                                                 ErrorNo = "VMS000",
                                                 Message = "Rejected Successfully."
+                                            });
+                                        }
+                                        else if (request.status == 145){
+
+                                            approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno );
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = VisEntry.Status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = VisEntry.Status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company , VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+
+                                            dto.tranStatus.result = false;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Rescheduled Successfully."
+                                            });
+                                        }
+                                    }
+                                }
+                            }
+                        }
+
+                        if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == true)
+                        {
+
+                            User user1 = new User();
+                            user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                            Department department = new Department();
+                            department = dbContext.Departments
+                                .Where(x => x.DepartmentId == user1.DeptId)
+                                .SingleOrDefault();
+
+                            var nextLevelUsers = dbContext.ApprovalConfigurationDetails
+                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId 
+                                    && x.DepartmentId == user1.DeptId)
+                                .OrderBy(x => x.LevelId)
+                                .Skip(1)
+                                .ToList();
+
+                            foreach (var user in nextLevelUsers)
+                            {
+                                var notifyUserId = user.PrimaryUserId;
+                                if (notifyUserId > 0)
+                                {
+                                    var notifyUser = dbContext.Users.FirstOrDefault(x => x.UserId == notifyUserId);
+                                    if (notifyUser != null && !string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                    {
+                                        string BrandLogo = Path.Combine(Directory.GetCurrentDirectory(), "upload", "Logo", "app-logo.png");
+                                        string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+                                        string FilePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "VisitorEntryNotifyTemplate.html");
+                                        string MailText = await File.ReadAllTextAsync(FilePath);
+                                        string PassFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Templates", "VisitorPass.html");
+                                        string PassMailText = await File.ReadAllTextAsync(PassFilePath);
+
+
+                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                         Approval approvalHeader = new Approval();
+                                         ApprovalDetail approvalDetail = new ApprovalDetail();
+                                        approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
+                                        approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno && x.Status == 74);
+
+                                        // User VisitEmp = new User();
+                                        // Department VisitedEmpDept = new Department();
+
+                                            if (VisEntry.VisitorTypeId != 66)
+                                            {
+                                                user1 = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                                department = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == user1.DeptId);
+                                            }
+
+                                        DateTime? visitDate = request.status != 145 ? VisEntry.ValidFrom : VisEntry.RescheduledDateTime;
+                                       
+                                        if (request.status == 75 && VisEntry.Status == 74)
+                                        {
+                                            var VisEntryDetail = dbContext.VisitorEntryDetails
+                                                .Where(x => x.VisitorEntryId == VisEntry.VisitorEntryId)
+                                                .ToList();
+
+                                            VisEntry.VisitorEntryDetails = VisEntryDetail;
+                                            var purpose = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
+                                            var visitorCompany = company.CompanyName;
+
+
+                                            // Replace email placeholders
+                                            MailText = MailText
+                                                .Replace("[WhomToVisit]", user1?.UserName ?? "-")
+                                                .Replace("[Department]", department?.DepartmentName ?? "-")
+                                                .Replace("[Visitor]", VisEntry.PersonName)
+                                                .Replace("[VisitDate]", visitDate?.ToString("dd-MM-yyyy"))
+                                                .Replace("[VisitTime]", visitDate?.ToString("hh:mm tt"))
+                                                .Replace("[VisitorCompany]", visitorCompany)
+                                                .Replace("[PurposeOfVisit]", purpose?.MetaSubDescription ?? "-")
+                                                .Replace("[approveLevels]", "")
+                                                .Replace("{{serviceURL}}", _mailSettings.Service)
+                                                .Replace("{{siteURL}}", _mailSettings.Website)
+                                                .Replace("{{Logo}}", BrandLogo)
+                                                .Replace("{{BrandLogoBig}}", BrandLogoBig);
+
+                                            // Send Email
+                                            var emailObj = new
+                                            {
+                                                FromID = "reply-no@visitorManagement.com",
+                                                ToID = notifyUser.UserEmail,
+                                                Subject = $"Visitor Pass Notification: {VisEntry.PersonName} scheduled on {visitDate?.ToString("dd-MM-yyyy")}",
+                                                Template = MailText
+                                            };
+
+                                            JObject convertObj = (JObject)JToken.FromObject(emailObj);
+                                            await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+
+                                            // Send WhatsApp Notification
+                                            string notifyMessage = $"Dear {notifyUser.UserName},\n" +
+                                                $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
+                                                $"🏢 Visitor Company: {visitorCompany}\n" +
+                                                $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
+                                                $"👤 To Meet: {user1?.UserName} ({department?.DepartmentName})\n\n" +
+                                                $"Please stay alert for further notifications.";
+
+                                            var whatsJson = new JObject
+                                            {
+                                                ["to_contact"] = "91" + notifyUser.UserTelNo,
+                                                ["type"] = "text",
+                                                ["text"] = new JObject { ["body"] = notifyMessage }
+                                            };
+
+                                            var whatsRes = await whatsAppService.SendApprovalReqWhatsApp(JsonConvert.SerializeObject(whatsJson));
+
+                                            JObject whatsResponse = JObject.Parse(whatsRes?.ToString() ?? "{}");
+                                            bool isFailed = whatsResponse?["status"]?.Value<bool>() == false;
+
+                                            if (isFailed)
+                                            {
+                                                dynamic jsonObject = new JObject();
+                                                jsonObject.to_contact = "91" + Convert.ToString(user1.UserTelNo);
+                                                jsonObject.type = "template";
+
+                                                dynamic template = new JObject();
+                                                template.name = "approval_notify_template";
+                                                template.language = "en";
+
+                                                jsonObject.template = template;
+
+                                                await whatsAppService.SendApprovalReqWhatsApp(JsonConvert.SerializeObject(jsonObject));
+                                            }
+
+                                            WhatsAppLogSaveOut(
+                                                whatsJson,
+                                                (int)VisEntry.CompanyId,
+                                                (int)VisEntry.PlantId,
+                                                (int)VisEntry.VisitedEmployeeId,
+                                                "917358112529",
+                                                "91" + notifyUser.UserTelNo,
+                                                DateTime.Now,
+                                                "notify_text_vms",
+                                                VisEntry.VisitorEntryCode);
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = (int)request.status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = (int)request.status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            await dbContext.SaveChangesAsync();
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+
+                                            dto.tranStatus.result = true;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Notification Sent Successfully."
+                                            });
+                                        }
+                                        else if (request.status == 76 && VisEntry.Status == 74)
+                                        {
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = (int)request.status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = (int)request.status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company , user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
+
+                                            dto.tranStatus.result = false;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Rejected Successfully."
+                                            });
+                                        }
+                                        else if (request.status == 145){
+
+                                            approvalDetail = dbContext.ApprovalDetails.FirstOrDefault(x => x.DocumentNo == request.documentno );
+
+                                            VisEntry.Status = (int)request.status;
+                                            dbContext.VisitorEntries.Update(VisEntry);
+                                            approvalDetail.Status = VisEntry.Status;
+                                            dbContext.ApprovalDetails.Update(approvalDetail);
+                                            approvalHeader.Status = VisEntry.Status;
+                                            dbContext.Approvals.Update(approvalHeader);
+
+                                            var sendpassnail =  SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company , user1?.UserName, department?.DepartmentName);
+                                            var sendpasswh =  SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
+
+                                            dto.tranStatus.result = false;
+                                            dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                            {
+                                                ErrorNo = "VMS000",
+                                                Message = "Rescheduled Successfully."
                                             });
                                         }
                                     }
@@ -1498,267 +1947,290 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     if (workflowheader.IsNotifyApprove == false)
                     {
 
-                        if (dto.tranStatus.lstErrorItem.Count == 0)
-                        {
-                            request.Isviewed = 1;
+                    if (dto.tranStatus.lstErrorItem.Count == 0)
+                    {
+                        request.Isviewed = 1;
 
-                            // Execute the stored procedure with all parameters
-                            var spCall = await dapperContext.ExecuteStoredProcedureAsync(
-                                "SP_APPROVAL_WORKFLOW_UPDATE",
-                                new
-                                {
-                                    CompanyId = request.companyid,
-                                    PlantId = request.plantid,
-                                    RequesterId = request.requesterid,
-                                    DocumentNo = request.documentno,
-                                    DocumentId = request.documentid,
-                                    DocumentActivityId = request.documentactivityid,
-                                    DocumentDetailId = request.documentdetailid,
-                                    Status = request.status,
-                                    ApproverId = request.approverid,
-                                    LevelId = request.levelid,
-                                    AlternateUser = request.alternateuser,
-                                    Remarks1 = request.remarks1,
-                                    Remarks2 = request.remarks2,
-                                    ParentId = request.parentid,
-                                    UserId = request.userid,
-                                    RequestFromDate = request.requestfromdate,
-                                    RequestToDate = request.requesttodate,
-                                    IsViewed = request.Isviewed,
-                                }
-                            );
-
-                            dto.ConditionExists = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            dto.CurrLvlSts = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            if (dto.ConditionExists == 1)
+                        // Execute the stored procedure with all parameters
+                        var spCall = await dapperContext.ExecuteStoredProcedureAsync(
+                            "SP_APPROVAL_WORKFLOW_UPDATE",
+                            new
                             {
-                                dto.ConditionList =
-                                    (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
-                                var tempapprovalDetail = dbContext
-                                    .ApprovalDetails.Where(x =>
-                                        x.DocumentNo == request.documentno
-                                        && x.PrimaryUserId == request.approverid
-                                    )
-                                    .SingleOrDefault();
+                                CompanyId = request.companyid,
+                                PlantId = request.plantid,
+                                RequesterId = request.requesterid,
+                                DocumentNo = request.documentno,
+                                DocumentId = request.documentid,
+                                DocumentActivityId = request.documentactivityid,
+                                DocumentDetailId = request.documentdetailid,
+                                Status = request.status,
+                                ApproverId = request.approverid,
+                                LevelId = request.levelid,
+                                AlternateUser = request.alternateuser,
+                                Remarks1 = request.remarks1,
+                                Remarks2 = request.remarks2,
+                                ParentId = request.parentid,
+                                UserId = request.userid,
+                                RequestFromDate = request.requestfromdate,
+                                RequestToDate = request.requesttodate,
+                                IsViewed = request.Isviewed,
+                            }
+                        );
+
+                        dto.ConditionExists = (await spCall.ReadFirstOrDefaultAsync<int>());
+                        dto.CurrLvlSts = (await spCall.ReadFirstOrDefaultAsync<int>());
+                        if (dto.ConditionExists == 1)
+                        {
+                            dto.ConditionList =
+                                (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
+                            var tempapprovalDetail = dbContext
+                                .ApprovalDetails.Where(x =>
+                                    x.DocumentNo == request.documentno
+                                    && x.PrimaryUserId == request.approverid
+                                )
+                                .SingleOrDefault();
+                            dto.tranStatus.result = false;
+                            if (tempapprovalDetail.Status == 75)
+                            {
+                                dto.tranStatus.lstErrorItem.Add(
+                                    new ErrorItem
+                                    {
+                                        ErrorNo = "VMS000",
+                                        Message =
+                                            $"{tempapprovalDetail.DocumentNo} Already in Approved Status",
+                                    }
+                                );
+                            }
+                            if (tempapprovalDetail.Status == 76)
+                            {
                                 dto.tranStatus.result = false;
-                                if (tempapprovalDetail.Status == 75)
+                                dto.tranStatus.lstErrorItem.Add(
+                                    new ErrorItem
+                                    {
+                                        ErrorNo = "VMS000",
+                                        Message =
+                                            $"{tempapprovalDetail.DocumentNo} Already in Rejected Status",
+                                    }
+                                );
+                            }
+                        }
+                        else if (dto.CurrLvlSts == 74)
+                        {
+                            dto.UpdatedApprovalDetailList = (
+                                await spCall.ReadAsync<dynamic>()
+                            ).ToList();
+                            dto.StatusSP = (await spCall.ReadFirstOrDefaultAsync<int>());
+                            dto.NextStageCountSP = (await spCall.ReadFirstOrDefaultAsync<int>());
+                            if (dto.StatusSP != 76)
+                            {
+                                if (dto.NextStageCountSP != 0)
                                 {
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message =
-                                                $"{tempapprovalDetail.DocumentNo} Already in Approved Status",
-                                        }
-                                    );
+                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
+                                    dto.ApprovalDetailList = (
+                                        await spCall.ReadAsync<dynamic>()
+                                    ).ToList();
+                                    dto.NextApprovalDetail = (
+                                        await spCall.ReadAsync<ApprovalDetail>()
+                                    ).SingleOrDefault();
                                 }
-                                if (tempapprovalDetail.Status == 76)
+                                else
                                 {
-                                    dto.tranStatus.result = false;
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message =
-                                                $"{tempapprovalDetail.DocumentNo} Already in Rejected Status",
-                                        }
-                                    );
+                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
+                                    dto.ApprovalDetailList = (
+                                        await spCall.ReadAsync<dynamic>()
+                                    ).ToList();
+                                    dto.NextApprovalDetail = (
+                                        await spCall.ReadAsync<ApprovalDetail>()
+                                    ).SingleOrDefault();
+                                    if (request.documentid == 42)
+                                    {
+                                        // WorkPermit workPermit = new WorkPermit();
+                                        // workPermit = dbContext
+                                        //     .WorkPermits.Where(x =>
+                                        //         x.VisitorEntryCode == request.documentno
+                                        //     )
+                                        //     .SingleOrDefault();
+                                        // var VisEntryDetail = dbContext
+                                        //     .VisitorEntryDetails.Where(x =>
+                                        //         x.VisitorEntryId == VisEntry.VisitorEntryId
+                                        //     )
+                                        //     .ToList();
+                                        // VisEntry.VisitorEntryDetails = VisEntryDetail;
+
+                                        // SendPassInternal(VisEntry, "true", company);
+                                        // dto.tranStatus.result = true;
+
+                                        // dto.tranStatus.lstErrorItem.Add(
+                                        //     new ErrorItem
+                                        //     {
+                                        //         ErrorNo = "VMS000",
+                                        //         Message = "Pass Sent Successfully.",
+                                        //     }
+                                        // );
+                                    }
                                 }
                             }
-                            else if (dto.CurrLvlSts == 74)
+
+                            // var approvalHeader = dbContext
+                            //     .Approvals.Where(x => x.DocumentNo == request.documentno)
+                            //     .SingleOrDefault();
+
+                            if (request.documentid == 34 )
                             {
-                                dto.UpdatedApprovalDetailList = (
-                                    await spCall.ReadAsync<dynamic>()
-                                ).ToList();
-                                dto.StatusSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                                dto.NextStageCountSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                                if (dto.StatusSP != 76)
+                                VisEntry = dbContext
+                                    .VisitorEntries.Where(x =>
+                                        x.VisitorEntryCode == request.documentno
+                                    )
+                                    .SingleOrDefault();
+                                var VisEntryDetail = dbContext
+                                    .VisitorEntryDetails.Where(x =>
+                                        x.VisitorEntryId == VisEntry.VisitorEntryId
+                                    )
+                                    .ToList();
+                                VisEntry.VisitorEntryDetails = VisEntryDetail;
+
+                                if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP != 76)
                                 {
-                                    if (dto.NextStageCountSP != 0)
+                                    // if (approvalHeader.Status == 74)
+                                    // {
+                                    if (
+                                        dto.ApprovalDetailList != null
+                                        && dto.ApprovalDetailList.Count > 0
+                                    )
                                     {
-                                        dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                        dto.ApprovalDetailList = (
-                                            await spCall.ReadAsync<dynamic>()
-                                        ).ToList();
-                                        dto.NextApprovalDetail = (
-                                            await spCall.ReadAsync<ApprovalDetail>()
-                                        ).SingleOrDefault();
-                                    }
-                                    else
-                                    {
-                                        dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                        dto.ApprovalDetailList = (
-                                            await spCall.ReadAsync<dynamic>()
-                                        ).ToList();
-                                        dto.NextApprovalDetail = (
-                                            await spCall.ReadAsync<ApprovalDetail>()
-                                        ).SingleOrDefault();
-                                        if (request.documentid == 42)
+
+                                        // Assign PrimaryUserId if it's missing
+                                        foreach (var item in dto.ApprovalDetailList)
                                         {
-                                            // WorkPermit workPermit = new WorkPermit();
-                                            // workPermit = dbContext
-                                            //     .WorkPermits.Where(x =>
-                                            //         x.VisitorEntryCode == request.documentno
-                                            //     )
-                                            //     .SingleOrDefault();
-                                            // var VisEntryDetail = dbContext
-                                            //     .VisitorEntryDetails.Where(x =>
-                                            //         x.VisitorEntryId == VisEntry.VisitorEntryId
-                                            //     )
-                                            //     .ToList();
-                                            // VisEntry.VisitorEntryDetails = VisEntryDetail;
-
-                                            // SendPassInternal(VisEntry, "true", company);
-                                            // dto.tranStatus.result = true;
-
-                                            // dto.tranStatus.lstErrorItem.Add(
-                                            //     new ErrorItem
-                                            //     {
-                                            //         ErrorNo = "VMS000",
-                                            //         Message = "Pass Sent Successfully.",
-                                            //     }
-                                            // );
+                                            long? primaryUserIds = VisEntry.VisitedEmployeeId;
+                                             object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
+                                            if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
+                                            {
+                                                item.PrimaryUserId = valueToSet;
+                                            }
                                         }
-                                    }
-                                }
 
-                                // var approvalHeader = dbContext
-                                //     .Approvals.Where(x => x.DocumentNo == request.documentno)
-                                //     .SingleOrDefault();
+                                        // Get approver detail based on request.approverid
+                                        long approverIdToCheck = request.approverid != 0 
+                                            ? request.approverid 
+                                            : dto.ApprovalDetailList.FirstOrDefault()?.PrimaryUserId ?? 0;
 
-                                if (request.documentid == 34)
-                                {
-                                    VisEntry = dbContext
-                                        .VisitorEntries.Where(x =>
-                                            x.VisitorEntryCode == request.documentno
-                                        )
-                                        .SingleOrDefault();
-                                    var VisEntryDetail = dbContext
-                                        .VisitorEntryDetails.Where(x =>
-                                            x.VisitorEntryId == VisEntry.VisitorEntryId
-                                        )
-                                        .ToList();
-                                    VisEntry.VisitorEntryDetails = VisEntryDetail;
+                                        var tempapprovalDetail = dto.ApprovalDetailList
+                                            .FirstOrDefault(x => x.PrimaryUserId == approverIdToCheck);
 
-                                    if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP != 76)
-                                    {
-                                        // if (approvalHeader.Status == 74)
-                                        // {
+
                                         if (
-                                            dto.ApprovalDetailList != null
-                                            && dto.ApprovalDetailList.Count > 0
+                                            tempapprovalDetail != null
+                                            && 
+                                            tempapprovalDetail.Status == 75
                                         )
                                         {
 
-                                            // Assign PrimaryUserId if it's missing
+
+                                            User users = new User();
+                                            Department departments = new Department();
+
                                             foreach (var item in dto.ApprovalDetailList)
                                             {
-                                                long? primaryUserIds = VisEntry.VisitedEmployeeId;
-                                                object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
-                                                if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
-                                                {
-                                                    item.PrimaryUserId = valueToSet;
-                                                }
+                                            long? primaryUserIds = VisEntry.VisitedEmployeeId;
+                                             object valueToSet = primaryUserIds.HasValue ? (object)primaryUserIds.Value : null;
+                                            if (item.PrimaryUserId == 0 && primaryUserIds.HasValue)
+                                            {
+                                                item.PrimaryUserId = valueToSet;
+                                            }
                                             }
 
-                                            // Get approver detail based on request.approverid
-                                            long approverIdToCheck = request.approverid != 0
-                                                ? request.approverid
-                                                : dto.ApprovalDetailList.FirstOrDefault()?.PrimaryUserId ?? 0;
-
-                                            var tempapprovalDetail = dto.ApprovalDetailList
-                                                .FirstOrDefault(x => x.PrimaryUserId == approverIdToCheck);
 
 
-                                            if (
-                                                tempapprovalDetail != null
-                                                &&
-                                                tempapprovalDetail.Status == 75
-                                            )
-                                            {
-
-                                                User VisitedEmp = new User();
-                                                Role VisitedEmpRole = new Role();
-                                                if (VisEntry.VisitorTypeId != 66)
+                                            if (VisEntry.VisitorTypeId != 66)
                                                 {
-                                                    VisitedEmp = dbContext
+                                            users = dbContext
                                                         .Users.Where(x =>
                                                             x.UserId
-                                                            == dto.NextApprovalDetail.PrimaryUserId
+                                                            == approverIdToCheck
                                                         )
                                                         .SingleOrDefault();
-                                                    VisitedEmpRole = dbContext
-                                                        .Roles.Where(x =>
-                                                            x.RoleId == VisitedEmp.DefaultRoleId
-                                                        )
-                                                        .SingleOrDefault();
+                                            departments = dbContext.Departments
+                                                .Where(x => x.DepartmentId == users.DeptId)
+                                                .SingleOrDefault();
                                                 }
 
-                                                if (dto.NextApprovalDetail.Status == 74)
+                                           
+
+                                               
+
+                                            if (dto.NextApprovalDetail.Status == 74)
+                                            {
+                                                // MAIL APPROVAL
+                                                var approvedLink = "";
+
+                                                string BrandLogo =
+                                                    Directory.GetCurrentDirectory()
+                                                    + "\\upload\\Logo\\app-logo.png";
+                                                string BrandLogoBig =
+                                                    "/upload/Logo/app-logo-big.png";
+                                                string FilePath =
+                                                    Directory.GetCurrentDirectory()
+                                                    + "\\Templates\\VisitorEntryEmailTemplate.html";
+                                                StreamReader str = new StreamReader(FilePath);
+                                                string MailText = str.ReadToEnd();
+                                                Company companyEmailConfig = new Company();
+                                                VisitorEntry visitorEntryUpdated =
+                                                    new VisitorEntry();
+
+                                                if(dto.NextApprovalDetail.PrimaryUserId == 0)
                                                 {
-                                                    // MAIL APPROVAL
-                                                    var approvedLink = "";
+                                                    dto.NextApprovalDetail.PrimaryUserId = (long)VisEntry.VisitedEmployeeId;
+                                                }
 
-                                                    string BrandLogo =
-                                                        Directory.GetCurrentDirectory()
-                                                        + "\\upload\\Logo\\app-logo.png";
-                                                    string BrandLogoBig =
-                                                        "/upload/Logo/app-logo-big.png";
-                                                    string FilePath =
-                                                        Directory.GetCurrentDirectory()
-                                                        + "\\Templates\\VisitorEntryEmailTemplate.html";
-                                                    StreamReader str = new StreamReader(FilePath);
-                                                    string MailText = str.ReadToEnd();
-                                                    Company companyEmailConfig = new Company();
-                                                    VisitorEntry visitorEntryUpdated =
-                                                        new VisitorEntry();
-                                                    var primeUser = dbContext
-                                                        .Users.Where(x =>
-                                                            x.UserId
-                                                            == dto.NextApprovalDetail.PrimaryUserId
-                                                        )
-                                                        .SingleOrDefault();
 
-                                                    companyEmailConfig = dbContext
-                                                        .Companies.Where(x =>
-                                                            x.CompanyId == VisEntry.CompanyId
-                                                        )
-                                                        .SingleOrDefault();
-                                                    // var userData = dbContext.Users.AsNoTracking(x => x.UserId == primaryUserId);
+                                                var primeUser = dbContext
+                                                    .Users.Where(x =>
+                                                        x.UserId
+                                                        == dto.NextApprovalDetail.PrimaryUserId
+                                                    )
+                                                    .SingleOrDefault();
+                                               
+                                                companyEmailConfig = dbContext
+                                                    .Companies.Where(x =>
+                                                        x.CompanyId == VisEntry.CompanyId
+                                                    )
+                                                    .SingleOrDefault();
+                                               // var userData = dbContext.Users.AsNoTracking(x => x.UserId == primaryUserId);
 
-                                                    var userApproverData = dbContext
-                                                        .Users.AsNoTracking()
-                                                        .FirstOrDefault(x => x.UserId == dto.NextApprovalDetail.PrimaryUserId);
+                                                var userApproverData = dbContext
+                                                    .Users.AsNoTracking()
+                                                    .FirstOrDefault(x => x.UserId == dto.NextApprovalDetail.PrimaryUserId);
 
-                                                    var approveLink = GenerateMailToken(
-                                                        "ENCRYPT",
-                                                        "",
-                                                        "APPROVE",
-                                                        $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                    );
-                                                    var rejectLink = GenerateMailToken(
-                                                        "ENCRYPT",
-                                                        "",
-                                                        "REJECT",
-                                                        $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                    );
-                                                    var rescheduleLink = GenerateMailToken(
-                                                       "ENCRYPT",
-                                                       "",
-                                                       "RESCHEDULE",
-                                                       $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
-                                                   );
+                                                var approveLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "APPROVE",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                );
+                                                var rejectLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "REJECT",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                );
+                                                 var rescheduleLink = GenerateMailToken(
+                                                    "ENCRYPT",
+                                                    "",
+                                                    "RESCHEDULE",
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
+                                                );
 
-                                                    string resultHtml = "";
-                                                    string resultWhatsapp = "";
-                                                    StringBuilder approvalBuilder = new StringBuilder();
-                                                    StringBuilder whatsappBuilder = new StringBuilder();
+                                                string resultHtml = "";
+                                                string resultWhatsapp = "";
+                                                StringBuilder approvalBuilder = new StringBuilder();
+                                                StringBuilder whatsappBuilder = new StringBuilder();
 
-                                                    if (dto.UpdatedApprovalDetailList?.Count > 0)
-                                                    {
-                                                        int levelCount = 1;
+                                                if (dto.UpdatedApprovalDetailList?.Count > 0)
+                                                {
+                                                    int levelCount = 1;
 
-                                                        approvalBuilder.Append(@"
+                                                    approvalBuilder.Append(@"
                                                         <table style='
                                                             font-family: Arial, sans-serif;
                                                             font-size: 16px;
@@ -1777,63 +2249,63 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                         <tbody>
                                                     ");
 
-                                                        foreach (var level in dto.UpdatedApprovalDetailList)
+                                                    foreach (var level in dto.UpdatedApprovalDetailList)
+                                                    {
+                                                        long primaryUserId = Convert.ToInt64(level.PrimaryUserId);
+                                                        long levelId = Convert.ToInt64(level.LevelId);
+                                                        string documentNo = level.DocumentNo;
+
+                                                        User userData = new User();
+
+
+                                                        if (primaryUserId == 0)
                                                         {
-                                                            long primaryUserId = Convert.ToInt64(level.PrimaryUserId);
-                                                            long levelId = Convert.ToInt64(level.LevelId);
-                                                            string documentNo = level.DocumentNo;
+                                                            var visitorData = dbContext.VisitorEntries
+                                                                .FirstOrDefault(x => x.VisitorEntryCode == documentNo);
+                                                            userData = dbContext.Users
+                                                                .FirstOrDefault(x => x.UserId == visitorData.VisitedEmployeeId);
+                                                        }
+                                                        else
+                                                        {
+                                                            userData = dbContext.Users
+                                                                .FirstOrDefault(x => x.UserId == primaryUserId);
+                                                        }
 
-                                                            User userData = new User();
-
-
-                                                            if (primaryUserId == 0)
-                                                            {
-                                                                var visitorData = dbContext.VisitorEntries
-                                                                    .FirstOrDefault(x => x.VisitorEntryCode == documentNo);
-                                                                userData = dbContext.Users
-                                                                    .FirstOrDefault(x => x.UserId == visitorData.VisitedEmployeeId);
-                                                            }
-                                                            else
-                                                            {
-                                                                userData = dbContext.Users
-                                                                    .FirstOrDefault(x => x.UserId == primaryUserId);
-                                                            }
-
-                                                            // var userData = dbContext.Users
-                                                            //  .FirstOrDefault(x => x.UserId == primaryUserId);
+                                                        // var userData = dbContext.Users
+                                                        //  .FirstOrDefault(x => x.UserId == primaryUserId);
 
 
-                                                            var metaLevelData = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == levelId);
-                                                            var deptData = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == userData.DeptId);
-                                                            var roleData = dbContext.Roles.FirstOrDefault(x => x.RoleId == userData.DefaultRoleId);
+                                                        var metaLevelData = dbContext.Metadata.FirstOrDefault(x => x.MetaSubId == levelId);
+                                                        var deptData = dbContext.Departments.FirstOrDefault(x => x.DepartmentId == userData.DeptId);
+                                                        var roleData = dbContext.Roles.FirstOrDefault(x => x.RoleId == userData.DefaultRoleId);
 
-                                                            var userName = userData?.UserName ?? "Unknown";
-                                                            var department = deptData?.DepartmentName ?? "Unknown";
-                                                            var roleName = roleData?.RoleName ?? "Unknown";
-                                                            var levelName = metaLevelData?.MetaSubDescription ?? $"Level {levelCount}";
+                                                        var userName = userData?.UserName ?? "Unknown";
+                                                        var departmentss = deptData?.DepartmentName ?? "Unknown";
+                                                        var roleName = roleData?.RoleName ?? "Unknown";
+                                                        var levelName = metaLevelData?.MetaSubDescription ?? $"Level {levelCount}";
 
-                                                            // HTML row
-                                                            approvalBuilder.AppendFormat(@"
+                                                        // HTML row
+                                                        approvalBuilder.AppendFormat(@"
                                                             <tr>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{0}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{1}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{2}</td>
                                                                 <td style='border: 1px solid #ddd; padding: 10px;'>{3}</td>
                                                             </tr>
-                                                        ", levelName, userName, department, roleName);
+                                                        ", levelName, userName, departmentss, roleName);
 
-                                                            // WhatsApp line
-                                                            whatsappBuilder.AppendLine($"Level: *{levelName}*");
-                                                            whatsappBuilder.AppendLine($"Approver: *{userName}*");
-                                                            whatsappBuilder.AppendLine($"Department: *{department}*");
-                                                            whatsappBuilder.AppendLine($"Role: *{roleName}*");
-                                                            whatsappBuilder.AppendLine();
+                                                        // WhatsApp line
+                                                        whatsappBuilder.AppendLine($"Level: *{levelName}*");
+                                                        whatsappBuilder.AppendLine($"Approver: *{userName}*");
+                                                        whatsappBuilder.AppendLine($"Department: *{departmentss}*");
+                                                        whatsappBuilder.AppendLine($"Role: *{roleName}*");
+                                                        whatsappBuilder.AppendLine();
 
-                                                            levelCount++;
-                                                        }
+                                                        levelCount++;
+                                                    }
 
-                                                        // Close HTML table
-                                                        approvalBuilder.Append(@"
+                                                    // Close HTML table
+                                                    approvalBuilder.Append(@"
                                                         </tbody>
                                                         <tfoot>
                                                             <tr>
@@ -1850,263 +2322,263 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                         </tfoot>
                                                     </table>");
 
-                                                        // WhatsApp footer
-                                                        whatsappBuilder.AppendLine("Status: *Approved*");
-                                                    }
-
-                                                    // Final values
-                                                    resultHtml = approvalBuilder.ToString();
-                                                    resultWhatsapp = whatsappBuilder.ToString().Trim();
-
-                                                    visitorEntryUpdated = VisEntry;
-                                                    dto.VisitorEntryHeader = visitorEntryUpdated;
-                                                    var PurposeName = dbContext
-                                                        .Metadata.Where(x =>
-                                                            x.MetaSubId == VisEntry.PurposeOfVisit
-                                                        )
-                                                        .SingleOrDefault();
-                                                    var visitorCompany = VisEntryDetail[0].VisitorCompany;
-                                                    MailText = MailText
-                                                        .Replace(
-                                                            "[WhomToVisit]",
-                                                            Convert.ToString(VisitedEmp?.UserName)
-                                                        )
-                                                        .Replace(
-                                                            "[Visitor]",
-                                                            Convert.ToString(VisEntry.PersonName)
-                                                        )
-                                                        .Replace(
-                                                            "[approveLevels]",
-                                                            Convert.ToString(resultHtml ?? "")
-                                                        )
-                                                        .Replace(
-                                                            "[VisitDate]",
-                                                            Convert.ToString(
-                                                                VisEntry.ValidFrom.Value.ToShortDateString()
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "[VisitTime]",
-                                                            Convert.ToString(
-                                                                VisEntry.ValidFrom.Value.ToShortTimeString()
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "[VisitorCompany]",
-                                                            Convert.ToString(visitorCompany ?? "-")
-                                                        )
-                                                        .Replace(
-                                                            "[PurposeOfVisit]",
-                                                            Convert.ToString(
-                                                                PurposeName.MetaSubDescription
-                                                            )
-                                                        )
-                                                        .Replace(
-                                                            "{{ApproveLink}}",
-                                                            Convert.ToString(approveLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{RejectLink}}",
-                                                            Convert.ToString(rejectLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{RescheduleLink}}",
-                                                            Convert.ToString(rescheduleLink.Result)
-                                                        )
-                                                        .Replace(
-                                                            "{{serviceURL}}",
-                                                            _mailSettings.Service
-                                                        )
-                                                        .Replace("{{siteURL}}", _mailSettings.Website)
-                                                        .Replace("{{Logo}}", BrandLogo)
-                                                        .Replace("{{BrandLogoBig}}", BrandLogoBig);
-                                                    object emailObj = new
-                                                    {
-                                                        FromID = "reply-no@visitorManagement.com",
-                                                        ToID = VisitedEmp.UserEmail,
-                                                        Subject = $"Pending Approval for Visitor {VisEntry.PersonName} on {VisEntry.ValidFrom.Value.ToLongDateString()} {VisEntry.ValidFrom.Value.ToLongTimeString()} from {Convert.ToString(visitorCompany)} for {PurposeName.MetaSubDescription}",
-                                                        Template = MailText,
-                                                    };
-
-                                                    JObject convertObj = (JObject)
-                                                        JToken.FromObject(emailObj);
-                                                    var mail = mailService.SendApprovalReqEmail(
-                                                        convertObj,
-                                                        (long)dto.VisitorEntryHeader.CompanyId,
-                                                        companyEmailConfig
-                                                    );
-
-                                                    var whatsApp = whatsAppService.SendWhatsAppApproval(
-                                                            VisEntryDetail,
-                                                            dto.VisitorEntryHeader,
-                                                            PurposeName,
-                                                            visitorCompany,
-                                                            VisitedEmp,
-                                                            approveLink,
-                                                            rejectLink,
-                                                            // rescheduleLink,
-                                                            resultWhatsapp
-                                                        );
-
-                                                    approvedLink = approveLink.Result;
-                                                    dto.tranStatus.result = true;
-
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Approved Successfully.",
-                                                        }
-                                                    );
+                                                    // WhatsApp footer
+                                                    whatsappBuilder.AppendLine("Status: *Approved*");
                                                 }
-                                                else if (
-                                                    VisEntry != null
-                                                    && dto.NextApprovalDetail.Status == 75
-                                                )
-                                                {
-                                                    SendPassInternal(VisEntry, "true", company, VisitedEmp?.UserName, VisitedEmpRole?.RoleName);
 
-                                                    JObject jObject = new JObject(
-                                                        new JProperty(
-                                                            "UserId",
-                                                            VisEntry.VisitedEmployeeId
-                                                        ),
-                                                        new JProperty(
-                                                            "VisitorEntryCode",
-                                                            VisEntry.VisitorEntryCode
-                                                        ),
-                                                        new JProperty(
-                                                            "VisitorEntryDetailId",
-                                                            VisEntryDetail[0].VisitorEntryDetailId
-                                                        ),
-                                                        new JProperty("Checkintime", DateTime.Now),
-                                                        new JProperty("type", "")
-                                                    );
-                                                    if (
-                                                        VisEntry.ValidFrom.HasValue
-                                                        && VisEntry.ValidFrom.Value.Date
-                                                            == DateTime.Today
-                                                        && VisEntry.ValidFrom.Value.TimeOfDay
-                                                            <= DateTime.Now.TimeOfDay
-                                                        && VisEntry.IsInternalAppointment == false
+                                                // Final values
+                                                resultHtml = approvalBuilder.ToString();
+                                                resultWhatsapp = whatsappBuilder.ToString().Trim();
+
+                                                visitorEntryUpdated = VisEntry;
+                                                dto.VisitorEntryHeader = visitorEntryUpdated;
+                                                var PurposeName = dbContext
+                                                    .Metadata.Where(x =>
+                                                        x.MetaSubId == VisEntry.PurposeOfVisit
                                                     )
-                                                    {
-                                                        await CheckIn(jObject);
-                                                    }
-                                                    dto.tranStatus.result = true;
+                                                    .SingleOrDefault();
+                                                var visitorCompany = VisEntryDetail[0].VisitorCompany;
+                                                MailText = MailText
+                                                    .Replace(
+                                                        "[WhomToVisit]",
+                                                        Convert.ToString(users?.UserName)
+                                                    )
+                                                    .Replace(
+                                                        "[Visitor]",
+                                                        Convert.ToString(VisEntry.PersonName)
+                                                    )
+                                                    .Replace(
+                                                        "[approveLevels]",
+                                                        Convert.ToString(resultHtml ?? "")
+                                                    )
+                                                    .Replace(
+                                                        "[VisitDate]",
+                                                        Convert.ToString(
+                                                            VisEntry.ValidFrom.Value.ToShortDateString()
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "[VisitTime]",
+                                                        Convert.ToString(
+                                                            VisEntry.ValidFrom.Value.ToShortTimeString()
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "[VisitorCompany]",
+                                                        Convert.ToString(visitorCompany ?? "-")
+                                                    )
+                                                    .Replace(
+                                                        "[PurposeOfVisit]",
+                                                        Convert.ToString(
+                                                            PurposeName.MetaSubDescription
+                                                        )
+                                                    )
+                                                    .Replace(
+                                                        "{{ApproveLink}}",
+                                                        Convert.ToString(approveLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{RejectLink}}",
+                                                        Convert.ToString(rejectLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{RescheduleLink}}",
+                                                        Convert.ToString(rescheduleLink.Result)
+                                                    )
+                                                    .Replace(
+                                                        "{{serviceURL}}",
+                                                        _mailSettings.Service
+                                                    )
+                                                    .Replace("{{siteURL}}", _mailSettings.Website)
+                                                    .Replace("{{Logo}}", BrandLogo)
+                                                    .Replace("{{BrandLogoBig}}", BrandLogoBig);
+                                                object emailObj = new
+                                                {
+                                                    FromID = "reply-no@visitorManagement.com",
+                                                    ToID = users.UserEmail,
+                                                    Subject = $"Pending Approval for Visitor {VisEntry.PersonName} on {VisEntry.ValidFrom.Value.ToLongDateString()} {VisEntry.ValidFrom.Value.ToLongTimeString()} from {Convert.ToString(visitorCompany)} for {PurposeName.MetaSubDescription}",
+                                                    Template = MailText,
+                                                };
 
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Approved Successfully.",
-                                                        }
+                                                JObject convertObj = (JObject)
+                                                    JToken.FromObject(emailObj);
+                                                var mail = mailService.SendApprovalReqEmail(
+                                                    convertObj,
+                                                    (long)dto.VisitorEntryHeader.CompanyId,
+                                                    companyEmailConfig
+                                                );
+
+                                                var whatsApp = whatsAppService.SendWhatsAppApproval(
+                                                        VisEntryDetail,
+                                                        dto.VisitorEntryHeader,
+                                                        PurposeName,
+                                                        visitorCompany,
+                                                        users,
+                                                        approveLink,
+                                                        rejectLink,
+                                                        // rescheduleLink,
+                                                        resultWhatsapp
                                                     );
-                                                }
-                                                else if (
-                                                    VisEntry != null
-                                                    && dto.NextApprovalDetail.Status == 76
+
+                                                approvedLink = approveLink.Result;
+                                                dto.tranStatus.result = true;
+
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Approved Successfully.",
+                                                    }
+                                                );
+                                            }
+                                            else if (
+                                                VisEntry != null
+                                                && dto.NextApprovalDetail.Status == 75
+                                            )
+                                            {
+                                                SendPassInternal(VisEntry, "true", company, users?.UserName, departments?.DepartmentName );
+
+                                                JObject jObject = new JObject(
+                                                    new JProperty(
+                                                        "UserId",
+                                                        VisEntry.VisitedEmployeeId
+                                                    ),
+                                                    new JProperty(
+                                                        "VisitorEntryCode",
+                                                        VisEntry.VisitorEntryCode
+                                                    ),
+                                                    new JProperty(
+                                                        "VisitorEntryDetailId",
+                                                        VisEntryDetail[0].VisitorEntryDetailId
+                                                    ),
+                                                    new JProperty("Checkintime", DateTime.Now),
+                                                    new JProperty("type", "")
+                                                );
+                                                if (
+                                                    VisEntry.ValidFrom.HasValue
+                                                    && VisEntry.ValidFrom.Value.Date
+                                                        == DateTime.Today
+                                                    && VisEntry.ValidFrom.Value.TimeOfDay
+                                                        <= DateTime.Now.TimeOfDay
+                                                    && VisEntry.IsInternalAppointment == false
                                                 )
                                                 {
-                                                    dto.tranStatus.result = true;
-                                                    dto.tranStatus.lstErrorItem.Add(
-                                                        new ErrorItem
-                                                        {
-                                                            ErrorNo = "VMS000",
-                                                            Message = "Rejected Successfully.",
-                                                        }
-                                                    );
+                                                    await CheckIn(jObject);
                                                 }
+                                                dto.tranStatus.result = true;
+
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Approved Successfully.",
+                                                    }
+                                                );
+                                            }
+                                            else if (
+                                                VisEntry != null
+                                                && dto.NextApprovalDetail.Status == 76
+                                            )
+                                            {
+                                                dto.tranStatus.result = true;
+                                                dto.tranStatus.lstErrorItem.Add(
+                                                    new ErrorItem
+                                                    {
+                                                        ErrorNo = "VMS000",
+                                                        Message = "Rejected Successfully.",
+                                                    }
+                                                );
                                             }
                                         }
-                                        // }
-                                        // else if (approvalHeader.Status == 75)
-                                        // {
-                                        //     dto.tranStatus.result = true;
-
-                                        //     dto.tranStatus.lstErrorItem.Add(
-                                        //         new ErrorItem
-                                        //         {
-                                        //             ErrorNo = "VMS000",
-                                        //             Message = "Approved Successfully.",
-                                        //         }
-                                        //     );
-                                        // }
-                                        // else if (approvalHeader.Status == 76)
-                                        // {
-                                        //     dto.tranStatus.result = false;
-
-                                        //     dto.tranStatus.lstErrorItem.Add(
-                                        //         new ErrorItem
-                                        //         {
-                                        //             ErrorNo = "VMS000",
-                                        //             Message = "Rejected Successfully.",
-                                        //         }
-                                        //     );
-                                        // }
                                     }
-                                    else if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP == 76)
+                                    // }
+                                    // else if (approvalHeader.Status == 75)
+                                    // {
+                                    //     dto.tranStatus.result = true;
+
+                                    //     dto.tranStatus.lstErrorItem.Add(
+                                    //         new ErrorItem
+                                    //         {
+                                    //             ErrorNo = "VMS000",
+                                    //             Message = "Approved Successfully.",
+                                    //         }
+                                    //     );
+                                    // }
+                                    // else if (approvalHeader.Status == 76)
+                                    // {
+                                    //     dto.tranStatus.result = false;
+
+                                    //     dto.tranStatus.lstErrorItem.Add(
+                                    //         new ErrorItem
+                                    //         {
+                                    //             ErrorNo = "VMS000",
+                                    //             Message = "Rejected Successfully.",
+                                    //         }
+                                    //     );
+                                    // }
+                                }
+                                else if ((VisEntry.VisitorTypeId == 36 || VisEntry.VisitorTypeId == 35) && dto.StatusSP == 76)
+                                {
+                                    // MAIL REJECTION
+                                    string BrandLogoBig = "/upload/Logo/app-logo-big.png";
+                                    string FilePath = Directory.GetCurrentDirectory() + "\\Templates\\RejectMail.html";
+                                    string MailText = System.IO.File.ReadAllText(FilePath);
+
+                                    Company companyEmailConfig = dbContext.Companies
+                                        .FirstOrDefault(x => x.CompanyId == VisEntry.CompanyId);
+
+                                    User VisitEmp = new User();
+                                    Role VisitedEmpRole = new Role();
+                                    if (VisEntry.VisitorTypeId != 66)
                                     {
-                                        // MAIL REJECTION
-                                        string BrandLogoBig = "/upload/Logo/app-logo-big.png";
-                                        string FilePath = Directory.GetCurrentDirectory() + "\\Templates\\RejectMail.html";
-                                        string MailText = System.IO.File.ReadAllText(FilePath);
+                                        VisitEmp = dbContext.Users
+                                            .FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                                        VisitedEmpRole = dbContext.Roles
+                                            .FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
+                                    }
 
-                                        Company companyEmailConfig = dbContext.Companies
-                                            .FirstOrDefault(x => x.CompanyId == VisEntry.CompanyId);
+                                    var visitorCompany = VisEntryDetail[0].VisitorCompany;
+                                    var purposeName = dbContext.Metadata
+                                        .FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
 
-                                        User VisitEmp = new User();
-                                        Role VisitedEmpRole = new Role();
-                                        if (VisEntry.VisitorTypeId != 66)
-                                        {
-                                            VisitEmp = dbContext.Users
-                                                .FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
-                                            VisitedEmpRole = dbContext.Roles
-                                                .FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
-                                        }
+                                    // Replace placeholders in RejectMail.html
+                                    MailText = MailText
+                                        .Replace("{{PersonName}}", VisEntry.PersonName)
+                                        .Replace("{{UserName}}", VisitEmp?.UserName ?? "")
+                                        .Replace("{{RoleName}}", VisitedEmpRole?.RoleName ?? "")
+                                        .Replace("{{serviceURL}}", _mailSettings.Service)
+                                        .Replace("{{BrandLogoBig}}", BrandLogoBig);
 
-                                        var visitorCompany = VisEntryDetail[0].VisitorCompany;
-                                        var purposeName = dbContext.Metadata
-                                            .FirstOrDefault(x => x.MetaSubId == VisEntry.PurposeOfVisit);
+                                    object emailObj = new
+                                    {
+                                        FromID = "reply-no@visitorManagement.com",
+                                        ToID = VisitEmp.UserEmail, // or whoever should receive the rejection
+                                        Subject = $"Gate Pass Rejected for {VisEntry.PersonName} on {VisEntry.ValidFrom?.ToLongDateString()}",
+                                        Template = MailText,
+                                    };
 
-                                        // Replace placeholders in RejectMail.html
-                                        MailText = MailText
-                                            .Replace("{{PersonName}}", VisEntry.PersonName)
-                                            .Replace("{{UserName}}", VisitEmp?.UserName ?? "")
-                                            .Replace("{{RoleName}}", VisitedEmpRole?.RoleName ?? "")
-                                            .Replace("{{serviceURL}}", _mailSettings.Service)
-                                            .Replace("{{BrandLogoBig}}", BrandLogoBig);
+                                    JObject convertObj = (JObject)JToken.FromObject(emailObj);
+                                    var mail = mailService.SendApprovalReqEmail(convertObj, companyEmailConfig.CompanyId , companyEmailConfig);
 
-                                        object emailObj = new
-                                        {
-                                            FromID = "reply-no@visitorManagement.com",
-                                            ToID = VisitEmp.UserEmail, // or whoever should receive the rejection
-                                            Subject = $"Gate Pass Rejected for {VisEntry.PersonName} on {VisEntry.ValidFrom?.ToLongDateString()}",
-                                            Template = MailText,
-                                        };
+                                    // WhatsApp text (simple message)
+                                    string whatsappMessage = $"Dear *{VisEntry.PersonName}*,\n\n" +
+                                                            "We regret to inform you that your recent gate pass application has been *rejected*.\n\n" +
+                                                            $"Regards,\n{VisitEmp?.UserName}\n{VisitedEmpRole?.RoleName}";
 
-                                        JObject convertObj = (JObject)JToken.FromObject(emailObj);
-                                        var mail = mailService.SendApprovalReqEmail(convertObj, companyEmailConfig.CompanyId, companyEmailConfig);
-
-                                        // WhatsApp text (simple message)
-                                        string whatsappMessage = $"Dear *{VisEntry.PersonName}*,\n\n" +
-                                                                "We regret to inform you that your recent gate pass application has been *rejected*.\n\n" +
-                                                                $"Regards,\n{VisitEmp?.UserName}\n{VisitedEmpRole?.RoleName}";
-
-                                        // Send WhatsApp message (example call — replace with actual WhatsApp service code)
-                                        if (VisEntryDetail != null && VisEntryDetail.Count > 0)
-                                        {
-                                            SendPassWhatsApp(
-                                                VisEntryDetail,
-                                                VisEntry,
-                                                "",
-                                                "false"
-                                            );
-                                        }
-                                        else
-                                        {
-                                            // Manually create a minimal VisitorEntryDetail list for fallback
-                                            var fallbackVisitorEntryDetail = new List<VisitorEntryDetail>
+                                    // Send WhatsApp message (example call — replace with actual WhatsApp service code)
+                                    if (VisEntryDetail != null && VisEntryDetail.Count > 0)
+                                    {
+                                        SendPassWhatsApp(
+                                            VisEntryDetail,
+                                            VisEntry,
+                                            "",
+                                            "false"
+                                        );
+                                    }
+                                    else
+                                    {
+                                        // Manually create a minimal VisitorEntryDetail list for fallback
+                                        var fallbackVisitorEntryDetail = new List<VisitorEntryDetail>
                                         {
                                             new VisitorEntryDetail
                                             {
@@ -2115,74 +2587,74 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             }
                                         };
 
-                                            SendPassWhatsApp(
-                                                fallbackVisitorEntryDetail,
-                                                VisEntry,
-                                                "",
-                                                "false"
-                                            );
-                                        }
-
-
-                                        dto.tranStatus.result = true;
-                                        dto.tranStatus.lstErrorItem.Add(new ErrorItem
-                                        {
-                                            ErrorNo = "VMS001",
-                                            Message = "Rejected mail and WhatsApp sent successfully."
-                                        });
+                                        SendPassWhatsApp(
+                                            fallbackVisitorEntryDetail,
+                                            VisEntry,
+                                            "",
+                                            "false"
+                                        );
                                     }
 
+
+                                    dto.tranStatus.result = true;
+                                    dto.tranStatus.lstErrorItem.Add(new ErrorItem
+                                    {
+                                        ErrorNo = "VMS001",
+                                        Message = "Rejected mail and WhatsApp sent successfully."
+                                    });
                                 }
-                                else
+
+                            }
+                            else
+                            {
+                                dto.tranStatus.result = true;
+                                if (request.status == 75)
+                                {
+                                    dto.tranStatus.lstErrorItem.Add(
+                                        new ErrorItem
+                                        {
+                                            ErrorNo = "VMS000",
+                                            Message = "Approved Successfully.",
+                                        }
+                                    );
+                                }
+                                if (request.status == 76)
                                 {
                                     dto.tranStatus.result = true;
-                                    if (request.status == 75)
-                                    {
-                                        dto.tranStatus.lstErrorItem.Add(
-                                            new ErrorItem
-                                            {
-                                                ErrorNo = "VMS000",
-                                                Message = "Approved Successfully.",
-                                            }
-                                        );
-                                    }
-                                    if (request.status == 76)
-                                    {
-                                        dto.tranStatus.result = true;
-                                        dto.tranStatus.lstErrorItem.Add(
-                                            new ErrorItem
-                                            {
-                                                ErrorNo = "VMS000",
-                                                Message = "Rejected Successfully.",
-                                            }
-                                        );
-                                    }
+                                    dto.tranStatus.lstErrorItem.Add(
+                                        new ErrorItem
+                                        {
+                                            ErrorNo = "VMS000",
+                                            Message = "Rejected Successfully.",
+                                        }
+                                    );
                                 }
                             }
-                            else if (dto.CurrLvlSts == 75)
-                            {
-                                dto.tranStatus.result = false;
-
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message = $"{request.documentno} Already in Approved Status",
-                                    }
-                                );
-                            }
-                            else if (dto.CurrLvlSts == 76)
-                            {
-                                dto.tranStatus.result = false;
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message = $"{request.documentno} Already in Rejected Status",
-                                    }
-                                );
-                            }
                         }
+                        else if (dto.CurrLvlSts == 75)
+                        {
+                            dto.tranStatus.result = false;
+
+                            dto.tranStatus.lstErrorItem.Add(
+                                new ErrorItem
+                                {
+                                    ErrorNo = "VMS000",
+                                    Message = $"{request.documentno} Already in Approved Status",
+                                }
+                            );
+                        }
+                        else if (dto.CurrLvlSts == 76)
+                        {
+                            dto.tranStatus.result = false;
+                            dto.tranStatus.lstErrorItem.Add(
+                                new ErrorItem
+                                {
+                                    ErrorNo = "VMS000",
+                                    Message = $"{request.documentno} Already in Rejected Status",
+                                }
+                            );
+                        }
+                    }
                     }
                 }
             }
@@ -2219,7 +2691,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     .ToList();
                 VisEntry.VisitorEntryDetails = VisEntryDetail;
 
-
+                
 
                 int reqStatus = int.Parse(decryptSplit[5]);
                 if (approvalHeader.Status == 74)
@@ -2274,14 +2746,14 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                         .Companies.Where(x => x.CompanyId == companyid)
                         .SingleOrDefault();
 
-                    User VisitEmp = new User();
-                    Role VisitedEmpRole = new Role();
+                        User VisitEmp = new User();
+                        Role VisitedEmpRole = new Role();
 
-                    if (VisEntry.VisitorTypeId != 66)
-                    {
-                        VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
-                        VisitedEmpRole = dbContext.Roles.FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
-                    }
+                        if (VisEntry.VisitorTypeId != 66)
+                        {
+                            VisitEmp = dbContext.Users.FirstOrDefault(x => x.UserId == VisEntry.VisitedEmployeeId);
+                            VisitedEmpRole = dbContext.Roles.FirstOrDefault(x => x.RoleId == VisitEmp.DefaultRoleId);
+                        }
 
 
                     dbContext.SaveChanges();
@@ -2397,9 +2869,9 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             VisitorEntry visitorEntry,
             string MailType,
             Company company,
-            string UserName,
+            string UserName, 
             string RoleName
-
+            
         )
         {
             try
@@ -2617,12 +3089,12 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                         }
                     }
 
-
+                    
 
 
                     foreach (dynamic token in companyLocTokenss)
                     {
-                        if (token.IsEmApprovalEnabled == true && _mailSettings.MSend == true)
+                        if (token.IsEmApprovalEnabled == true && _mailSettings.MSend)
                         {
                             ApprovalWorkFlowDTO emailPass = SendPassEmail(
                                 dto.VisitorEntryDetail,
@@ -2631,14 +3103,14 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 MailType,
                                 FilePath,
                                 company,
-                                UserName,
+                                UserName, 
                                 RoleName
                             );
                         }
                     }
                     foreach (dynamic token in companyLocTokenss)
                     {
-                        if (token.IsWaApprovalEnabled == true && _mailSettings.WSend == true)
+                        if (token.IsWaApprovalEnabled == true && _mailSettings.WSend)
                         {
                             ApprovalWorkFlowDTO whatsPass = SendPassWhatsApp(
                                 dto.VisitorEntryDetail,
@@ -2855,11 +3327,11 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                         return dto;
                     }
 
-
+                    
 
                     foreach (dynamic token in companyLocTokenss)
                     {
-                        if (token.IsEmApprovalEnabled == true && _mailSettings.MSend == true)
+                        if (token.IsEmApprovalEnabled == true && _mailSettings.MSend)
                         {
                             ApprovalWorkFlowDTO emailPass = SendPassEmail(
                                 dto.VisitorEntryDetail,
@@ -2868,14 +3340,14 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 MailType,
                                 FilePath,
                                 company,
-                                UserName,
+                                UserName, 
                                 RoleName
                             );
                         }
                     }
                     foreach (dynamic token in companyLocTokenss)
                     {
-                        if (token.IsWaApprovalEnabled == true && _mailSettings.WSend == true)
+                        if (token.IsWaApprovalEnabled == true && _mailSettings.WSend)
                         {
                             ApprovalWorkFlowDTO whatsPass = SendPassWhatsApp(
                                 dto.VisitorEntryDetail,
@@ -2905,7 +3377,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             string MailType,
             string FilePath,
             Company company,
-            String UserName,
+            String UserName, 
             String RoleName
         )
         {
@@ -2944,7 +3416,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             $"{(dto.VisitorEntryHeader?.VisitorTypeId ?? visitorEntry.VisitorTypeId)}_" +
                             $"{(dto.VisitorEntryHeader?.VisitorEntryId ?? visitorEntry.VisitorEntryId)}";
 
-
+                
 
                 resultValue = ApproveTokenService.GenerateToken(TokenData);
                 StreamReader str = new StreamReader(FilePath);
@@ -3358,690 +3830,5 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
             }
             return dto;
         }
-        //***ANDROID START
-        public async Task<object> AndroidApprovalWorkFlowUpdate(JObject obj)
-        {
-            ApprovalRequest request = obj["ApprovalRequest"].ToObject<ApprovalRequest>();
-            // using (var command = dbContext.Database.GetDbConnection().CreateCommand())
-            // {
-            try
-            {
-                VisitorEntry VisEntry = new VisitorEntry();
-                Company company = new Company();
-                company = dbContext
-                    .Companies.Where(x => x.CompanyId == request.companyid)
-                    .SingleOrDefault();
-                using (dapperContext)
-                {
-                    var workflowheader = dbContext
-                        .ApprovalConfigurations.Where(x =>
-                            x.DocumentId == request.documentid
-                            && x.PlantId == request.plantid
-                            && x.ApprovalActivityId == request.documentactivityid
-                            && x.Status == 1
-                        )
-                        .SingleOrDefault();
-                    if (workflowheader != null)
-                    {
-                        var workflowdetail = dbContext.ApprovalConfigurationDetails.Any(A =>
-                            A.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId
-                            && (
-                                A.PrimaryUserId == request.userid
-                                || A.SecondaryUserId == request.userid
-                            )
-                        );
-                        if (workflowdetail == false)
-                        {
-                            dto.tranStatus.result = false;
-                            dto.tranStatus.lstErrorItem.Add(
-                                new ErrorItem
-                                {
-                                    ErrorNo = "VMS000",
-                                    Message =
-                                        "This Document No : '"
-                                        + request.documentno
-                                        + "' is not Eligible to Approve from this User",
-                                }
-                            );
-                        }
-                    }
-
-                    if (dto.tranStatus.lstErrorItem.Count == 0)
-                    {
-                        request.Isviewed = 1;
-
-                        // Execute the stored procedure with all parameters
-                        var spCall = await dapperContext.ExecuteStoredProcedureAsync(
-                            "SP_ANDROID_APPROVAL_WORKFLOW_UPDATE",
-                            new
-                            {
-                                CompanyId = request.companyid,
-                                PlantId = request.plantid,
-                                RequesterId = request.requesterid,
-                                DocumentNo = request.documentno,
-                                DocumentId = request.documentid,
-                                DocumentActivityId = request.documentactivityid,
-                                DocumentDetailId = request.documentdetailid,
-                                Status = request.status,
-                                ApproverId = request.approverid,
-                                LevelId = request.levelid,
-                                AlternateUser = request.alternateuser,
-                                Remarks1 = request.remarks1,
-                                Remarks2 = request.remarks2,
-                                ParentId = request.parentid,
-                                UserId = request.userid,
-                                RequestFromDate = request.requestfromdate,
-                                RequestToDate = request.requesttodate,
-                                IsViewed = request.Isviewed,
-                            }
-                        );
-
-                        dto.ConditionExists = (await spCall.ReadFirstOrDefaultAsync<int>());
-                        dto.CurrLvlSts = (await spCall.ReadFirstOrDefaultAsync<int>());
-                        if (dto.ConditionExists == 1)
-                        {
-                            dto.ConditionList =
-                                (await spCall.ReadFirstOrDefaultAsync<string>()) ?? string.Empty;
-                            var tempapprovalDetail = dbContext
-                                .ApprovalDetails.Where(x =>
-                                    x.DocumentNo == request.documentno
-                                    && x.PrimaryUserId == request.approverid
-                                )
-                                .SingleOrDefault();
-                            dto.tranStatus.result = false;
-                            if (tempapprovalDetail.Status == 75)
-                            {
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message =
-                                            $"{tempapprovalDetail.DocumentNo} Already in Approved Status",
-                                    }
-                                );
-                            }
-                            if (tempapprovalDetail.Status == 76)
-                            {
-                                dto.tranStatus.result = false;
-                                dto.tranStatus.lstErrorItem.Add(
-                                    new ErrorItem
-                                    {
-                                        ErrorNo = "VMS000",
-                                        Message =
-                                            $"{tempapprovalDetail.DocumentNo} Already in Rejected Status",
-                                    }
-                                );
-                            }
-                        }
-                        else if (dto.CurrLvlSts == 74)
-                        {
-                            dto.UpdatedApprovalDetailList = (
-                                await spCall.ReadAsync<dynamic>()
-                            ).ToList();
-                            dto.StatusSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            dto.NextStageCountSP = (await spCall.ReadFirstOrDefaultAsync<int>());
-                            if (dto.StatusSP != 76)
-                            {
-                                if (dto.NextStageCountSP != 0)
-                                {
-                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                    dto.ApprovalDetailList = (
-                                        await spCall.ReadAsync<dynamic>()
-                                    ).ToList();
-                                    dto.NextApprovalDetail = (
-                                        await spCall.ReadAsync<ApprovalDetail>()
-                                    ).SingleOrDefault();
-                                }
-                                else
-                                {
-                                    dto.ApprovalList = (await spCall.ReadAsync<dynamic>()).ToList();
-                                    dto.ApprovalDetailList = (
-                                        await spCall.ReadAsync<dynamic>()
-                                    ).ToList();
-                                    dto.NextApprovalDetail = (
-                                        await spCall.ReadAsync<ApprovalDetail>()
-                                    ).SingleOrDefault();
-                                    if (request.documentid == 42)
-                                    {
-                                        // WorkPermit workPermit = new WorkPermit();
-                                        // workPermit = dbContext
-                                        //     .WorkPermits.Where(x =>
-                                        //         x.VisitorEntryCode == request.documentno
-                                        //     )
-                                        //     .SingleOrDefault();
-                                        // var VisEntryDetail = dbContext
-                                        //     .VisitorEntryDetails.Where(x =>
-                                        //         x.VisitorEntryId == VisEntry.VisitorEntryId
-                                        //     )
-                                        //     .ToList();
-                                        // VisEntry.VisitorEntryDetails = VisEntryDetail;
-
-                                        // SendPassInternal(VisEntry, "true", company);
-                                        // dto.tranStatus.result = true;
-
-                                        // dto.tranStatus.lstErrorItem.Add(
-                                        //     new ErrorItem
-                                        //     {
-                                        //         ErrorNo = "VMS000",
-                                        //         Message = "Pass Sent Successfully.",
-                                        //     }
-                                        // );
-                                    }
-                                }
-                            }
-
-                            // var approvalHeader = dbContext
-                            //     .Approvals.Where(x => x.DocumentNo == request.documentno)
-                            //     .SingleOrDefault();
-
-                            if (request.documentid == 34 && dto.StatusSP != 76)
-                            {
-                                VisEntry = dbContext
-                                    .VisitorEntries.Where(x =>
-                                        x.VisitorEntryCode == request.documentno
-                                    )
-                                    .SingleOrDefault();
-                                var VisEntryDetail = dbContext
-                                    .VisitorEntryDetails.Where(x =>
-                                        x.VisitorEntryId == VisEntry.VisitorEntryId
-                                    )
-                                    .ToList();
-                                VisEntry.VisitorEntryDetails = VisEntryDetail;
-
-                                if (VisEntry.VisitorTypeId == 36)
-                                {
-                                    // if (approvalHeader.Status == 74)
-                                    // {
-                                    if (
-                                        dto.ApprovalDetailList != null
-                                        && dto.ApprovalDetailList.Count > 0
-                                    )
-                                    {
-                                        var tempapprovalDetail = dto
-                                            .ApprovalDetailList.Where(x =>
-                                                x.PrimaryUserId == request.approverid
-                                            )
-                                            .SingleOrDefault();
-
-                                        if (
-                                            tempapprovalDetail != null
-                                            && tempapprovalDetail.Status == 75
-                                        )
-                                        {
-                                            if (dto.NextApprovalDetail.Status == 74)
-                                            {
-                                                // MAIL APPROVAL
-                                                var approvedLink = "";
-
-                                                string BrandLogo =
-                                                    Directory.GetCurrentDirectory()
-                                                    + "\\upload\\Logo\\app-logo.png";
-                                                string BrandLogoBig =
-                                                    "/upload/Logo/app-logo-big.png";
-                                                string FilePath =
-                                                    Directory.GetCurrentDirectory()
-                                                    + "\\Templates\\VisitorEntryEmailTemplate.html";
-                                                StreamReader str = new StreamReader(FilePath);
-                                                string MailText = str.ReadToEnd();
-                                                Company companyEmailConfig = new Company();
-                                                VisitorEntry visitorEntryUpdated =
-                                                    new VisitorEntry();
-                                                var primeUser = dbContext
-                                                    .Users.Where(x =>
-                                                        x.UserId
-                                                        == dto.NextApprovalDetail.PrimaryUserId
-                                                    )
-                                                    .SingleOrDefault();
-                                                User VisitedEmp = new User();
-                                                Role VisitedEmpRole = new Role();
-                                                if (VisEntry.VisitorTypeId != 66)
-                                                {
-                                                    VisitedEmp = dbContext
-                                                        .Users.Where(x =>
-                                                            x.UserId
-                                                            == dto.NextApprovalDetail.PrimaryUserId
-                                                        )
-                                                        .SingleOrDefault();
-                                                    VisitedEmpRole = dbContext
-                                                        .Roles.Where(x =>
-                                                            x.RoleId == VisitedEmp.DefaultRoleId
-                                                        )
-                                                        .SingleOrDefault();
-                                                }
-                                                companyEmailConfig = dbContext
-                                                    .Companies.Where(x =>
-                                                        x.CompanyId == VisEntry.CompanyId
-                                                    )
-                                                    .SingleOrDefault();
-
-                                                var approveLink = GenerateMailToken(
-                                                    "ENCRYPT",
-                                                    "",
-                                                    "APPROVE",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                );
-                                                var rejectLink = GenerateMailToken(
-                                                    "ENCRYPT",
-                                                    "",
-                                                    "REJECT",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
-                                                );
-
-                                                visitorEntryUpdated = VisEntry;
-                                                dto.VisitorEntryHeader = visitorEntryUpdated;
-                                                var PurposeName = dbContext
-                                                    .Metadata.Where(x =>
-                                                        x.MetaSubId == VisEntry.PurposeOfVisit
-                                                    )
-                                                    .SingleOrDefault();
-                                                var visitorCompany = VisEntryDetail[0].VisitorCompany;
-                                                MailText = MailText
-                                                    .Replace(
-                                                        "[WhomToVisit]",
-                                                        Convert.ToString(VisitedEmp?.UserName)
-                                                    )
-                                                    .Replace(
-                                                        "[Visitor]",
-                                                        Convert.ToString(VisEntry.PersonName)
-                                                    )
-                                                    .Replace(
-                                                        "[VisitDate]",
-                                                        Convert.ToString(
-                                                            VisEntry.ValidFrom.Value.ToShortDateString()
-                                                        )
-                                                    )
-                                                    .Replace(
-                                                        "[VisitTime]",
-                                                        Convert.ToString(
-                                                            VisEntry.ValidFrom.Value.ToShortTimeString()
-                                                        )
-                                                    )
-                                                    .Replace(
-                                                        "[VisitorCompany]",
-                                                        Convert.ToString(visitorCompany ?? "-")
-                                                    )
-                                                    .Replace(
-                                                        "[PurposeOfVisit]",
-                                                        Convert.ToString(
-                                                            PurposeName.MetaSubDescription
-                                                        )
-                                                    )
-                                                    .Replace(
-                                                        "{{ApproveLink}}",
-                                                        Convert.ToString(approveLink.Result)
-                                                    )
-                                                    .Replace(
-                                                        "{{RejectLink}}",
-                                                        Convert.ToString(rejectLink.Result)
-                                                    )
-                                                    .Replace(
-                                                        "{{serviceURL}}",
-                                                        _mailSettings.Service
-                                                    )
-                                                    .Replace("{{siteURL}}", _mailSettings.Website)
-                                                    .Replace("{{Logo}}", BrandLogo)
-                                                    .Replace("{{BrandLogoBig}}", BrandLogoBig);
-                                                object emailObj = new
-                                                {
-                                                    FromID = "reply-no@visitorManagement.com",
-                                                    ToID = VisitedEmp.UserEmail,
-                                                    Subject = $"Pending Approval for Visitor {VisEntry.PersonName} on {VisEntry.ValidFrom.Value.ToLongDateString()} {VisEntry.ValidFrom.Value.ToLongTimeString()} from {Convert.ToString(visitorCompany)} for {PurposeName.MetaSubDescription}",
-                                                    Template = MailText,
-                                                };
-
-                                                JObject convertObj = (JObject)
-                                                    JToken.FromObject(emailObj);
-                                                var mail = mailService.SendApprovalReqEmail(
-                                                    convertObj,
-                                                    (long)dto.VisitorEntryHeader.CompanyId,
-                                                    companyEmailConfig
-                                                );
-                                                // var whatsApp = sendWhatsAppApproval(
-                                                //     VisEntrydetail,
-                                                //     dto.VisitorEntryHeader,
-                                                //     PurposeName,
-                                                //     VisitedEmp,
-                                                //     approveLink,
-                                                //     rejectLink
-                                                // );
-                                                approvedLink = approveLink.Result;
-                                                dto.tranStatus.result = true;
-
-                                                dto.tranStatus.lstErrorItem.Add(
-                                                    new ErrorItem
-                                                    {
-                                                        ErrorNo = "VMS000",
-                                                        Message = "Approved Successfully.",
-                                                    }
-                                                );
-                                            }
-                                            else if (
-                                                VisEntry != null
-                                                && dto.NextApprovalDetail.Status == 75
-                                            )
-                                            {
-                                                SendPassInternal(VisEntry, "false", company, "1", "1");
-
-                                                JObject jObject = new JObject(
-                                                    new JProperty(
-                                                        "UserId",
-                                                        VisEntry.VisitedEmployeeId
-                                                    ),
-                                                    new JProperty(
-                                                        "VisitorEntryCode",
-                                                        VisEntry.VisitorEntryCode
-                                                    ),
-                                                    new JProperty(
-                                                        "VisitorEntryDetailId",
-                                                        VisEntryDetail[0].VisitorEntryDetailId
-                                                    ),
-                                                    new JProperty("Checkintime", DateTime.Now),
-                                                    new JProperty("type", "")
-                                                );
-                                                if (
-                                                    VisEntry.ValidFrom.HasValue
-                                                    && VisEntry.ValidFrom.Value.Date
-                                                        == DateTime.Today
-                                                    && VisEntry.ValidFrom.Value.TimeOfDay
-                                                        <= DateTime.Now.TimeOfDay
-                                                    && VisEntry.IsInternalAppointment == false
-                                                )
-                                                {
-                                                    await CheckIn(jObject);
-                                                }
-                                                dto.tranStatus.result = true;
-
-                                                dto.tranStatus.lstErrorItem.Add(
-                                                    new ErrorItem
-                                                    {
-                                                        ErrorNo = "VMS000",
-                                                        Message = "Approved Successfully.",
-                                                    }
-                                                );
-                                            }
-                                            else if (
-                                                VisEntry != null
-                                                && dto.NextApprovalDetail.Status == 76
-                                            )
-                                            {
-                                                dto.tranStatus.result = true;
-                                                dto.tranStatus.lstErrorItem.Add(
-                                                    new ErrorItem
-                                                    {
-                                                        ErrorNo = "VMS000",
-                                                        Message = "Rejected Successfully.",
-                                                    }
-                                                );
-                                            }
-                                        }
-                                    }
-                                    // }
-                                    // else if (approvalHeader.Status == 75)
-                                    // {
-                                    //     dto.tranStatus.result = true;
-
-                                    //     dto.tranStatus.lstErrorItem.Add(
-                                    //         new ErrorItem
-                                    //         {
-                                    //             ErrorNo = "VMS000",
-                                    //             Message = "Approved Successfully.",
-                                    //         }
-                                    //     );
-                                    // }
-                                    // else if (approvalHeader.Status == 76)
-                                    // {
-                                    //     dto.tranStatus.result = false;
-
-                                    //     dto.tranStatus.lstErrorItem.Add(
-                                    //         new ErrorItem
-                                    //         {
-                                    //             ErrorNo = "VMS000",
-                                    //             Message = "Rejected Successfully.",
-                                    //         }
-                                    //     );
-                                    // }
-                                }
-                            }
-                            else
-                            {
-                                var visitorEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
-                                dto.tranStatus.result = true;
-                                if (request.status == 75 && request.remarks1 == "Rescheduled via Android")
-                                {
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message = "Rescheduled Successfully.",
-                                        }
-                                    );
-                                    if (visitorEntry.IsAndroidVisitor == true)
-                                    {
-                                        await SendApprovalOrRejectionNotification(visitorEntry, "Rescheduled");
-
-                                    }
-                                }
-                                if (request.status == 75 && request.remarks1 == "")
-                                {
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message = "Approved Successfully.",
-                                        }
-                                    );
-                                    if (visitorEntry.IsAndroidVisitor == true)
-                                    {
-                                        var users = dbContext.Users.FirstOrDefault(x => x.UserId == visitorEntry.VisitedEmployeeId);
-
-                                        var checkInRequest = new visitorcheckincheckoutrequest
-                                        {
-                                            VisitorRequestNo = visitorEntry.VisitorEntryCode,
-                                            qrcodecompanyid = (int)visitorEntry.CompanyId,
-                                            qrcodeplantid = (int)visitorEntry.PlantId,
-                                            qrcoderoleid = (int)users.DefaultRoleId
-                                        };
-
-                                        JObject jObject = JObject.FromObject(checkInRequest); // ✅ Convert to JObject
-
-                                        await AndroidAutoCheckIn(jObject);
-
-                                        await SendApprovalOrRejectionNotification(visitorEntry, "Approved");
-
-                                    }
-                                }
-                                if (request.status == 76)
-                                {
-                                    dto.tranStatus.result = true;
-                                    dto.tranStatus.lstErrorItem.Add(
-                                        new ErrorItem
-                                        {
-                                            ErrorNo = "VMS000",
-                                            Message = "Rejected Successfully.",
-                                        }
-                                    );
-                                    if (visitorEntry.IsAndroidVisitor == true)
-                                    {
-                                        await SendApprovalOrRejectionNotification(visitorEntry, "Rejected");
-                                    }
-                                }
-                            }
-                        }
-                        else if (dto.CurrLvlSts == 75)
-                        {
-                            dto.tranStatus.result = false;
-
-                            dto.tranStatus.lstErrorItem.Add(
-                                new ErrorItem
-                                {
-                                    ErrorNo = "VMS000",
-                                    Message = $"{request.documentno} Already in Approved Status",
-                                }
-                            );
-                        }
-                        else if (dto.CurrLvlSts == 76)
-                        {
-                            dto.tranStatus.result = false;
-                            dto.tranStatus.lstErrorItem.Add(
-                                new ErrorItem
-                                {
-                                    ErrorNo = "VMS000",
-                                    Message = $"{request.documentno} Already in Rejected Status",
-                                }
-                            );
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                dto.tranStatus.result = false;
-                dto.tranStatus.lstErrorItem.Add(
-                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
-                );
-            }
-            // }
-            return dto;
-        }
-        public async Task SendApprovalOrRejectionNotification(VisitorEntry visitorEntry, string action)
-        {
-            var visitor = dbContext.AndroidUsers
-                .Where(u => u.UserId == visitorEntry.VisitorId)
-                .FirstOrDefault();
-
-            var host = dbContext.Users
-                .Where(u => u.UserId == visitorEntry.VisitedEmployeeId)
-                .FirstOrDefault();
-
-            if (visitor == null || host == null)
-                return;
-
-            string dateTime = visitorEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
-
-            // string status = isApproved ? "Approved" : "Rejected";
-            string formattedDateTime = visitorEntry.ValidFrom.HasValue
-                 ? visitorEntry.ValidFrom.Value.ToString("dd-MM-yyyy hh:mm tt")
-                 : "";
-            string message = string.Empty;
-
-            if (action == "Rescheduled")
-            {
-                message = $"Your visit request ({visitorEntry.VisitorEntryCode}) has been approved & rescheduled by {host.UserName}. Reschedule Date and Time: {formattedDateTime}";
-            }
-            else if (action == "Approved")
-            {
-                message = $"Your visit request ({visitorEntry.VisitorEntryCode}) has been {action.ToLower()} by {host.UserName}. Your pass has been auto checked-in.";
-            }
-            else if (action == "Rejected")
-            {
-                message = $"Your visit request ({visitorEntry.VisitorEntryCode}) has been {action.ToLower()} by {host.UserName}.";
-            }
-            //     string message = action == "Rescheduled"
-            //  ? $"Your visit request ({visitorEntry.VisitorEntryCode}) has been approved & {action} by {host.UserName}. Reschedule Date and Time: {formattedDateTime}"
-            //  : $"Your visit request ({visitorEntry.VisitorEntryCode}) has been {action} by {host.UserName}";
-            string imageUrl = dbContext.VisitorEntries
-                .Where(u => u.VisitorEntryCode == visitorEntry.VisitorEntryCode)
-                .Select(u => u.VisitorImageUrl)
-                .FirstOrDefault();
-
-            ;
-
-            var notificationDetail = new AndroidNotificationDetail
-            {
-                NotificationId = 0,
-                NotificationType = action, // different type for approve/reject
-                MobileNo = visitor.Mobileno,
-                VisitorOrHostId = visitor.UserId.ToString(),
-                NotificationMessage = message,
-                NotificationStatus = 1,
-                Imageurl = imageUrl,
-                VisitorAddress = "",
-                VisitorEntryDate = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
-                VisitorEntryCode = visitorEntry.VisitorEntryCode
-            };
-
-            dbContext.AndroidNotificationDetails.Add(notificationDetail);
-            dbContext.SaveChanges();
-
-            // Fetch device token
-            var deviceToken = dbContext.Userdevicetokens
-                .Where(d => d.MobileNumber == visitor.Mobileno)
-                .Select(d => d.DeviceToken)
-                .FirstOrDefault();
-
-            if (deviceToken != null)
-            {
-                var notification = new FirebaseNotificationDto
-                {
-                    Token = deviceToken,
-                    Title = $"Visit Request {action}",
-                    Body = message,
-                    Image = imageUrl
-                };
-
-                // await FirebaseService.SendPushNotificationAsync(notification);
-            }
-        }
-            //Android Auto checkin
-          public async Task<object> AndroidAutoCheckIn(JObject obj)
-        {
-            try
-            {
-                visitorcheckincheckoutrequest checkinrequest = obj.ToObject<visitorcheckincheckoutrequest>();
-
-                if (checkinrequest != null)
-                {
-
-                    var visitorentry = dbContext.VisitorEntries.Where(v => v.VisitorEntryCode == checkinrequest.VisitorRequestNo && v.CompanyId == checkinrequest.qrcodecompanyid && v.PlantId == checkinrequest.qrcodeplantid).FirstOrDefault();
-                    var visitorentrylog = dbContext.VisitorEntryLogs.Any(v => v.VisitorEntryCode == checkinrequest.VisitorRequestNo && v.CheckedIn == null);
-
-                    if (visitorentry != null && !visitorentrylog)
-                    {
-                        long visitorentryDetailid = dbContext.VisitorEntryDetails.Where(v => v.VisitorEntryId == visitorentry.VisitorEntryId).Select(v => v.VisitorEntryDetailId).FirstOrDefault();
-
-                        VisitorEntryLog log = new VisitorEntryLog();
-                        log.VisitorEntryLogId = 0;
-                        log.VisitorEntryDetailId = visitorentryDetailid;
-                        log.VisitorEntryCode = checkinrequest.VisitorRequestNo;
-                        log.CheckedIn = DateTime.Now;
-                        log.CreatedBy = 1;
-                        log.CreatedOn = DateTime.Now;
-                        dbContext.VisitorEntryLogs.Add(log);
-                        dbContext.SaveChanges();
-
-                        dto.tranStatus.result = true;
-                        dto.tranStatus.lstErrorItem.Add(
-                        new ErrorItem
-                        {
-                            ErrorNo = "VMS000",
-                            Message = $"Visitor Checked-In Successfully.",
-                        });
-                    }
-                    else
-                    {
-                        dto.tranStatus.result = false;
-                        dto.tranStatus.lstErrorItem.Add(
-                        new ErrorItem
-                        {
-                            ErrorNo = "VMS000",
-                            Message = $"Invalid QR Code. Please try again.",
-                        });
-
-                    }
-
-                }
-            }
-
-            catch (Exception ex)
-            {
-                dto.tranStatus.result = false;
-                dto.tranStatus.lstErrorItem.Add(
-                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
-                );
-            }
-            return dto;
-        }
-
-
     }
 }

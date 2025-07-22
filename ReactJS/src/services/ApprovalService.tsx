@@ -18,6 +18,9 @@ export const changeStatus = (data) => {
 export const OnChangeRole = (data) => {
   return api.post("/Approval/OnChangeRole", data);
 };
+export const OnChangeDepartment = (data) => {
+  return api.post("/Approval/OnChangeDepartment", data);
+};
 
 export const sendPass = (data) => {
   return api.post("/ApprovalWorkFlow/SendPass", data);

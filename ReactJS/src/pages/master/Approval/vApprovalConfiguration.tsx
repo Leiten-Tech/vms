@@ -40,6 +40,7 @@ const VApprovalConfiguration = () => {
       CompanyId: +localStorage["CompanyId"],
       PlantId: +localStorage["PlantId"],
       RoleId: +localStorage["DefaultRoleId"],
+      DepartmentId: +localStorage["DeptId"],
     };
     dispatch(fetch(Approval));
   };
@@ -165,6 +166,7 @@ const VApprovalConfiguration = () => {
         CompanyId: +localStorage["CompanyId"],
         PlantId: +localStorage["PlantId"],
         RoleId: +localStorage["DefaultRoleId"],
+        DepartmentId: +localStorage["DeptId"],
         Taskname: "CREATEINITIALIZE",
       };
       const dataFetched = dispatch(createInit(data));
@@ -183,6 +185,7 @@ const VApprovalConfiguration = () => {
         CompanyId: +localStorage["CompanyId"],
         PlantId: +localStorage["PlantId"],
         RoleId: +localStorage["DefaultRoleId"],
+        DepartmentId: +localStorage["DeptId"],
         Taskname: "CREATEINITIALIZE",
       };
       const dataFetched = dispatch(createInit(data));

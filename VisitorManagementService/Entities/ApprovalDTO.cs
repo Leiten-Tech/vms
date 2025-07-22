@@ -12,6 +12,7 @@ namespace VisitorManagementMySQL.Entities
         public List<Metadatum> ActivityList { get; set; }
         public List<Metadatum> LevelList { get; set; }
         public List<Role> RoleList { get; set; }
+        public List<Department> DepartmentList { get; set; }
         public List<User> PrimaryUserList { get; set; }
         public List<User> SecondaryUserList { get; set; }
         public ApprovalConfiguration HdrTable { get; set; }

@@ -69,7 +69,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             _mailSettings = mailSettings.Value;
         }
 
-        public async Task<VisitorEntryDTO> CreateInitialize(JObject obj)
+          public async Task<VisitorEntryDTO> CreateInitialize(JObject obj)
         {
             try
             {
@@ -720,7 +720,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                 )
                                 .ToList();
 
-                            // For New Vehicle 
+                                // For New Vehicle 
                             if (VisitorEntry.VisitorTypeId == 66)
                             {
                                 Vehicle existVehicle = dbContext.Vehicles.Where(x => x.VehicleNo == VisEntry.VehicleNo).SingleOrDefault();
@@ -747,7 +747,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             }
                             // For New Vehicle 
                             ftransaction.Commit();
-
+                            
                             User VisitedEmp = new User();
                             Role VisitedEmpRole = new Role();
                             if (VisEntry.VisitorTypeId != 66)
@@ -929,7 +929,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                         request.companyid = VisEntry.CompanyId ?? 0;
                                         approvalservice.ApprovalWorkFlowInsert(request);
                                     }
-                                    else if (VisitorEntry.VisitorTypeId == 35)
+                                    else if(VisitorEntry.VisitorTypeId == 35)
                                     {
                                         // Whom To Visit Approval
 
@@ -1175,7 +1175,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                             {
                                                 if (
                                                     token.IsEmApprovalEnabled == true
-                                                    && _mailSettings.MSend == true
+                                                    && _mailSettings.MSend
                                                 )
                                                 {
                                                     var mail = mailService.SendApprovalReqEmail(
@@ -1189,7 +1189,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                             {
                                                 if (
                                                     token.IsWaApprovalEnabled == true
-                                                    && _mailSettings.WSend == true
+                                                    && _mailSettings.WSend
                                                 )
                                                 {
                                                     var whatsApp = sendWhatsAppApproval(
@@ -1200,7 +1200,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                                         ApproveSendUser,
                                                         approveLink,
                                                         rejectLink
-                                                    // rescheduleLink
+                                                        // rescheduleLink
                                                     );
                                                 }
                                             }
@@ -2230,7 +2230,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "ntn_approval";
+                template.name = "bks_approval";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -2330,7 +2330,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "approval_template_vms";
+                string Template = "bks_app_info_template";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
                 approvalservice.WhatsAppLogSaveOut(
                     tempObj,
@@ -2436,6 +2436,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             }
             return dto;
         }
+
         //******Android Start*********//
         public async Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj, IFormFile webfile)
         {
@@ -2557,6 +2558,40 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                     });
                     dto.PlantList = (await spcall.ReadAsync<Plant>()).ToList();
                     dto.DepartmentList = (await spcall.ReadAsync<Department>()).ToList();
+                    // dto.AreaList = (await spcall.ReadAsync<Area>()).ToList();
+                    // dto.PersonDetails = (await spcall.ReadAsync<User>()).ToList();
+                    // dto.PurposeList = (await spcall.ReadAsync<Metadatum>()).ToList();
+                    dto.tranStatus.result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                dto.tranStatus.result = false;
+                dto.tranStatus.lstErrorItem.Add(
+                    new ErrorItem { ErrorNo = "VMS000", Message = ex.Message }
+                );
+            }
+            return dto;
+        }
+          public async Task<VisitorEntryDTO> AndroidHostPersonDetails(JObject obj)
+        {
+            try
+            {
+                long _CompanyId = obj["CompanyId"].ToObject<long>();
+                long _PlantId = obj["PlantId"].ToObject<long>();
+                long _RoleId = obj["RoleId"].ToObject<long>();
+                long _DepartmentId = obj["DepartmentId"].ToObject<long>();
+
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_ANDROID_HOST_PERSON_PAGEONLOAD",
+                    new
+                    {
+                        _CompanyId,
+                        _PlantId,
+                        _RoleId,
+                        _DepartmentId
+                    });
                     dto.AreaList = (await spcall.ReadAsync<Area>()).ToList();
                     dto.PersonDetails = (await spcall.ReadAsync<User>()).ToList();
                     dto.PurposeList = (await spcall.ReadAsync<Metadatum>()).ToList();

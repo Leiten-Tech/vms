@@ -2,10 +2,10 @@ CREATE TABLE IF NOT EXISTS `Approval_Configuration_Details` (
   `Approval_Configuration_Detail_Id` BIGINT AUTO_INCREMENT  NOT NULL,
   `Approval_Configuration_Id` BIGINT NOT NULL,
   `Level_Id` INT NOT NULL,
-  `Role_Id` BIGINT NOT NULL,
+  `Role_Id` BIGINT  NULL,
   `Primary_User_Id` BIGINT NOT NULL,
   `Secondary_User_Id` BIGINT NULL DEFAULT NULL,
-  `Is_Notify_Approve` tinyint default null,
+  `Department_Id` BIGINT default null,
   PRIMARY KEY (`Approval_Configuration_Detail_Id`),
   INDEX `fk_Approval_Configuration_Approval_Configuration_Id` (`Approval_Configuration_Id` ASC),
   CONSTRAINT `fk_Approval_Configuration_Approval_Configuration_Id`

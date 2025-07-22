@@ -31,6 +31,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
                 long ApprovalConfigurationId = obj["ApprovalConfigurationId"].ToObject<long>();
                 long CompanyId = obj["CompanyId"].ToObject<long>();
                 long RoleId = obj["RoleId"].ToObject<long>();
+                long DeptId = obj["DepartmentId"].ToObject<long>();
                 long PlantId = obj["PlantId"].ToObject<long>();
                 string Type = "CreateInitialize";
                 using (dapperContext)
@@ -40,6 +41,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
                         Type,
                         ApprovalConfigurationId,
                         RoleId,
+                        DeptId,
                         PrimaryUserId = (object)null,
                         CompanyId,
                         PlantId,
@@ -50,6 +52,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
                     dto.ActivityList = (await spcall.ReadAsync<Metadatum>()).ToList();
                     dto.LevelList = (await spcall.ReadAsync<Metadatum>()).ToList();
                     dto.RoleList = (await spcall.ReadAsync<Role>()).ToList();
+                    dto.DepartmentList = (await spcall.ReadAsync<Department>()).ToList();
                     if (ApprovalConfigurationId > 0)
                     {
                         dto.PrimaryUserList = (await spcall.ReadAsync<User>()).ToList();
@@ -115,6 +118,44 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
             return dto;
 
         }
+
+        public async Task<Object> OnChangeDepartment(JObject obj)
+        {
+            try
+            {
+                long DeptId = obj["DepartmentId"].ToObject<long>();
+                long PlantId = obj["PlantId"].ToObject<long>();
+                string Type = "OnChangeDepartment";
+                using (dapperContext)
+                {
+                    var spcall = await dapperContext.ExecuteStoredProcedureAsync(spName: "SP_APPROVALCONFIGURATION_CI", new
+                    {
+                        Type,
+                        ApprovalConfigurationId = (object)null,
+                        RoleId = (object)null,
+                        DeptId,
+                        PrimaryUserId = (object)null,
+                        CompanyId = (object)null,
+                        PlantId,
+                    });
+                    dto.PrimaryUserList = (await spcall.ReadAsync<User>()).ToList();
+                }
+                dto.transtatus.result = true;
+            }
+            catch (Exception ex)
+            {
+                dto.transtatus.result = false;
+                dto.transtatus.lstErrorItem.Add(
+                    new ErrorItem
+                    {
+                        ErrorNo = "VM0000",
+                        Message = ex.Message
+                    }
+                );
+            }
+            return dto;
+
+        }
         public async Task<object> SearchInitialize(JObject obj)
         {
             try
@@ -122,6 +163,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
                 long ApprovalConfigurationId = obj["ApprovalConfigurationId"].ToObject<long>();
                 long CompanyId = obj["CompanyId"].ToObject<long>();
                 long RoleId = obj["RoleId"].ToObject<long>();
+                long DeptId = obj["DepartmentId"].ToObject<long>();
                 long PlantId = obj["PlantId"].ToObject<long>();
                 string Type = "SearchInitialize";
                 using (dapperContext)
@@ -131,6 +173,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
                         Type,
                         ApprovalConfigurationId,
                         RoleId,
+                        DeptId,
                         PrimaryUserId = (object)null,
                         CompanyId,
                         PlantId,

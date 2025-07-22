@@ -192,6 +192,22 @@
           "email": "arjayabalan09@gmail.com"
         },
         "timeSpent": 76
+      },
+      {
+        "date": "2025-07-22T05:48:31.608Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 8
+      },
+      {
+        "date": "2025-07-22T05:49:16.908Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 45
       }
     ],
     "VisitorManagementService\\.gitignore.git": [
@@ -226,6 +242,32 @@
           "email": "arjayabalan09@gmail.com"
         },
         "timeSpent": 5
+      }
+    ],
+    "ReactJS\\package.json": [
+      {
+        "date": "2025-07-21T14:11:49.310Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 26
+      },
+      {
+        "date": "2025-07-21T14:12:13.130Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 24
+      },
+      {
+        "date": "2025-07-21T14:13:12.049Z",
+        "user": {
+          "name": "",
+          "email": "arjayabalan09@gmail.com"
+        },
+        "timeSpent": 59
       }
     ]
   }

@@ -566,7 +566,7 @@ namespace VisitorManagementMySQL.Services.Login
                 return uContext;
             }
         }
-          public async Task<LoginDTO> AndroidLogin(JObject obj)
+        public async Task<LoginDTO> AndroidLogin(JObject obj)
         {
             try
             {
@@ -747,15 +747,15 @@ namespace VisitorManagementMySQL.Services.Login
             else if (mobileisalreadyexistsNotverified != null)
             {
                 dto.isalready = true;
-                    var hashedPassword = HashPassword(androidUser.Password);
-                    var hashedPasswordString = ByteArrayToString(hashedPassword);
-                    androidUser.Password = hashedPasswordString;
+                var hashedPassword = HashPassword(androidUser.Password);
+                var hashedPasswordString = ByteArrayToString(hashedPassword);
+                androidUser.Password = hashedPasswordString;
                 mobileisalreadyexistsNotverified.UserName = androidUser.UserName;
                 mobileisalreadyexistsNotverified.Emailid = androidUser.Emailid;
-                 mobileisalreadyexistsNotverified.CompanyName = androidUser.CompanyName;
-                 mobileisalreadyexistsNotverified.Password = androidUser.Password;
-                  mobileisalreadyexistsNotverified.UserImageName = hashedPasswordString;
-                 dbContext.AndroidUsers.Update(mobileisalreadyexistsNotverified);
+                mobileisalreadyexistsNotverified.CompanyName = androidUser.CompanyName;
+                mobileisalreadyexistsNotverified.Password = androidUser.Password;
+                mobileisalreadyexistsNotverified.UserImageName = hashedPasswordString;
+                dbContext.AndroidUsers.Update(mobileisalreadyexistsNotverified);
             }
 
 
@@ -785,6 +785,18 @@ namespace VisitorManagementMySQL.Services.Login
                         }
                         else if (type == "EmailId")
                         {
+                            bool isemailalreadyexists = dbContext.AndroidUsers.Any(w => w.Emailid == value);
+
+                            if (isemailalreadyexists)
+                            {
+                                dto.tranStatus.result = false;
+                                dto.tranStatus.lstErrorItem.Add(
+                                    new ErrorItem { ErrorNo = "VMS000", Message = "Email Id is Already Exists" }
+                                );
+                                return dto;
+                            }
+
+
                             visitordetails.Emailid = value;
                         }
                         else if (type == "CompanyName")
@@ -952,6 +964,6 @@ namespace VisitorManagementMySQL.Services.Login
             }
             return sb.ToString();
         }
-         //*****Start*****Android 
+        //*****Start*****Android 
     }
 }

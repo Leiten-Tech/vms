@@ -1047,7 +1047,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                         {
                                             var workflowdetail = dbContext.ApprovalConfigurationDetails.SingleOrDefault(A =>
                                                 A.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId &&
-                                                A.LevelId == 67
+                                                A.LevelId == 67 && 
+                                                A.DepartmentId == VisitedEmp.DeptId
                                             );
                                            var selectedUserId = (workflowdetail?.PrimaryUserId == 0)
                                                 ? VisitedEmp.UserId
@@ -1145,7 +1146,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                             {
                                                 if (
                                                     token.IsEmApprovalEnabled == true
-                                                    && _mailSettings.MSend == true
+                                                    && _mailSettings.MSend
                                                 )
                                                 {
                                                     var mail = mailService.SendApprovalReqEmail(
@@ -1159,7 +1160,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                                             // {
                                                 if (
                                                     token.IsWaApprovalEnabled == true
-                                                    && _mailSettings.WSend == true
+                                                    && _mailSettings.WSend
                                                 )
                                                 {
                                                     var whatsApp = sendWhatsAppApproval(
@@ -1256,7 +1257,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "ntn_approval";
+                template.name = "bks_approval";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -1363,7 +1364,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "ntn_approval";
+                string Template = "bks_approval";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
 
                 approvalservice.WhatsAppLogSaveOut(
@@ -2583,7 +2584,7 @@ private ApprovalWorkFlowDTO SendPassWhatsApp(
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(item.MobileNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "approval_template_vms";
+                string Template = "bks_app_info_template";
                 WhatsAppLogSaveOut(
                     tempObj,
                     (int)visitorEntry.CompanyId,

@@ -8,6 +8,7 @@ namespace VisitorManagementMySQL.Services.Master.ApprovalService
     {
         Task<object> CreateInitialize(JObject input);
         Task<object> OnChangeRole(JObject input);
+        Task<object> OnChangeDepartment(JObject input);
         Task<object> SearchInitialize(JObject input);
         Task<object> Create(JObject input);
         Task<object> Update(JObject input);

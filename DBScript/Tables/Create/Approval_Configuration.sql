@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS `Approval_Configuration` (
   `Created_On` DATETIME(6) NOT NULL,
   `Modified_By` INT NULL DEFAULT NULL,
   `Modified_On` DATETIME(6) NULL DEFAULT NULL,
+  `Is_Notify_Approve` Bool null,
+  `Is_Department_Specific` Bool null,
   PRIMARY KEY (`Approval_Configuration_Id`))
 ENGINE = InnoDB
 DEFAULT CHARACTER SET = utf8mb4
