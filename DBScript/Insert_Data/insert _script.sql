@@ -33,7 +33,6 @@ INSERT INTO Company(
 -- update Company set User_Name = "info@smartvms.in";
 -- update Company set Password = "89S22fp_u";
 
-UPDATE `company` SET `Mail` = 'info@leitensmartvms.com', `Host` = 'smtp.gmail.com', `User_Name` = 'info@leitensmartvms.com', `Password` = 'jhkm denp nehv himx'
 
 
  
