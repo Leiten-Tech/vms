@@ -388,5 +388,33 @@
         "timeSpent": 54
       }
     ]
+  },
+  "G": {
+    "code.txt": [
+      {
+        "date": "2025-07-24T12:56:55.266Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-24T12:56:56.399Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-24T12:56:56.565Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ]
   }
 }
