@@ -182,14 +182,6 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                     }
                 };
 
-                if (visitor.VisitorId != null ||visitor.VisitorId != 0)
-                {
-                    var visitorDocs = dbContext.VisitorDocDetails
-                        .Where(x => x.VisitorId == visitor.VisitorId)
-                        .ToList();
-                    dbContext.VisitorDocDetails.RemoveRange(visitorDocs);
-                }
-
                 var blackListedVisitor = false;
                 var blackListVisitorAlreadyExists = dbContext
                     .Visitors.Where(x => x.Status == 2)
@@ -261,6 +253,11 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                         // If visitor exists, assign the existing VisitorId to the incoming visitor
                         visitor.VisitorId = visitorExists.VisitorId;
 
+                        List<VisitorDocDetail> visitorDocs = dbContext
+                            .VisitorDocDetails.Where(u => u.VisitorId == visitor.VisitorId)
+                            .ToList();
+                        dbContext.VisitorDocDetails.RemoveRange(visitorDocs);
+
                         // Loop through each VisitorDetail for the incoming visitor
                         foreach (var detail in visitor.VisitorDetails)
                         {
@@ -276,6 +273,7 @@ namespace VisitorManagementMySQL.Services.Master.ExternalBookVisitorService
                                     )
                                     .ToList();
                                 dbContext.VisitorDetails.RemoveRange(existingAllVisDetails);
+
                                 // If the VisitorDetail exists, update the VisitorDetailId
                                 detail.VisitorDetailId = existingVisitorDetail.VisitorDetailId;
                                 detail.VisitorDetailCode = existingVisitorDetail.VisitorDetailCode;

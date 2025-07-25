@@ -3302,6 +3302,30 @@
           "email": "arjayabalan09@gmail.com"
         },
         "timeSpent": 0
+      },
+      {
+        "date": "2025-07-22T18:30:01.168Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 10
+      },
+      {
+        "date": "2025-07-22T18:30:49.042Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 48
+      },
+      {
+        "date": "2025-07-22T18:31:45.962Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 57
       }
     ],
     "src\\utils\\utilFunc.ts": [
@@ -13878,6 +13902,14 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 33
+      },
+      {
+        "date": "2025-07-23T04:39:00.846Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 29
       }
     ],
     "src\\pages\\master\\userScreenMapping\\vUserScreenMapping.tsx": [
@@ -31394,6 +31426,22 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 1
+      },
+      {
+        "date": "2025-07-22T18:17:53.837Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 18
+      },
+      {
+        "date": "2025-07-22T18:18:41.479Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 48
       }
     ],
     "package.json.git": [
@@ -34384,6 +34432,34 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 1
+      }
+    ],
+    "src\\pages\\VisitorManagement\\ExternalMultipleVisitorManage\\BookExternalMultiple.tsx.git": [
+      {
+        "date": "2025-07-22T18:26:58.962Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 36
+      },
+      {
+        "date": "2025-07-22T18:27:07.209Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 8
+      }
+    ],
+    "node_modules\\vite\\client.d.ts": [
+      {
+        "date": "2025-07-22T18:29:38.339Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
       }
     ]
   }

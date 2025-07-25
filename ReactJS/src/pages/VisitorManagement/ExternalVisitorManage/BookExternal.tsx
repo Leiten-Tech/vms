@@ -287,7 +287,7 @@ const BookExternal = (props) => {
     VisitorTypeId: DtoVisitorEntryHeader
       ? DtoVisitorEntryHeader.VisitorTypeId
       : 35,
-    VisitorId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VisitorId : null,
+    VisitorId: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.VisitorId : 0,
     PersonName: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.PersonName : "",
     MobileNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.MobileNo : "",
     TagNo: DtoVisitorEntryHeader ? DtoVisitorEntryHeader.TagNo : "",
@@ -1341,7 +1341,7 @@ const BookExternal = (props) => {
         IdCardUrl: "",
         Status: 1,
       };
-      setVisitorDocDetailList([aadobj, dlobj]);
+      // setVisitorDocDetailList([aadobj, dlobj]);
 
       let matobj: any = {};
       matobj.VisitorEntryMaterialDetailId = 0;
@@ -1528,11 +1528,11 @@ const BookExternal = (props) => {
     if (visitorFormik.values.MobileNo.length != 10) {
       return toastValidation("Please Enter Valid WhatsApp Mobile No.");
     }
-   
+
     let mobNo = {
       MobileNo: visitorFormik.values.MobileNo,
       PlantId: accessData && accessData?.PlantId,
-      CompanyId: accessData && accessData?.CompanyId,
+      CompanyId: accessData && accessData?.CompanyId, 
       RoleId: (accessData && accessData?.RoleId) || 0,
     };
     var updateres = dispatch(OnEnterMobileNo(mobNo));
@@ -1546,25 +1546,23 @@ const BookExternal = (props) => {
             let vData = res.payload.VisitorEntryHeader;
             let vDocData = res.payload.VisitorDocDetailsList;
 
+            if (vData) {
+              vData = {
+                ...vData,
+                ImageUrl: vData.Visitor_Image_Name,
+                imageUrl: vData.Visitor_Image_Name,
+              };
+            }
 
             setCurrVisData(vData);
             loadVisData(vData);
             if (vDocData && vDocData.length) {
               vDocData.forEach((doc, index) => {
-                doc.FileName = doc.IdCardUrl
-                // doc.LocalPreviewUrl = doc.LocalPreviewUrl
+                doc.FileName = doc.IdCardUrl;
               });
               loadVisDocData(vDocData);
             } else {
-              loadVisDocData([
-                {
-                  VisitorDocId: 0,
-                  VisitorId: 0,
-                  IdCardType: "",
-                  IdCardNo: "",
-                  IdCardUrl: "",
-                },
-              ]);
+              loadVisDocData([]);
             }
             setPageTypeTogg(false);
           }
@@ -1631,6 +1629,7 @@ const BookExternal = (props) => {
     if (vDocData && vDocData.length) {
       setVisitorDocDetailList(vDocData);
     } else {
+      setVisitorDocDetailList([]);
       setVisitorDocDetailList([
         {
           VisitorDocId: 0,
@@ -1702,7 +1701,7 @@ const BookExternal = (props) => {
       setTempVehicleList(res.payload.VehicleList);
     }
     if (isCreate) {
-      visitorEntryFormik.setFieldValue("VisitorId", null);
+      visitorEntryFormik.setFieldValue("VisitorId", 0);
       visitorEntryFormik.setFieldValue("PersonName", "");
       visitorEntryFormik.setFieldValue("MobileNo", "");
       visitorEntryFormik.setFieldValue("IdProofType", null);
@@ -2311,7 +2310,7 @@ const BookExternal = (props) => {
       return toastValidation("Please Enter Mobile No.");
     if (values.MobileNo.length != 10)
       return toastValidation("Please Enter Valid Mobile No.");
-   
+
     // if (values.Address == "" || values.Address == null)
     // return toastValidation("Please Enter Address.");
     if (
@@ -2671,6 +2670,8 @@ const BookExternal = (props) => {
         const formData: any = new FormData();
         let VDList: any[] = [];
         values.Dob = datepipes(new Date(values.Dob));
+        values.VisitorId = values.VisitorId ?? 0;
+
         values.CreatedOn = datepipes(new Date(values.CreatedOn));
         if (!isCreate) {
           values.ModifiedOn = datepipes(new Date(values.ModifiedOn));
@@ -3385,8 +3386,7 @@ const BookExternal = (props) => {
       loadVisDocData([]);
       setIsdisableSave(true);
       setSignedUrl(null);
-    }
-    else {
+    } else {
       setIsdisableSave(false);
     }
   };

@@ -79,7 +79,15 @@ import { confirmDialog, ConfirmDialog } from "primereact/confirmdialog";
 import { DecryptData, EncryptData } from "@/redux/slices/master/workFlowSlice";
 
 export const CVisitorInfo = (props) => {
-  const { tabConfig, itemTemplate, sHost, sVisit, passData, toast } = props;
+  const {
+    tabConfig,
+    itemTemplate,
+    sHost,
+    sVisit,
+    passData,
+    toast,
+    VisitorDocDetailList
+  } = props;
 
   return (
     <div className="col-12">
@@ -141,12 +149,72 @@ export const CVisitorInfo = (props) => {
           <div className="visitor-company">{sHost?.MobileNo}</div>
         </div>
       </div>
+
+      {/* Visitor Doc Information */}
+      <div className="white">
+        <div className="widget-hdr">
+          <div className="sub-title">
+            <div className="grid">
+              <div className="col-12">
+                <h2>Visitor Document Information</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {VisitorDocDetailList?.length > 0 ? (
+          VisitorDocDetailList.map((doc, index) => (
+            <div className="widget-body" key={index}>
+              <div className="visitor-name">
+                {doc.IdCardType} -{" "}
+                <span className="emp-id">Doc ID: {doc.VisitorDocId}</span>
+              </div>
+
+              <div className="visitor-company">
+                <strong>ID Number:</strong> {doc.IdCardNo}
+              </div>
+
+              <div className="visitor-company">
+                <strong>Document URL:</strong>{" "}
+                {doc.IdCardUrl ? (
+                  <a
+                    href={doc.LocalPreviewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    View Document
+                  </a>
+                ) : (
+                  "No File"
+                )}
+              </div>
+
+              {/* <div className="visitor-company">
+                <strong>Status:</strong>{" "}
+                {doc.Status === 1 ? "Active" : "Inactive"}
+              </div> */}
+
+              <hr />
+            </div>
+          ))
+        ) : (
+          <div className="widget-body">No documents found.</div>
+        )}
+      </div>
     </div>
   );
 };
 
 export const CVistorDetail = (props) => {
-  const { tabConfig, itemTemplate, sHost, sVisit, passData, toast } = props;
+  const {
+    tabConfig,
+    itemTemplate,
+    sHost,
+    sVisit,
+    passData,
+    toast,
+    VisitorDocDetailList
+  } = props;
 
   const printRef = useRef(null);
 
@@ -198,6 +266,7 @@ const CVisitorManagement = () => {
   const [visitorEntryDetailListNew, setvisitorEntryDetailListNew] = useState(
     []
   );
+  const [VisitorDocDetailList, setVisitorDocDetailList] = useState([]);
   const [VisitorEntryRefDetailList, setVisitorEntryRefDetailList] = useState([
     {
       VisitorEntryRefDetailId: 0,
@@ -2900,6 +2969,7 @@ const CVisitorManagement = () => {
           setupdatedVisitorNameList(res.payload.UpdatedVisitorNameList);
           setvisitorEntryDetailListNew(res.payload.VisitorEntryDetails);
           setupdatedBelongingList(res.payload.VisitorEntryBelongingDetail);
+          setVisitorDocDetailList(res.payload.VisitorDocDetailList);
           handlePassPreview(
             res.payload.VisitorEntryHeader,
             res.payload.UpdatedVisitorNameList,
@@ -3005,7 +3075,7 @@ const CVisitorManagement = () => {
             res.payload.hasOwnProperty("tranStatus") &&
             res.payload.tranStatus.result
           ) {
-            setEncryptedValue("E^^_"+ res.payload.VisitorEntryHeader);
+            setEncryptedValue("E^^_" + res.payload.VisitorEntryHeader);
             setVehPopVisible(true);
           }
         })
@@ -6549,6 +6619,7 @@ const CVisitorManagement = () => {
                           toast={toast}
                           handleClosePassPrev={handleClosePassPrev}
                           setpassVisible={setpassVisible}
+                          VisitorDocDetailList={VisitorDocDetailList}
                         />
                       </div>
                     )}

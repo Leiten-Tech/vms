@@ -116,6 +116,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
+
                         }
                     );
 
@@ -221,6 +223,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
             return dto;
         }
 
+
         public async Task<VisitorEntryDTO> OnChangePartyType(JObject obj)
         {
             try
@@ -257,6 +260,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.PartyNameList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -317,6 +321,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorNameList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -393,6 +398,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorWorkerList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -453,6 +459,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VehicleNoList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -513,6 +520,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.DriverList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -571,6 +579,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.PreBookingList = (await spcall.ReadAsync<VisitorEntry>()).ToList();
@@ -1265,7 +1274,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "versuni_approval";
+                template.name = "yongsan_app_info_template";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -1279,6 +1288,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 JArray parameters = new JArray();
 
                 dynamic hParam = new JObject();
+                dynamic lParam = new JObject();
 
                 dynamic fParam = new JObject();
                 dynamic sParam = new JObject();
@@ -1287,6 +1297,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 dynamic fiParam = new JObject();
 
                 hParam.type = "image";
+                lParam.type = "text";
 
                 fParam.type = "text";
                 sParam.type = "text";
@@ -1321,9 +1332,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                         }
                         else
                         {
-                            // hParam.image.link = Scheme + entry.DocumentUrl;
-                            string BrandLogoBig = "/upload/Logo/avatar.png";
-                            hParam.image.link = SchemeUpload + BrandLogoBig;
+                            hParam.image.link = Scheme + entry.DocumentUrl;
                         }
                     }
                 }
@@ -1347,7 +1356,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 );
                 fiParam.text = Convert.ToString(PurposeName.MetaSubDescription);
 
+                lParam.text = "-";
+
                 parameters.Add(fParam);
+                parameters.Add(lParam);
                 parameters.Add(sParam);
                 parameters.Add(tParam);
                 parameters.Add(foParam);
@@ -1371,7 +1383,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "bks_approval";
+                string Template = "yongsan_app_info_template";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
 
                 approvalservice.WhatsAppLogSaveOut(
@@ -1503,6 +1515,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                             // FDate,
                             // TDate
                         }
@@ -1852,6 +1865,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     if (EntryType == 60)
@@ -1933,6 +1947,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VehicleList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -1988,6 +2003,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEntryHeader = (await spcall.ReadAsync<dynamic>()).SingleOrDefault();
@@ -2072,6 +2088,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEntryHeader = (await spcall.ReadAsync<dynamic>()).SingleOrDefault();
@@ -2151,6 +2168,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEmployeeList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2203,6 +2221,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.OnchangePlantList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2257,6 +2276,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.EmployeeList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2591,7 +2611,7 @@ private ApprovalWorkFlowDTO SendPassWhatsApp(
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(item.MobileNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "bks_app_info_template";
+                string Template = "yongsan_app_info_template";
                 WhatsAppLogSaveOut(
                     tempObj,
                     (int)visitorEntry.CompanyId,

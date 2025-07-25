@@ -256,7 +256,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     var workflowheader = dbContext.ApprovalConfigurations
                         .Where(x => x.DocumentId == request.documentid
                             && x.PlantId == request.plantid
-                            && x.ApprovalActivityId == request.documentactivityid
+                           && (request.documentactivityid == null || x.ApprovalActivityId == request.documentactivityid)
                             && x.Status == 1)
                         .SingleOrDefault();
 
@@ -279,7 +279,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             });
                         }
 
-                        if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == false)
+                        if (workflowheader.IsNotifyApprove == true && (workflowheader.IsDepartmentSpecific == false || workflowheader.IsDepartmentSpecific == null))
                         {
                             var nextLevelUsers = dbContext.ApprovalConfigurationDetails
                                 .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
@@ -293,7 +293,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 if (notifyUserId > 0)
                                 {
                                     var notifyUser = dbContext.Users.FirstOrDefault(x => x.UserId == notifyUserId);
-                                    if (notifyUser != null && !string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                    if (notifyUser != null)
                                     {
                                         string BrandLogo = Path.Combine(Directory.GetCurrentDirectory(), "upload", "Logo", "app-logo.png");
                                         string BrandLogoBig = "/upload/Logo/app-logo-big.png";
@@ -355,7 +355,10 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             };
 
                                             JObject convertObj = (JObject)JToken.FromObject(emailObj);
-                                            await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+                                            if (!string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                            {
+                                                await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+                                            }
 
                                             // Send WhatsApp Notification
                                             string notifyMessage = $"Dear {notifyUser.UserName},\n" +
@@ -914,7 +917,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 }
 
 
-                                                var primeUser = dbContext
+                                                users = dbContext
                                                     .Users.Where(x =>
                                                         x.UserId
                                                         == dto.NextApprovalDetail.PrimaryUserId
@@ -936,19 +939,19 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                     "ENCRYPT",
                                                     "",
                                                     "APPROVE",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
                                                 );
                                                 var rejectLink = GenerateMailToken(
                                                     "ENCRYPT",
                                                     "",
                                                     "REJECT",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
                                                 );
                                                  var rescheduleLink = GenerateMailToken(
                                                     "ENCRYPT",
                                                     "",
                                                     "RESCHEDULE",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
                                                 );
 
                                                 string resultHtml = "";
@@ -1950,7 +1953,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     }
 
 
-                    if (workflowheader.IsNotifyApprove == false || workflowheader.IsNotifyApprove == null)
+                    if (workflowheader.IsNotifyApprove == false)
                     {
 
                     if (dto.tranStatus.lstErrorItem.Count == 0)
@@ -2190,7 +2193,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 }
 
 
-                                                var primeUser = dbContext
+                                                users = dbContext
                                                     .Users.Where(x =>
                                                         x.UserId
                                                         == dto.NextApprovalDetail.PrimaryUserId
@@ -2212,19 +2215,19 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                     "ENCRYPT",
                                                     "",
                                                     "APPROVE",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_75_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
                                                 );
                                                 var rejectLink = GenerateMailToken(
                                                     "ENCRYPT",
                                                     "",
                                                     "REJECT",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_76_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}"
                                                 );
                                                  var rescheduleLink = GenerateMailToken(
                                                     "ENCRYPT",
                                                     "",
                                                     "RESCHEDULE",
-                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{primeUser.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
+                                                    $"{VisEntry.VisitorEntryCode}_{VisEntry.CompanyId}_{VisEntry.PlantId}_{34}_{users.UserId}_145_{VisEntry.VisitorTypeId}_{dto.NextApprovalDetail.LevelId}_{VisEntry.VisitorEntryId}_{userApproverData.DefaultRoleId}"
                                                 );
 
                                                 string resultHtml = "";
@@ -2948,6 +2951,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
 
@@ -3207,6 +3211,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                             VisitorEntryCode,
                             VisitorTypeId,
                             DetailId,
+                            SchemeDoc = (object)null,
                         }
                     );
 
@@ -3503,7 +3508,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     jsonObject.type = "template";
 
                     dynamic template = new JObject();
-                    template.name = "versuni_pass";
+                    template.name = "yongsan_pass";
                     template.language = "en";
 
                     JArray components = new JArray();
@@ -3572,7 +3577,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(item.MobileNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "bks_app_info_template";
+                string Template = "yongsan_app_info_template";
                 WhatsAppLogSaveOut(
                     tempObj,
                     (int)visitorEntry.CompanyId,

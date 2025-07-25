@@ -208,6 +208,38 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 45
+      },
+      {
+        "date": "2025-07-25T04:44:54.287Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-25T04:44:58.459Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-25T04:46:05.527Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 67
+      },
+      {
+        "date": "2025-07-25T04:47:18.719Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 73
       }
     ],
     "VisitorManagementService\\.gitignore.git": [

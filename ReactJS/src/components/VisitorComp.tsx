@@ -47,6 +47,7 @@ export const ContDetail = (props) => {
     toast,
     handleClosePassPrev,
     setpassVisible,
+    VisitorDocDetailList
   } = props;
   const routePage = useHistory();
   const openPrint = () => {
@@ -106,6 +107,7 @@ export const ContDetail = (props) => {
                 sHost={selectedHost}
                 sVisit={selectedVisitor}
                 toast={toast}
+                VisitorDocDetailList={VisitorDocDetailList}
               />
             </div>
           </div>

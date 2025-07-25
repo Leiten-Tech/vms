@@ -207,7 +207,7 @@ const deleteTemplate: any = (
 //             body={(rowData, rowIndex) => textEditor(rowData, rowIndex)}
 //           />
 //           <Column
-//             field="IdCardUrl"
+//             field="IdCardUrl"  
 //             header="Doument Upload"
 //             style={{ width: "25%" }}
 //             body={(rowData, rowIndex) => textEditor(rowData, rowIndex)}
@@ -235,6 +235,7 @@ export const VisitorDocDetailForm = (props) => {
 
   useEffect(() => {
     if (!VisitorDocDetailList || VisitorDocDetailList.length === 0) {
+      setVisitorDocDetailList([]);
       setVisitorDocDetailList([
         {
           VisitorDocId: 0,
@@ -247,10 +248,12 @@ export const VisitorDocDetailForm = (props) => {
     } else if (VisitorDocDetailList.length > 1) {
       setVisitorDocDetailList(VisitorDocDetailList);
       VisitorDocDetailList.forEach((doc, index) => {
-        doc.files = [{
-          name: doc.IdCardUrl,
-          type: "image/jpeg",
-        }];
+        doc.files = [
+          {
+            name: doc.IdCardUrl,
+            type: "image/jpeg",
+          },
+        ];
         handleFileUpload(doc, index, doc);
       });
     }
@@ -323,6 +326,7 @@ export const VisitorDocDetailForm = (props) => {
 
     const reader = new FileReader();
     reader.onloadend = () => {
+      setVisitorDocDetailList([]);
       const updatedDocs = [...VisitorDocDetailList];
       updatedDocs[rowIndex.rowIndex] = {
         ...rowData,
@@ -335,6 +339,25 @@ export const VisitorDocDetailForm = (props) => {
       setVisitorDocDetailList(updatedDocs);
     };
     reader.readAsDataURL(renamedFile);
+
+    const ClearFileUpload = () => {
+      const updatedDocs = [...VisitorDocDetailList];
+      updatedDocs[rowIndex.rowIndex] = {
+        ...rowData,
+        UploadedImage: "",
+        FileName: "",
+        IdCardNo: "",
+        IdCardUrl: "",
+      };
+      setVisitorDocDetailList(updatedDocs);
+
+      const fileUploadRef = uploadRefs.current[rowIndex.rowIndex];
+      if (fileUploadRef && fileUploadRef.clear) {
+        fileUploadRef.clear();
+      }
+    };
+
+    ClearFileUpload();
   };
 
   const documentUploadTemplate = (rowData, rowIndex, handleFileUpload) => {
@@ -382,7 +405,7 @@ export const VisitorDocDetailForm = (props) => {
         </div>
 
         <FileUpload
-          ref={(el) => (uploadRefs.current[rowIndex.rowIndex] = el)}
+          ref={(el) => {uploadRefs.current[rowIndex.rowIndex] = el}}
           mode="basic"
           customUpload
           chooseOptions={chooseOptions}

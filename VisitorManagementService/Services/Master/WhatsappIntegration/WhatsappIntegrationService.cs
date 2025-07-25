@@ -96,7 +96,7 @@ namespace VisitorManagementMySQL.Services.Master.WIntegrationService
                 // ApprovalRequest request = JsonConvert.DeserializeObject<ApprovalRequest>(decryptData);
                 string FromContact = "917358112529";
                 DateTime MessageTime = DateTime.Now;
-                string Template = "versuni_app_info_template"; // Updated template name
+                string Template = "yongsan_app_info_template"; // Updated template name
                 long messageType = 104;
                 string EntryRefCode = decryptSplit[0];
                 string ToContact = obj["payload"]["contacts"][0]["to"].ToObject<string>();

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace VisitorManagementMySQL.ContextHelper
 {
-    public class DbContextHelper : vms_webContext
+    public class DbContextHelper : vms_yongsanContext
     {
         private readonly string _connectionString;
         public DbContextHelper(IOptions<DbConnectionInfo> dbConnectionInfo)
@@ -15,7 +15,7 @@ namespace VisitorManagementMySQL.ContextHelper
             _connectionString = dbConnectionInfo.Value.VisitorManagementCon;
         }
 
-        public DbContextHelper(DbContextOptions<vms_webContext> options)
+        public DbContextHelper(DbContextOptions<vms_yongsanContext> options)
             : base(options)
         {
             this.Database.SetCommandTimeout(180);

@@ -67,6 +67,10 @@ namespace VisitorManagementMySQL.Entities
         public List<dynamic> WorkPermitEntryDetails { get; set; }
         public List<dynamic> reScheduleVisiorList { get; set; }
         public dynamic VisitorEntry { get; set; }
+        public List<dynamic> VisitorDocDetailList { get; set; }
+
+
+
         //***ANDROID START 
 
         //ANDROID

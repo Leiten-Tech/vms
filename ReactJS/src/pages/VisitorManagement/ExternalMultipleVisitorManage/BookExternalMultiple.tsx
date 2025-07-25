@@ -1040,14 +1040,14 @@ const BookExternalMultiple = (props) => {
       VisitorDocId: 0,
       VisitorId: 0,
       IdCardType: "Aadhar Card",
-      IdCard_No: "",
+      IdCardNo: "",
       IdCardUrl: "",
       Status: 1,
     };
     let dlobj: any = {
       VisitorDocId: 0,
       VisitorId: 0,
-      IdCardType: "Driving Licence",
+      IdCardType: "Driving License",
       IdCardNo: "",
       IdCardUrl: "",
       Status: 1,
@@ -1075,6 +1075,7 @@ const BookExternalMultiple = (props) => {
     if (updatedList.length > 0) {
       let visitor: any = updatedList.find((f) => f.VisitorId == value);
       if (visitor) {
+        visitorFormik.setFieldValue("VisitorId", visitor.VisitorId);
         visitorEntryFormik.setFieldValue("PersonName", visitor.FirstName);
         visitorEntryFormik.setFieldValue("MobileNo", visitor.MobileNo);
         visitorEntryFormik.setFieldValue("AadharNo", visitor.AadharNo);
@@ -1240,7 +1241,7 @@ const BookExternalMultiple = (props) => {
       let dlobj: any = {
         VisitorDocId: 0,
         VisitorId: 0,
-        IdCardType: "Driving Licence",
+        IdCardType: "Driving License",
         IdCardNo: "",
         IdCardUrl: "",
         Status: 1,
@@ -1382,13 +1383,29 @@ const BookExternalMultiple = (props) => {
     const uploadedImageUrl = URL.createObjectURL(e);
     setImageUrl(uploadedImageUrl);
   };
+  // const onUploadDocument = (e) => {
+  //   setDocument(e.files[0]);
+  //   visitorEntryFormik.setFieldValue("VehicleDocumentName", e.files[0].name);
+  //   visitorEntryFormik.setFieldValue("VehicleDocumentUrl", e.files[0].name);
+  //   const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+  //   setDocumentUrl(uploadedImageUrl);
+  // };
+
   const onUploadDocument = (e) => {
-    setDocument(e.files[0]);
-    visitorEntryFormik.setFieldValue("VehicleDocumentName", e.files[0].name);
-    visitorEntryFormik.setFieldValue("VehicleDocumentUrl", e.files[0].name);
-    const uploadedImageUrl = URL.createObjectURL(e.files[0]);
+    console.log("Upload Event:", e);
+
+    if (!e.files || e.files.length === 0) return;
+
+    const file = e.files[0];
+    setDocument(file);
+
+    visitorEntryFormik.setFieldValue("VehicleDocumentName", file.name);
+    visitorEntryFormik.setFieldValue("VehicleDocumentUrl", file.name);
+
+    const uploadedImageUrl = URL.createObjectURL(file);
     setDocumentUrl(uploadedImageUrl);
   };
+
   const deleteDocuments = () => {
     setDocumentUrl("");
     setDocument(null);
@@ -2464,6 +2481,7 @@ const BookExternalMultiple = (props) => {
           formData.append("webfile1", documentfilesVis[x]);
         }
       }
+      visValues.VisitorId = visitorDetailList[0].VisitorId;
       visValues.MobileNo = visitorDetailList[0].MobileNo;
       visValues.AadharNo = visitorDetailList[0].AadharNo;
       visValues.FirstName = visitorDetailList[0].FirstName;
@@ -2493,13 +2511,30 @@ const BookExternalMultiple = (props) => {
           tempvisitorDetailList.unshift(matchingDetail);
         }
       });
+
+      // const updatedDocDetails = VisitorDocDetailList.map((doc) => {
+      //   return {
+      //     ...doc,
+      //     IdCardUrl: doc.FileName || "",
+      //   };
+      // });
+
+      const updatedDocDetails = VisitorDocDetailList.filter((v) => v.IdCardType && v.IdCardNo)
+
       let obj = {
         Visitor: visValues,
         VisitorDetail: tempvisitorDetailList,
+        VisitorDocDetails: updatedDocDetails || [],
         IsMultiple: true,
       };
       let input: string = JSON.stringify(obj);
       formData.append("input", input);
+
+      updatedDocDetails.forEach((item) => {
+        if (item.RawFile) {
+          formData.append("webfiles", item.RawFile);
+        }
+      });
 
       if (isCreate == false) {
         if (!VisitorHeaderVM.VisitorDocumentUrl) {
@@ -3187,8 +3222,51 @@ const BookExternalMultiple = (props) => {
             res.payload.VisitorEntryHeader != null
           ) {
             let vData = res.payload.VisitorEntryHeader;
+            let vDocData = res.payload.VisitorDocDetailsList;
             setCurrVisData(vData);
             loadVisData(vData);
+
+            let aadobj: any = {
+              VisitorDocId: 0,
+              VisitorId: 0,
+              IdCardType: "Aadhar Card",
+              IdCardNo: "",
+              IdCardUrl: "",
+              Status: 1,
+            };
+            let dlobj: any = {
+              VisitorDocId: 0,
+              VisitorId: 0,
+              IdCardType: "Driving License",
+              IdCardNo: "",
+              IdCardUrl: "",
+              Status: 1,
+            };
+
+            if (vDocData && vDocData.length) {
+              vDocData.forEach((doc, index) => {
+                doc.FileName = doc.IdCardUrl;
+                // doc.LocalPreviewUrl = doc.LocalPreviewUrl
+              });
+
+              const hasAadhar = vDocData.some(
+                (doc) => doc.IdCardType === "Aadhar Card"
+              );
+              const hasDL = vDocData.some(
+                (doc) => doc.IdCardType === "Driving License"
+              );
+
+              if (!hasAadhar) {
+                vDocData.push(aadobj);
+              }
+              if (!hasDL) {
+                vDocData.push(dlobj);
+              }
+
+              loadVisDocData(vDocData);
+            } else {
+              loadVisDocData([]);
+            }
             setPageTypeTogg(false);
           }
           // else {
@@ -3208,6 +3286,7 @@ const BookExternalMultiple = (props) => {
   };
 
   const loadVisData = (vData) => {
+    visitorFormik.setFieldValue("VisitorId", vData.VisitorId);
     visitorFormik.setFieldValue("FirstName", vData.PersonName);
     visitorFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorFormik.setFieldValue("MobileNo", vData.MobileNo);
@@ -3217,6 +3296,7 @@ const BookExternalMultiple = (props) => {
     visitorFormik.setFieldValue("IdProofNo", vData.IdCardNo);
     visitorFormik.setFieldValue("TagNo", vData.TagNo);
 
+    visitorEntryFormik.setFieldValue("VisitorId", vData.VisitorId);
     visitorEntryFormik.setFieldValue("FirstName", vData.PersonName);
     visitorEntryFormik.setFieldValue("VisitorCompany", vData.VisitorCompany);
     visitorEntryFormik.setFieldValue("MailId", vData.MailId);
@@ -3227,6 +3307,32 @@ const BookExternalMultiple = (props) => {
     visitorEntryFormik.setFieldValue("TagNo", vData.TagNo);
   };
 
+  const loadVisDocData = (vDocData) => {
+    if (vDocData && vDocData.length) {
+      setVisitorDocDetailList(vDocData);
+    } else {
+      setVisitorDocDetailList([]);
+
+      let aadobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Aadhar Card",
+        IdCardNo: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+      let dlobj: any = {
+        VisitorDocId: 0,
+        VisitorId: 0,
+        IdCardType: "Driving License",
+        IdCardNo: "",
+        IdCardUrl: "",
+        Status: 1,
+      };
+
+      setVisitorDocDetailList([aadobj, dlobj]);
+    }
+  };
 
   const handleMobKeyPress = (event) => {
     visitorFormik.setFieldValue("MobileNo", event?.target?.value);
@@ -3244,6 +3350,7 @@ const BookExternalMultiple = (props) => {
     console.log(event);
     if (event?.keyCode == 8 && visitorFormik.values.MobileNo.length < 10) {
       loadVisData({
+        VisitorId: "",
         PersonName: "",
         VisitorCompany: "",
         MailId: "",

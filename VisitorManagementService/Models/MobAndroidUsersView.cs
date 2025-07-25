@@ -15,7 +15,6 @@ namespace VisitorManagementMySQL.Models
         public string Type { get; set; }
         public string UserImageUrl { get; set; }
         public string UserImageName { get; set; }
-        public string CompanyId { get; set; }
         public string CompanyName { get; set; }
     }
 }

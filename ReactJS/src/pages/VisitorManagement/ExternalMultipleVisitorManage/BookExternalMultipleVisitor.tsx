@@ -60,6 +60,7 @@ const VisitorDetailForm = (props) => {
     documentUploadRef,
     WorkSeverityList,
   } = props;
+
   const chooseOptions = { icon: "las la-upload", iconOnly: true };
   return (
     <Formik
@@ -229,12 +230,12 @@ const VisitorDetailForm = (props) => {
                     <FileUpload
                       mode="basic"
                       chooseOptions={chooseOptions}
-                      uploadHandler={onUploadDocument}
                       chooseLabel={documentUrl}
                       auto
                       customUpload
                       ref={documentUploadRef}
-                      disabled={isView ? true : false}
+                      disabled={isView}
+                      onSelect={(e) => onUploadDocument(e)}
                     />
                     <Button
                       icon="las la-times"
@@ -408,6 +409,280 @@ const deleteTemplate = (
   );
 };
 
+export const VisitorDocDetailForm = (props) => {
+  const {
+    toast,
+    isCreate,
+    isView,
+    setVisitorDocDetailList,
+    VisitorDocDetailList,
+  } = props;
+  const uploadRefs = useRef({});
+
+  const AddAndDeleteTemplate: React.FC<any> = (rowData) => {
+    const index = VisitorDocDetailList.indexOf(rowData);
+    const handleAddRow = () => {
+      let isexist: any[] = VisitorDocDetailList.filter(
+        (f) => f.DeviceName == "" || f.DeviceNo == ""
+      );
+      if (isexist.length > 0) {
+        toast.current?.show({
+          severity: "warn",
+          detail: "Please Enter Device Name And No.",
+          summary: "Warning Message",
+        });
+        return;
+      }
+      const newObj = {
+        VisitorEntryBelongingDetailId: 0,
+        VisitorEntryId: 0,
+        DeviceNo: "",
+        DeviceName: "",
+      };
+      setVisitorDocDetailList([...VisitorDocDetailList, newObj]);
+    };
+    const handleDeleteRow = () => {
+      const updatedgridData = [...VisitorDocDetailList];
+      updatedgridData.splice(index, 1);
+      if (updatedgridData.length == 0) {
+        const newObj = {
+          VisitorEntryBelongingDetailId: 0,
+          VisitorEntryId: 0,
+          DeviceNo: "",
+          DeviceName: "",
+        };
+        setVisitorDocDetailList([newObj]);
+      } else {
+        setVisitorDocDetailList(updatedgridData);
+      }
+    };
+
+    return (
+      <>
+        <Button
+          label=""
+          severity="success"
+          title="Add"
+          icon="las la-plus"
+          className="mr-2 p-1"
+          onClick={handleAddRow}
+          disabled={isView || !isCreate}
+        />
+        <Button
+          label=""
+          severity="danger"
+          title="Delete"
+          icon="las la-times"
+          className="mr-2 p-1"
+          onClick={handleDeleteRow}
+          disabled={isView || !isCreate}
+        />
+      </>
+    );
+  };
+
+  const handleInputChange = (event, rowData, rowIndex) => {
+    const updatedData = [...VisitorDocDetailList];
+    updatedData[rowIndex.rowIndex][rowIndex.field] = event.target.value;
+    setVisitorDocDetailList(updatedData);
+  };
+
+  const textEditor = (rowData, rowIndex) => {
+    return (
+      <InputText
+        className="w-full"
+        value={rowData[rowIndex.field]}
+        onChange={(e: any) => {
+          handleInputChange(e, rowData, rowIndex);
+        }}
+        maxLength={50}
+        disabled={isView || !isCreate}
+      />
+    );
+  };
+
+  const documentUploadTemplate = (rowData, rowIndex, handleFileUpload) => {
+    const chooseOptions = { icon: "las la-upload", iconOnly: true };
+
+    const ClearFileUpload = () => {
+      const updatedDocs = [...VisitorDocDetailList];
+      updatedDocs[rowIndex.rowIndex] = {
+        ...rowData,
+        UploadedImage: "",
+        FileName: "",
+        documentUrl: "",
+        IdCardNo: "",
+        IdCardUrl: "",
+      };
+      setVisitorDocDetailList(updatedDocs);
+
+      const fileUploadRef = uploadRefs.current[rowIndex.rowIndex];
+      if (fileUploadRef && fileUploadRef.clear) {
+        fileUploadRef.clear();
+      }
+    };
+    const handleClick = (linkValue) => {
+      if (linkValue) {
+        window.open(linkValue, "_blank");
+      } else {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Invalid File",
+          detail: "No attachment found to open.",
+        });
+      }
+    };
+
+    return (
+      <div className="p-inputgroup">
+        <div className="browse-links">
+          {rowData.FileName != "" && rowData.FileName != null ? (
+            <Button
+              label={rowData.FileName}
+              link
+              onClick={() => handleClick(rowData.LocalPreviewUrl)}
+            />
+          ) : null}
+        </div>
+        <FileUpload
+          ref={(el) => {uploadRefs.current[rowIndex.rowIndex] = el}}
+          mode="basic"
+          customUpload
+          chooseOptions={chooseOptions}
+          // maxFileSize={1000000}
+          onSelect={(e) => handleFileUpload(e, rowIndex, rowData)}
+          chooseLabel={rowData.FileName || "Upload"}
+          auto
+          accept=".jpeg, .jpg, .png, .pdf, .word, .xls, .xlsx"
+          disabled={isView ? true : false}
+        />
+        <Button
+          icon="las la-times"
+          disabled={isView || !rowData.FileName}
+          onClick={ClearFileUpload}
+        />
+      </div>
+    );
+  };
+
+  const handleFileUpload = (e, rowIndex, rowData) => {
+    const file = e.files[0];
+    if (!file) return;
+    const extension = file.name.split(".").pop();
+    const docType = rowData.IdCardType || "Document";
+    const uniqueFileName = `${docType}_${Date.now()}_${Math.floor(
+      Math.random() * 10000
+    )}.${extension}`;
+    const renamedFile = new File([file], uniqueFileName, { type: file.type });
+
+    const previewUrl = URL.createObjectURL(renamedFile);
+
+    const displayName = file.name.toLowerCase().startsWith("whatsapp image")
+      ? "WhatsApp Image"
+      : file.name;
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const updatedDocs = [...VisitorDocDetailList];
+      updatedDocs[rowIndex.rowIndex] = {
+        ...rowData,
+        UploadedImage: reader.result,
+        FileName: displayName,
+        IdCardUrl: uniqueFileName,
+        LocalPreviewUrl: previewUrl,
+        RawFile: renamedFile,
+      };
+      setVisitorDocDetailList(updatedDocs);
+    };
+    reader.readAsDataURL(renamedFile);
+
+    const ClearFileUpload = () => {
+      const updatedDocs = [...VisitorDocDetailList];
+      updatedDocs[rowIndex.rowIndex] = {
+        ...rowData,
+        UploadedImage: "",
+        FileName: "",
+        IdCardNo: "",
+        IdCardUrl: "",
+      };
+      setVisitorDocDetailList(updatedDocs);
+
+      const fileUploadRef = uploadRefs.current[rowIndex.rowIndex];
+      if (fileUploadRef && fileUploadRef.clear) {
+        fileUploadRef.clear();
+      }
+    };
+
+    ClearFileUpload();
+  };
+
+  // return (
+  //   <>
+  //     <div className="sub-title">
+  //       <div className="grid">
+  //         <div className="col-12">
+  //           <h2>Document Details</h2>
+  //         </div>
+  //       </div>
+  //     </div>
+  //     <div className="normal-table">
+  //       {/* <div className="card"> */}
+  //       <DataTable
+  //         value={VisitorDocDetailList}
+  //         showGridlines
+  //         // paginator
+  //         filterDisplay="menu"
+  //         globalFilterFields={[
+  //           "VisitorName",
+  //           "DepartMentName",
+  //           "Dob",
+  //           "MobileNo",
+  //           "MailId",
+  //           "IdCardTypeName",
+  //           "IdCardNo",
+  //           "StatusName",
+  //         ]}
+  //         emptyMessage="No Data found."
+  //         // editMode="cell"
+  //         // rows={5}
+  //         // rowsPerPageOptions={[5, 10, 25, 50, 100]}
+  //         // currentPageReportTemplate="Showing {first} to {last} of {totalRecords} Entries"
+  //         // paginatorTemplate="CurrentPageReport FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink RowsPerPageDropdown"
+  //         // tableStyle={{ minWidth: "50rem" }}
+  //       >
+  //         {/* <Column
+  //           field="Action"
+  //           header="Action"
+  //           style={{ width: "35%", textAlign: "center" }}
+  //           body={AddAndDeleteTemplate}
+  //         /> */}
+  //         <Column
+  //           field="IdCardType"
+  //           header="Document Name"
+  //           style={{ width: "25%" }}
+  //           body={(rowData, rowIndex) => textEditor(rowData, rowIndex)}
+  //         />
+  //         <Column
+  //           field="IdCardNo"
+  //           header="Document Number"
+  //           style={{ width: "25%" }}
+  //           body={(rowData, rowIndex) => textEditor(rowData, rowIndex)}
+  //         />
+  //         <Column
+  //           field="IdCardUrl"
+  //           header="Doument Upload"
+  //           style={{ width: "25%" }}
+  //           body={(rowData, rowIndex) =>
+  //             documentUploadTemplate(rowData, rowIndex, handleFileUpload)
+  //           }
+  //         />
+  //       </DataTable>
+  //       {/* </div> */}
+  //     </div>
+  //   </>
+  // );
+};
+
 export const VisitorEntryBelongingDetailForm = (props) => {
   const {
     visitorEntryBelongingDetailForm,
@@ -420,6 +695,7 @@ export const VisitorEntryBelongingDetailForm = (props) => {
     toast,
     isCreate,
   } = props;
+
   const AddAndDeleteTemplate: React.FC<any> = (rowData) => {
     const index = VisitorEntryBelongingDetailList.indexOf(rowData);
     const handleAddRow = () => {
@@ -596,7 +872,7 @@ const VisitorForm = (props) => {
     OnClear,
     toast,
     handleMobKeyPress,
-    handleMobBack
+    handleMobBack,
   } = props;
   const customOptions = { icon: "las la-camera-retro", iconOnly: true };
   const chooseOptions = { icon: "las la-upload", iconOnly: true };
@@ -625,16 +901,14 @@ const VisitorForm = (props) => {
                         className="small-combo"
                         id={"CountryCode"}
                         name={"CountryCode"}
-                        value={formik.values["CountryCode"] }
+                        value={formik.values["CountryCode"]}
                         options={phonenumber}
                         onBlur={formik.handleBlur}
                         optionLabel={"CountryCode"}
                         optionValue={"CountryCode"}
                         disabled={true}
                         onChange={(e) => {
-                          handleSelect(
-                            e.target.value
-                          );
+                          handleSelect(e.target.value);
                         }}
                       />
                       <InputText
@@ -643,8 +917,8 @@ const VisitorForm = (props) => {
                         disabled={isView ? true : false}
                         onBlur={formik.handleBlur}
                         onChange={(e) => {
-                          handleMobKeyPress(e)
-                          formik.handleChange
+                          handleMobKeyPress(e);
+                          formik.handleChange;
                         }}
                         onKeyDown={handleMobBack}
                         value={formik.values["MobileNo"]}
@@ -909,7 +1183,7 @@ const VisitorForm = (props) => {
                 // body={(e) => DocumentHyperLink(e)}
                 headerClassName="text-center"
               ></Column>
-                {/* <Column
+              {/* <Column
                 field="AadharNo"
                 header="Aadhar No"
                 style={{
@@ -945,25 +1219,25 @@ const VisitorForm = (props) => {
   );
 };
 export const visitorForm = {
-  VisitorName: '',           
-  MobileNo: '',             
-  AadharNo: '',        
-  Email: '',                 
-  Gender: '',               
-  VisitPurpose: '',        
-  VisitDate: '',            
-  DepartmentId: '',          
-  IdCardType: '',           
-  IdCardNo: '',              
-  CompanyName: '',        
-  Designation: '',           
-  Status: '',                // Visit status (Pending, Approved, Rejected)
-  EntryTime: '',             // Time of entry
-  ExitTime: '',              // Time of exit
-  IsCheckedIn: false,        // Boolean flag if visitor has checked in
-  IsCheckedOut: false,       // Boolean flag if visitor has checked out
-  DocumentUpload: null,      // Placeholder for uploaded document/image
-  Remarks: '',               // Additional notes or remarks
+  VisitorName: "",
+  MobileNo: "",
+  AadharNo: "",
+  Email: "",
+  Gender: "",
+  VisitPurpose: "",
+  VisitDate: "",
+  DepartmentId: "",
+  IdCardType: "",
+  IdCardNo: "",
+  CompanyName: "",
+  Designation: "",
+  Status: "", // Visit status (Pending, Approved, Rejected)
+  EntryTime: "", // Time of entry
+  ExitTime: "", // Time of exit
+  IsCheckedIn: false, // Boolean flag if visitor has checked in
+  IsCheckedOut: false, // Boolean flag if visitor has checked out
+  DocumentUpload: null, // Placeholder for uploaded document/image
+  Remarks: "", // Additional notes or remarks
 };
 export const BookExternalVisitor = (props) => {
   const {
@@ -1017,7 +1291,10 @@ export const BookExternalVisitor = (props) => {
     OnClear,
     TitleList,
     handleMobKeyPress,
-    handleMobBack
+    handleMobBack,
+    VisitorDocDetailList,
+    setVisitorDocDetailList,
+    IsDocDetailsShow,
   } = props;
 
   const route = useHistory();
@@ -1112,6 +1389,17 @@ export const BookExternalVisitor = (props) => {
                   IsBelongingDetailsShow={IsBelongingDetailsShow}
                 />
               </div>
+
+              {/* <div className={isViewVM ? "p-disabled" : ""}>
+                <VisitorDocDetailForm
+                  VisitorDocDetailList={VisitorDocDetailList}
+                  setVisitorDocDetailList={setVisitorDocDetailList}
+                  isView={isViewVM}
+                  isCreate={isCreateVM}
+                  toast={toast}
+                  IsDocDetailsShow={IsDocDetailsShow}
+                />
+              </div> */}
             </>
           ) : (
             <AppProgressSpinner />

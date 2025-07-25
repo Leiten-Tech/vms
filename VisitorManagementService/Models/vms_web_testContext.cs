@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Metadata;
 
 namespace VisitorManagementMySQL.Models
 {
-    public partial class vms_webContext : DbContext
+    public partial class vms_web_testContext : DbContext
     {
-        public vms_webContext()
+        public vms_web_testContext()
         {
         }
 
-        public vms_webContext(DbContextOptions<vms_webContext> options)
+        public vms_web_testContext(DbContextOptions<vms_web_testContext> options)
             : base(options)
         {
         }
@@ -36,7 +36,6 @@ namespace VisitorManagementMySQL.Models
         public virtual DbSet<Driver> Drivers { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<EmployeeDocumentDetail> EmployeeDocumentDetails { get; set; }
-        public virtual DbSet<EmployeeMealDetail> EmployeeMealDetails { get; set; }
         public virtual DbSet<Feedback> Feedbacks { get; set; }
         public virtual DbSet<FeedbackDetail> FeedbackDetails { get; set; }
         public virtual DbSet<Function> Functions { get; set; }
@@ -112,7 +111,7 @@ namespace VisitorManagementMySQL.Models
             if (!optionsBuilder.IsConfigured)
             {
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-                optionsBuilder.UseMySQL("Server=192.168.10.192;Port=3306;Database=vms_web;Uid=VMS;Pwd=Leiten@2024*;");
+                optionsBuilder.UseMySQL("Server=3.109.131.222;Port=3306;Database=vms_web_test;Uid=root;Pwd=Leiten@2024;");
             }
         }
 
@@ -303,7 +302,7 @@ namespace VisitorManagementMySQL.Models
 
                 entity.Property(e => e.IsDepartmentSpecific).HasColumnName("Is_Department_Specific");
 
-                entity.Property(e => e.IsNotifyApprove1).HasColumnName("Is_Notify_Approve");
+                entity.Property(e => e.IsNotifyApprove).HasColumnName("Is_Notify_Approve");
 
                 entity.Property(e => e.ModifiedBy).HasColumnName("Modified_By");
 
@@ -324,9 +323,7 @@ namespace VisitorManagementMySQL.Models
 
                 entity.Property(e => e.ApprovalConfigurationId).HasColumnName("Approval_Configuration_Id");
 
-                entity.Property(e => e.DepartmentId)
-                    .HasColumnName("Department_Id")
-                    .HasDefaultValueSql("'0'");
+                entity.Property(e => e.DepartmentId).HasColumnName("Department_Id");
 
                 entity.Property(e => e.LevelId).HasColumnName("Level_Id");
 
@@ -857,6 +854,7 @@ namespace VisitorManagementMySQL.Models
                     .HasColumnName("First_Name");
 
                 entity.Property(e => e.IdcardNo)
+                    .IsRequired()
                     .HasMaxLength(20)
                     .HasColumnName("Idcard_No");
 
@@ -895,14 +893,6 @@ namespace VisitorManagementMySQL.Models
                 entity.Property(e => e.SecondaryMobileNo)
                     .HasMaxLength(15)
                     .HasColumnName("Secondary_Mobile_No");
-
-                entity.Property(e => e.VehicleModel)
-                    .HasMaxLength(25)
-                    .HasColumnName("Vehicle_Model");
-
-                entity.Property(e => e.VehicleNo)
-                    .HasMaxLength(15)
-                    .HasColumnName("Vehicle_No");
             });
 
             modelBuilder.Entity<EmployeeDocumentDetail>(entity =>
@@ -940,37 +930,6 @@ namespace VisitorManagementMySQL.Models
                     .HasForeignKey(d => d.EmployeeId)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("fk_Employee_Employee_Id");
-            });
-
-            modelBuilder.Entity<EmployeeMealDetail>(entity =>
-            {
-                entity.ToTable("employee_meal_details");
-
-                entity.HasIndex(e => e.EmployeeId, "fk_Employee_Employee_Id");
-
-                entity.Property(e => e.EmployeeMealDetailId).HasColumnName("Employee_Meal_Detail_Id");
-
-                entity.Property(e => e.EmployeeId).HasColumnName("Employee_Id");
-
-                entity.Property(e => e.EmployeeMealCount)
-                    .IsRequired()
-                    .HasMaxLength(100)
-                    .HasColumnName("Employee_Meal_Count");
-
-                entity.Property(e => e.GuestMealCount)
-                    .HasMaxLength(300)
-                    .HasColumnName("Guest_Meal_Count");
-
-                entity.Property(e => e.MealType)
-                    .IsRequired()
-                    .HasMaxLength(100)
-                    .HasColumnName("Meal_Type");
-
-                entity.HasOne(d => d.Employee)
-                    .WithMany(p => p.EmployeeMealDetails)
-                    .HasForeignKey(d => d.EmployeeId)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("fk_Employee_Meal_Details_Employee_Id");
             });
 
             modelBuilder.Entity<Feedback>(entity =>
@@ -1660,6 +1619,10 @@ namespace VisitorManagementMySQL.Models
                 entity.Property(e => e.AlertAfterMins)
                     .HasColumnType("decimal(5,2)")
                     .HasColumnName("Alert_After_Mins");
+
+                entity.Property(e => e.AlterAfterMins)
+                    .HasColumnType("decimal(5,2)")
+                    .HasColumnName("Alter_After_Mins");
 
                 entity.Property(e => e.CcMail)
                     .HasColumnType("longtext")
@@ -3202,6 +3165,10 @@ namespace VisitorManagementMySQL.Models
                     .HasColumnName("is_meeting_close");
 
                 entity.Property(e => e.IsPreBooking).HasColumnName("Is_Pre_Booking");
+
+                entity.Property(e => e.IsVisitEnded)
+                    .HasColumnName("Is_Visit_Ended")
+                    .HasDefaultValueSql("'0'");
 
                 entity.Property(e => e.MobileNo)
                     .HasMaxLength(50)

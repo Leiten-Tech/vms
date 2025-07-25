@@ -196,9 +196,23 @@ BEGIN
                 WHERE DWS.Level_Id = NEXTSTAGE 
                   AND ac.Document_Id = documentid 
                   AND ac.Status = 1
-                  AND DWS.Department_Id = (
-						  SELECT Dept_Id FROM Users WHERE User_Id = requesterid LIMIT 1
-					  )
+-- 				  AND DWS.Department_Id = (
+--                         SELECT Dept_Id FROM Users WHERE User_Id = requesterid LIMIT 1
+--                   )
+
+					AND DWS.Department_Id = (
+						SELECT Dept_Id 
+						FROM Users 
+						WHERE User_Id = (
+							CASE 
+								WHEN approverid = 0 THEN 
+									(SELECT Visited_Employee_Id FROM Visitor_Entry WHERE Visitor_Entry_Code= documentno LIMIT 1)
+								ELSE approverid
+							END
+						) 
+						LIMIT 1
+					)
+
                   AND l.Document_No = documentno 
                   AND l.Status NOT IN (75, 76) 
                   AND l.Approval_Activity_Id = documentactivityid;

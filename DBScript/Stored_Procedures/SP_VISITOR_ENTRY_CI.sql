@@ -14,6 +14,7 @@ create procedure SP_VISITOR_ENTRY_CI
     IN Scheme VARCHAR(255),
     IN SchemeVehicle VARCHAR(255),
     IN SchemeDetail VARCHAR(255),
+    IN SchemeDoc VARCHAR(255),
     IN EntryType INT,
     IN PartyType INT,
     IN Visitor_Type_Id INT,
@@ -575,7 +576,7 @@ select
 		v.Address,
 		vd.Mail_Id MailId,
 		vd.Mobile_No MobileNo ,
-        vd.Aadhar_No AadharNo,
+        -- vd.Aadhar_No AadharNo,
         vd.Tag_No TagNo,
         vd.Visitor_Company VisitorCompany,
 		v.Id_Card_Type IdCardType,
@@ -716,7 +717,7 @@ select
 			v.Dob Dob,
 			v.Mail_Id MailId,
 			v.Mobile_No MobileNo,
-            v.Aadhar_No AadharNo,
+           --  v.Aadhar_No AadharNo,
             v.Tag_No TagNo,
 			v.Visitor_Company VisitorCompany,
 			v.Id_Card_Type IdCardType,
@@ -758,7 +759,7 @@ select
 			v.Dob Dob,
 			v.Mail_Id MailId,
 			v.Mobile_No MobileNo,
-            v.Aadhar_No AadharNo,
+          --   v.Aadhar_No AadharNo,
             v.Tag_No TagNo,
 			v.Visitor_Company VisitorCompany,
 			v.Id_Card_Type IdCardType,
@@ -809,7 +810,7 @@ select
 		-- v.Person_Name PersonName,
 		vd.First_Name PersonName,
 		v.Mobile_No MobileNo,
-        vd.Aadhar_No AadharNo,
+        -- vd.Aadhar_No AadharNo,
 		v.Id_Proof_Type IdProofType,
 		v.Id_Proof_No IdProofNo,
 		v.Visited_Employee_Id VisitedEmployeeId,
@@ -1483,7 +1484,7 @@ select
 			where v.Status=1 and v.Company_Id = CompanyId  and v.Plant_Id = PlantId
 			order by ifnull(v.Created_On, v.Modified_On) desc;
 
-			select 
+			select
             Visitor_Entry_Belonging_Detail_Id,
 			Visitor_Entry_Id,
 			 CASE 
@@ -1494,6 +1495,22 @@ select
             from 
 			Visitor_Entry_Belonging_Detail  
 			where Visitor_Entry_Id=VisitorEntryId;
+            
+            -- Visitor Documnet Detail
+			select
+			vd.Visitor_Doc_Id AS VisitorDocId
+			,vd.Visitor_Id AS VisitorId
+			,vd.Id_Card_Type AS IdCardType
+			,vd.Id_Card_No AS IdCardNo
+			,vd.Id_Card_Url AS IdCardUrl
+			,CONCAT(SchemeDoc, vd.Id_Card_Url) AS LocalPreviewUrl
+			,vd.Status AS Status
+			from
+			visitor v
+			Inner Join visitor_doc_detail vd on vd.Visitor_Id = v.Visitor_Id
+			Inner Join visitor_entry ve on ve.Visitor_Id = v.Visitor_Id
+            Where ve.visitor_entry_id = VisitorEntryId;
+            
 	 end if;
 
 	if type='OnChangeEntryDetail'    

@@ -127,6 +127,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
 
@@ -221,6 +222,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.PartyNameList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -282,6 +284,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorNameList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -345,6 +348,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId,
                             WorkPermitCode,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.WorkPermitHeader = (await spcall.ReadAsync<dynamic>()).SingleOrDefault();
@@ -414,6 +418,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorWorkerList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -477,6 +482,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.LastVisitorEntryList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -538,6 +544,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.PreBookingList = (await spcall.ReadAsync<VisitorEntry>()).ToList();
@@ -1410,6 +1417,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEntryList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -1557,6 +1565,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEntryTypeList = (await spcall.ReadAsync<Metadatum>()).ToList();
@@ -1885,6 +1894,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     if (EntryType == 60)
@@ -1955,6 +1965,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     if (EntryType == 60)
@@ -2037,6 +2048,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VehicleDataList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2093,6 +2105,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.VisitorEmployeeList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2146,6 +2159,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             WorkPermitId = (object)null,
                             WorkPermitCode = (object)null,
                             VehicleNo = (object)null,
+                            SchemeDoc = (object)null,
                         }
                     );
                     dto.OnChangeEntryDetailList = (await spcall.ReadAsync<dynamic>()).ToList();
@@ -2230,7 +2244,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "versuni_approval";
+                template.name = "yongsan_app_info_template";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -2244,6 +2258,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 JArray parameters = new JArray();
 
                 dynamic hParam = new JObject();
+                dynamic lParam = new JObject();
 
                 dynamic fParam = new JObject();
                 dynamic sParam = new JObject();
@@ -2252,7 +2267,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 dynamic fiParam = new JObject();
 
                 hParam.type = "image";
-
+                lParam.type = "text";
                 fParam.type = "text";
                 sParam.type = "text";
                 tParam.type = "text";
@@ -2306,7 +2321,10 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 );
                 fiParam.text = Convert.ToString(PurposeName.MetaSubDescription);
 
+                lParam.text = "-";
+
                 parameters.Add(fParam);
+                parameters.Add(lParam);
                 parameters.Add(sParam);
                 parameters.Add(tParam);
                 parameters.Add(foParam);
@@ -2330,7 +2348,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "bks_app_info_template";
+                string Template = "yongsan_app_info_template";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
                 approvalservice.WhatsAppLogSaveOut(
                     tempObj,
@@ -2358,6 +2376,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             return dto;
         }
 
+                     
         public async Task<VisitorEntryDTO> ShowPass(JObject obj)
         {
             try
@@ -2377,6 +2396,11 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                     + "://"
                     + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
                     + "/upload/VisitorDetail/";
+                string SchemeDoc =
+                    httpContextAccessor.HttpContext.Request.Scheme
+                    + "://"
+                    + httpContextAccessor.HttpContext.Request.Host.Value.ToString()
+                    + "/upload/VisitorDocDetail/";
 
                 string type = "ShowPass";
                 string VisitorEntryId = obj["VisitorEntryId"].ToObject<string>();
@@ -2403,6 +2427,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                             Scheme,
                             SchemeVehicle,
                             SchemeDetail,
+                            SchemeDoc,
                             EntryType = (object)null,
                             PartyType = (object)null,
                             Visitor_Type_Id = (object)null,
@@ -2424,6 +2449,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                     dto.VisitorEntryBelongingDetail = (
                         await spcall.ReadAsync<VisitorEntryBelongingDetail>()
                     ).ToList();
+                    dto.VisitorDocDetailList = (await spcall.ReadAsync<dynamic>()).ToList(); //VisitorNameList
                 }
                 dto.tranStatus.result = true;
             }
@@ -2436,6 +2462,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
             }
             return dto;
         }
+
+
 
         //******Android Start*********//
         public async Task<VisitorEntryDTO> AndroidVisitorAppointmentEntry(JObject obj, IFormFile webfile)

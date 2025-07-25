@@ -493,7 +493,7 @@ const PrintPass = (props) => {
                     </div>
                   </div>
                   <div className="col-6">
-                    <div className="visitor-photo right">
+                    <div className="p-3 visitor-photo right">
                       <QRCode
                         value={
                           `${printPassData?.VisitorEntryCode}:${printPassData?.VisitorEntryDetailId}` ||

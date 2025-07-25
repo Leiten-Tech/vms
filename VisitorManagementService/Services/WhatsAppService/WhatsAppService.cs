@@ -140,7 +140,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "versuni_app_info_template";
+                template.name = "yongsan_app_info_template";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -252,7 +252,7 @@ namespace VisitorManagementMySQL.Services.WhatsAppService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "approval_template_vms";
+                string Template = "yongsan_app_info_template";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
 
                 WhatsAppLogSaveOut(

@@ -11,7 +11,10 @@ CREATE TABLE IF NOT EXISTS `android_notification_details`
     `visitor_entry_code`VARCHAR(255) NOT NULL ,
     `notification_status` INT NOT NULL,
     PRIMARY KEY (`notification_id`)
-) ENGINE=InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET=utf8mb4;
+) ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8mb4
+COLLATE = utf8mb4_general_ci;
+
 
 
 
