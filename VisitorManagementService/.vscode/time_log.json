@@ -20660,6 +20660,30 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 500
+      },
+      {
+        "date": "2025-07-26T14:24:33.597Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 66
+      },
+      {
+        "date": "2025-07-26T14:29:09.235Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 276
+      },
+      {
+        "date": "2025-07-26T14:29:35.651Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 26
       }
     ],
     "Models\\vms_trialContext.cs": [
@@ -61900,6 +61924,134 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 6
+      },
+      {
+        "date": "2025-07-26T14:30:08.648Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T14:31:16.378Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 68
+      },
+      {
+        "date": "2025-07-26T14:32:02.144Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 46
+      },
+      {
+        "date": "2025-07-26T14:32:58.355Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 56
+      },
+      {
+        "date": "2025-07-26T14:33:20.684Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 22
+      },
+      {
+        "date": "2025-07-26T14:33:28.143Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T14:33:31.365Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T14:33:40.291Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 9
+      },
+      {
+        "date": "2025-07-26T14:34:45.906Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 66
+      },
+      {
+        "date": "2025-07-26T14:34:53.183Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T14:35:01.873Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 9
+      },
+      {
+        "date": "2025-07-26T14:35:59.513Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 58
+      },
+      {
+        "date": "2025-07-26T14:36:39.367Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 40
+      },
+      {
+        "date": "2025-07-26T14:37:18.069Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 39
+      },
+      {
+        "date": "2025-07-26T14:38:15.068Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 57
+      },
+      {
+        "date": "2025-07-26T14:44:44.909Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 390
       }
     ],
     "Services\\ApprovalWorkflow\\ApprovalWorkFlow.cs.git": [
