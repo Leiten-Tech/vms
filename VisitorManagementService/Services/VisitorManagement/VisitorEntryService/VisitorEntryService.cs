@@ -2244,7 +2244,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "yongsan_app_info_template";
+                template.name = "approval_template_vms";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -2348,7 +2348,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "yongsan_app_info_template";
+                string Template = "approval_template_vms";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
                 approvalservice.WhatsAppLogSaveOut(
                     tempObj,
@@ -2501,7 +2501,8 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
 
                         if (visitorEntry != null)
                         {
-                            var visitordetails = dbContext.AndroidUsers.Where(a => a.UserId == visitorEntry.VisitorId).FirstOrDefault();
+                            var visitordetails = dbContext.Visitors.Where(a => a.MobileNo == visitorEntry.MobileNo).FirstOrDefault();
+                            // var hostdetails = dbContext.Users.Where(a => a.MobileNo == visitorEntry.MobileNo).FirstOrDefault();
 
                             if (visitordetails != null)
                             {
@@ -2509,12 +2510,12 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                 detail.VisitorEntryDetailId = 0;
                                 detail.VisitorEntryId = 0;
                                 detail.VisitorEntryDetailCode = "";
-                                detail.VisitorId = (int)visitorEntry.VisitorId;
+                                detail.VisitorId = (int)visitordetails.VisitorId;
                                 detail.TitleId = 37;
                                 detail.FirstName = visitorEntry.PersonName;
                                 detail.LastName = "";
-                                detail.MailId = visitordetails.Emailid;
-                                detail.MobileNo = visitordetails.Mobileno;
+                                detail.MailId = visitordetails.MailId;
+                                detail.MobileNo = visitordetails.MobileNo;
                                 detail.Status = 1;
                                 detail.ValidFrom = visitorEntry.ValidFrom;
                                 detail.ValidTo = visitorEntry.ValidFrom;
@@ -2526,7 +2527,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                                 detail.SignedVersion = 0;
                                 detail.IsTermsAgreed = false;
                                 detail.TagNo = "";
-                                detail.VisitorCompany = visitordetails.CompanyName;
+                                detail.VisitorCompany = visitordetails.CompanyId + "";
 
                                 visitorEntry.VisitorEntryDetails.Add(detail);
                             }
@@ -2547,8 +2548,31 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
 
                         dbContext.VisitorEntries.Add(visitorEntry);
                         dbContext.SaveChanges();
+
+                      
+                        ApprovalRequest request = new ApprovalRequest();
+                         request.companyid=visitorEntry.CompanyId;
+                        request.plantid = visitorEntry.PlantId;
+                        request.requesterid = visitorEntry.VisitorEntryId;
+                        request.documentno = visitorEntry.VisitorEntryCode;
+                        request.documentid = 34;
+                        request.documentactivityid = 70;
+                        request.documentdetailid = null;
+                            request.status = 74;
+                        request.approverid = 0;
+                        request.levelid = null;
+                        request.alternateuser = null;
+                            request.remarks1 = "";
+                        request.remarks2 = "";
+                        request.parentid = "";
+                        request.userid = 0;
+                        request.requestfromdate = visitorEntry.VisitorEntryDate;
+                        request.requesttodate = null;
+                
                         //APPROVAL DETAILS
-                        VisitorAppointmentSendToApproval(visitorEntry);
+                        // VisitorAppointmentSendToApproval(visitorEntry);
+                        approvalservice.ApprovalWorkFlowInsert(request);
+
                         AndroidNotificationSend(visitorEntry);
                         dto.tranStatus.result = true;
 
@@ -2736,13 +2760,13 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.VisitorEntryService
                     dto.tranStatus.result = true;
 
                 }
-                else
-                {
-                    dto.tranStatus.result = false;
-                    dto.tranStatus.lstErrorItem.Add(
-                        new ErrorItem { ErrorNo = "VMS001", Message = "Device token not found for the user." }
-                    );
-                }
+                // else
+                // {
+                //     dto.tranStatus.result = false;
+                //     dto.tranStatus.lstErrorItem.Add(
+                //         new ErrorItem { ErrorNo = "VMS001", Message = "Device token not found for the user." }
+                //     );
+                // }
             }
         }
         public async Task<VisitorEntryDTO> AndroidSecurityDashBoard(JObject obj)

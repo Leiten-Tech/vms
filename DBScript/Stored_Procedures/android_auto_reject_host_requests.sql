@@ -3,7 +3,7 @@
 
 -- SET GLOBAL event_scheduler = ON;
 
--- DROP EVENT IF EXISTS auto_reject_host_requests;
+DROP EVENT IF EXISTS android_auto_reject_host_requests;
 
 DELIMITER //
 

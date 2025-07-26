@@ -1274,7 +1274,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 jsonObject.custom = Newtonsoft.Json.JsonConvert.SerializeObject(customJsonObject);
 
                 dynamic template = new JObject();
-                template.name = "yongsan_app_info_template";
+                template.name = "approval_template_vms";
                 template.language = "en";
 
                 JArray components = new JArray();
@@ -1383,7 +1383,7 @@ namespace VisitorManagementMySQL.Services.VisitorManagement.ExternalBookEntrySer
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(VisitedEmp.UserTelNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "yongsan_app_info_template";
+                string Template = "approval_template_vms";
                 string EntryRefCode = visitorEntry.VisitorEntryCode;
 
                 approvalservice.WhatsAppLogSaveOut(
@@ -2611,7 +2611,7 @@ private ApprovalWorkFlowDTO SendPassWhatsApp(
                 string FromContact = "917358112529";
                 string ToContact = "91" + Convert.ToString(item.MobileNo);
                 DateTime MessageTime = DateTime.Now;
-                string Template = "yongsan_app_info_template";
+                string Template = "approval_template_vms";
                 WhatsAppLogSaveOut(
                     tempObj,
                     (int)visitorEntry.CompanyId,

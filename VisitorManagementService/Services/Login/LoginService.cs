@@ -16,6 +16,7 @@ using VisitorManagementMySQL.Models;
 using VisitorManagementMySQL.Services.Authentication;
 using VisitorManagementMySQL.Services.Common;
 using VisitorManagementMySQL.Services.Master.FileUploadService;
+using VisitorManagementMySQL.Services.Master.VisitorService;
 using VisitorManagementMySQL.Utils;
 
 namespace VisitorManagementMySQL.Services.Login
@@ -28,6 +29,7 @@ namespace VisitorManagementMySQL.Services.Login
         private readonly IDapperContext dapperContext;
         private readonly MailSettings _mailSettings;
         private readonly ICommonService commonService;
+        private readonly IVisitorService _IVisitorService;
 
         private LoginDTO dto;
         private readonly FileUploadService uploadService;
@@ -677,7 +679,7 @@ namespace VisitorManagementMySQL.Services.Login
                 dto.tranStatus.result = true;
                 AndroidUser _visitorRegistration = obj["VisitorRegistration"].ToObject<AndroidUser>();
 
-                var result1 = RegistrationValidation(_visitorRegistration);
+                var result1 = await RegistrationValidation(_visitorRegistration);
 
                 if (dto.tranStatus.result)
                 {
@@ -685,14 +687,13 @@ namespace VisitorManagementMySQL.Services.Login
                     var hashedPassword = HashPassword(_visitorRegistration.Password);
                     var hashedPasswordString = ByteArrayToString(hashedPassword);
                     _visitorRegistration.Password = hashedPasswordString;
+
                     if (result1.isalready == false)
                     {
                         dbContext.AndroidUsers.Add(_visitorRegistration);
                     }
-                    else
-                    {
 
-                    }
+
                     await dbContext.SaveChangesAsync();
 
                     var result = await this.mailService.SendOtp(_visitorRegistration.Emailid, "REGISTER", _visitorRegistration.Mobileno);
@@ -722,13 +723,89 @@ namespace VisitorManagementMySQL.Services.Login
             return dto;
         }
 
-        public LoginDTO RegistrationValidation(AndroidUser androidUser)
+        public async Task<LoginDTO> RegistrationValidation(AndroidUser androidUser)
         {
 
             var mobileisalreadyexists = dbContext.AndroidUsers.Any(a => a.Mobileno == androidUser.Mobileno && a.Verified == true);
             var emailisalreadyexists = dbContext.AndroidUsers.Any(a => a.Emailid == androidUser.Emailid && a.Verified == true);
             var mobileisalreadyexistsNotverified = dbContext.AndroidUsers.Where(a => a.Mobileno == androidUser.Mobileno && a.Verified == false).FirstOrDefault();
             dto.isalready = false;
+
+            bool isalreadyexists = false;
+
+            isalreadyexists = dbContext.Visitors.Any(a => a.MobileNo == androidUser.Mobileno);
+
+            if (!isalreadyexists)
+            {
+
+                Visitor visitor = new Visitor ();
+
+                visitor.VisitorId = 0;
+                visitor.VisitorCode = "";
+                visitor.VisitorTypeId = 35;
+                visitor.CompanyId = 1;
+                visitor.PlantId = 1;
+                visitor.CountryId = 1;
+                   visitor.StateId = 1;
+                visitor.CityId = null;
+                   visitor.TitleId = 37;
+                visitor.FirstName = androidUser.UserName;
+                visitor.LastName = "";
+                visitor.Dob = DateTime.Now;
+                visitor.VisitorCompany = androidUser.CompanyName;
+                   visitor.Address = "";
+                visitor.MailId = androidUser.Emailid;
+                visitor.MobileNo = androidUser.Mobileno;
+                visitor.IdCardType = 17; // e.g., 1 for Aadhar, 2 for PAN, etc.
+                visitor.IdCardNo = "";
+                visitor.DocumentName = androidUser.UserImageName;
+                visitor.DocumentUrl = androidUser.UserImageName;
+                visitor.VisitorDocumentName = "";
+                visitor.VisitorDocumentUrl = "";
+                visitor.Status = 1; // 1 = Active, 0 = Inactive
+                visitor.CreatedBy = 1;
+                visitor.CreatedOn = DateTime.Now;
+                visitor.ModifiedBy = null;
+                visitor.ModifiedOn = null;
+                visitor.AadharNo = null;
+
+
+
+                VisitorDetail visitorDetail = new VisitorDetail();
+                {
+                  visitorDetail.VisitorDetailId = 0;
+                    visitorDetail.VisitorId = 0;
+                    visitorDetail.VisitorDetailCode = await GenerateUniqueCode();
+                  visitorDetail.TitleId = 37;
+                  visitorDetail.FirstName = visitor.FirstName;
+                  visitorDetail.LastName = visitor.LastName;
+                  visitorDetail.DepartmentId = null;
+                  visitorDetail.Dob = visitor.Dob;
+                  visitorDetail.MailId = visitor.MailId;
+                  visitorDetail.MobileNo = visitor.MobileNo;
+                  visitorDetail.VisitorCompany = visitor.VisitorCompany;
+                  visitorDetail.TagNo = "";
+                  visitorDetail.IdCardType = visitor.IdCardType ?? 0;
+                    visitorDetail.IdCardNo = visitor.IdCardNo;
+                  visitorDetail.DocumentName = visitor.DocumentName;
+                  visitorDetail.DocumentUrl = visitor.DocumentUrl;
+                  visitorDetail.DigitalSignName = "";
+                  visitorDetail.DigitalSignUrl = "";
+                  visitorDetail.SignedVersion = 0;
+                  visitorDetail.IsTermsAgreed = false;
+                  visitorDetail.ExpirryDate = DateTime.Now.AddDays(30);
+                  visitorDetail.WorkSeverity = 96;
+                  visitorDetail.Status = 1;
+                  visitorDetail.AadharNo = visitor.AadharNo;
+                };
+
+
+                visitor.VisitorDetails.Add(visitorDetail);
+                dbContext.Visitors.Add(visitor);
+                dbContext.SaveChanges();
+
+            }
+
 
             if (mobileisalreadyexists)
             {
@@ -946,6 +1023,21 @@ namespace VisitorManagementMySQL.Services.Login
 
             dbContext.Userdevicetokens.RemoveRange(invalidTokens);
             await dbContext.SaveChangesAsync();
+        }
+        public async Task<string> GenerateUniqueCode()
+        {
+            string documentno = "";
+            string documentid = "26";
+            string series = "45";
+            using (dapperContext)
+            {
+                var spcall = await dapperContext.ExecuteStoredProcedureAsync(
+                    spName: "GetPrimaryKey",
+                    new { documentid, series }
+                );
+                documentno = (await spcall.ReadAsync<string>()).SingleOrDefault();
+            }
+            return documentno;
         }
 
         // Get device tokens for a mobile number

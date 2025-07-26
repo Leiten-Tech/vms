@@ -230,12 +230,12 @@ namespace VisitorManagementMySQL
             services.AddScoped<ICalendarService, CalendarService>();
 
                //Android Notification
-             services.AddScoped<IFirebaseService, FirebaseService>();
-            // services.AddScoped<IJobCheckinCheckoutService,JobCheckinCheckoutService>();
+            services.AddSingleton<IFirebaseService, FirebaseService>();
+            services.AddScoped<IJobCheckinCheckoutService,JobCheckinCheckoutService>();
 
-            // services.AddHostedService<VisitorReportHostedJob>();
+            services.AddHostedService<VisitorReportHostedJob>();
 
-            // services.AddWkhtmltopdf();
+            services.AddWkhtmltopdf();
 
             services.AddScoped<IVisitorDashboardService,VisitorDashboardService>();
 

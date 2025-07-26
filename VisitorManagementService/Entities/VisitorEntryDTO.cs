@@ -176,6 +176,8 @@ namespace VisitorManagementMySQL.Entities
         public bool CheckOut { get; set; }
         public string VisitorImageUrl { get; set; }
         public string VisitorContactNo { get; set; }
+         public string CheckedInDate { get; set; }
+        public string CheckedOutDate { get; set; }
 
 
     }
