@@ -86,7 +86,7 @@ const ApprovalForm = (props) => {
     handlePlantSelect,
     onNotiFyApproveChange,
     onDepartmentSpecificChange,
-    isDepartmentSpecificEnabled
+    isDepartmentSpecificEnabled,
   } = props;
 
   return (
@@ -106,7 +106,7 @@ const ApprovalForm = (props) => {
                 options={PlantList}
                 show={true}
                 required={true}
-                disable={isView ? true : false}
+                disable={isView || !isCreate ? true : false}
                 optionLabel={"PlantName"}
                 optionValue={"PlantId"}
                 handleSelect={handlePlantSelect}
@@ -120,7 +120,7 @@ const ApprovalForm = (props) => {
                 options={DocumentList}
                 show={true}
                 required={true}
-                disable={isView ? true : false}
+                disable={isView|| !isCreate ? true : false}
                 optionLabel={"FunctionName"}
                 optionValue={"FunctionId"}
                 handleSelect={handleSelect}
@@ -134,7 +134,7 @@ const ApprovalForm = (props) => {
                 options={ActivityList}
                 show={true}
                 required={true}
-                disable={isView ? true : false}
+                disable={isView|| !isCreate ? true : false}
                 optionLabel={"MetaSubDescription"}
                 optionValue={"MetaSubId"}
                 handleSelect={handleSelect}
@@ -280,11 +280,10 @@ const ApprovalDetailForm = (props) => {
       return <span>Host</span>;
     }
 
-    const departmentUsers = rowData.availableUsers && 
-    rowData.availableUsers.length > 0 &&
-    rowData.availableUsers.filter(
-      (u) => u.DeptId === rowData.DepartmentId
-    );
+    const departmentUsers =
+      rowData.availableUsers &&
+      rowData.availableUsers.length > 0 &&
+      rowData.availableUsers.filter((u) => u.DeptId === rowData.DepartmentId);
 
     const usedUserIdsInSameDept = approvalDetailList
       ?.filter(
@@ -417,7 +416,7 @@ const ApprovalDetailForm = (props) => {
                 handleSelect={handleDSelect}
                 formik={formik}
                 fldStyle={"col-12 md:col-3"}
-              /> 
+              />
             </div>
             <div className="text-center mb-3">
               <Button
@@ -479,18 +478,16 @@ const ApprovalDetailForm = (props) => {
               ></Column>
               <Column field="LevelName" header="Level"></Column>
               {/* <Column field="RoleName" header="Role"></Column> */}
-              <Column field="DepartmentName" header="Department"
-              
-              ></Column>
+              <Column field="DepartmentName" header="Department"></Column>
               {/* <Column field="UserName" header="Primary User"></Column> */}
               <Column
                 field="PrimaryUserId"
                 header="Primary User"
                 style={{
-                   minWidth: "30rem", 
-                   width: "30rem",
-                   maxWidth: "30rem",
-                   }}
+                  minWidth: "30rem",
+                  width: "30rem",
+                  maxWidth: "30rem",
+                }}
                 body={(rowData, options) =>
                   renderPrimaryUserDropdown(rowData, options.rowIndex)
                 }
@@ -525,7 +522,7 @@ const CApproval = () => {
   const [isPrimaryEnabled, setIsPrimaryEnabled] = useState(true);
   const [deptType, setDeptType] = useState("select");
   const [triggerEffect, setTriggerEffect] = useState(0);
-  
+
   const {
     isCreate,
     isView,
@@ -556,22 +553,26 @@ const CApproval = () => {
   }, [PrimaryUserList]);
 
   useEffect(() => {
-  // Small defer to batch updates
-  const timeout = setTimeout(() => {
-    setTriggerEffect((prev) => prev + 1);
-  }, 0);
-  return () => clearTimeout(timeout);
-}, [isHostChecked, isDepartmentSpecificChecked, DepartmentList]);
+    // Small defer to batch updates
+    const timeout = setTimeout(() => {
+      setTriggerEffect((prev) => prev + 1);
+    }, 0);
+    return () => clearTimeout(timeout);
+  }, [isHostChecked, isDepartmentSpecificChecked, DepartmentList]);
 
-useEffect(() => {
-  if (isHostChecked) {
-    // approvalDetailFormik.setFieldValue("DeptId", []);
-  } else if (isDepartmentSpecificChecked && DepartmentList && DepartmentList.length > 0) {
-    const deptIds = DepartmentList.map((d) => d.DepartmentId);
-    approvalDetailFormik.setFieldValue("DeptId", deptIds);
-    allDeptSelect(deptIds);
-  }
-}, [triggerEffect]);
+  useEffect(() => {
+    if (isHostChecked) {
+      // approvalDetailFormik.setFieldValue("DeptId", []);
+    } else if (
+      isDepartmentSpecificChecked &&
+      DepartmentList &&
+      DepartmentList.length > 0
+    ) {
+      const deptIds = DepartmentList.map((d) => d.DepartmentId);
+      approvalDetailFormik.setFieldValue("DeptId", deptIds);
+      allDeptSelect(deptIds);
+    }
+  }, [triggerEffect]);
 
   const allDeptSelect = async (deptids) => {
     let allUsers: any[] = [];
@@ -588,7 +589,7 @@ useEffect(() => {
         const primaryUsers = res.payload.PrimaryUserList || [];
         const usersWithDepts = primaryUsers.map((u) => ({
           ...u,
-          DepartmentIds: deptids, 
+          DepartmentIds: deptids,
         }));
         allUsers.push(...usersWithDepts);
         // deptids &&
@@ -691,6 +692,55 @@ useEffect(() => {
         List.push(obj);
       }
       setApprovalDetailList(List);
+      if (List && List.length > 0) {
+        let lastLvlId = List[List.length - 1].LevelId;
+        handleDSelect("LevelId", {}, lastLvlId != 69 ? lastLvlId + 1 : 119);
+      }
+      if (
+        approvalFormik.values.DocumentId == 34 &&
+        approvalFormik.values.IsDepartmentSpecific
+      ) {
+        setIsDepartmentSpecificEnabled(false);
+        if (approvalFormik.values.IsDepartmentSpecific) {
+          setDeptType("multi_select");
+          setIsHostEnabled(true);
+          if (approvalFormik.values.IsDepartmentSpecific) {
+            setDeptType("multi_select");
+            setIsPrimaryEnabled(false);
+          } else {
+            setIsPrimaryEnabled(true);
+            setDeptType("select");
+          }
+        
+          if (approvalFormik.values.IsDepartmentSpecific) {
+            approvalDetailFormik.setFieldValue(
+              "DeptId",
+              DepartmentList.map((item) => item.DepartmentId)
+            );
+            setIsDeptEnabled(false);
+          } else {
+            setIsDeptEnabled(true);
+            setApprovalDetailList([]);
+          }
+        } else {
+          setDeptType("select");
+        }
+      } else {
+        setIsDepartmentSpecificEnabled(false);
+      }
+      if (
+        approvalDetailList &&
+        approvalDetailList.length > 0 &&
+        approvalDetailList.some((item) => item.RoleId !== 0)
+      ) {
+        setIsHostChecked(false);
+        setIsHostEnabled(true);
+      } else if (approvalDetailList.length == 0) {
+        setIsHostEnabled(true);
+      } else {
+        setIsHostChecked(false);
+        setIsHostEnabled(false);
+      }
     }
   }, []);
   const approvalForm = {
@@ -735,9 +785,34 @@ useEffect(() => {
         approvalDetailList.length == 0
       ) {
         toast.current?.show({
-          severity: "error",
-          summary: "Error Message",
+          severity: "warn",
+          summary: "Warning Message",
           detail: "Please Add Atleast One Item In The Grid.",
+        });
+        return;
+      }
+     if (
+      approvalDetailList &&
+      approvalDetailList.length > 0 &&
+      approvalDetailList.some(
+        item =>
+          (item.PrimaryUserId == null || item.PrimaryUserId === 0) &&
+          item.UserName?.toLowerCase() !== 'host'
+      )
+    ) {
+      toast.current?.show({
+        severity: "warn",
+        summary: "Warning Message",
+        detail: "Please select at least one user for each department level.",
+      });
+      return;
+    }
+
+      if(approvalFormik.values.Status == 2 && approvalFormik.values.DocumentId == 34 && approvalFormik.values.ApprovalActivityId == 70) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Warning Message",
+          detail: "At least one level of approval configuration is required for Visitor Management.",
         });
         return;
       }
@@ -823,16 +898,18 @@ useEffect(() => {
     setTempUserList([]);
     setTempUserListSecondary([]);
     setApprovalDetailList([]);
-    setIsDepartmentSpecificEnabled(true)
-    setDeptType("select")
+    setIsDepartmentSpecificEnabled(true);
+    setDeptType("select");
   };
 
   const approvalDetailFormik: any = useFormik({
     initialValues: approvalDetailForm,
     validationSchema: ApprovalDetailValidationSchema,
     onSubmit: (values: any, { resetForm }) => {
-      
-      if (approvalFormik.values.DocumentId == null || !approvalFormik.values.DocumentId) {
+      if (
+        approvalFormik.values.DocumentId == null ||
+        !approvalFormik.values.DocumentId
+      ) {
         toast.current?.show({
           severity: "warn",
           summary: "Warning",
@@ -874,10 +951,13 @@ useEffect(() => {
           SecUserName: "",
         });
       } else if (isDeptSpecific) {
-        (Array.isArray(values.DepartmentId) ? values.DepartmentId : values.DeptId).forEach((deptId) => {
+        (Array.isArray(values.DepartmentId)
+          ? values.DepartmentId
+          : values.DeptId
+        ).forEach((deptId) => {
           const dept = DepartmentList.find((d) => d.DepartmentId === deptId);
 
-          const hasUsers = tempUserList.some((u) => u.DeptId === deptId);
+          const hasUsers = tempUserList && tempUserList.length > 0 ? tempUserList : PrimaryUserList && PrimaryUserList.some((u) => u.DeptId === deptId);
           if (!hasUsers) return;
 
           rowsToAdd.push({
@@ -888,21 +968,22 @@ useEffect(() => {
             RoleId: values.RoleId,
             DepartmentId: deptId,
             DepartmentName: dept?.DepartmentName ?? "",
-            availableUsers: tempUserList,
+            availableUsers: tempUserList && tempUserList.length > 0 ? tempUserList : PrimaryUserList && PrimaryUserList,
             PrimaryUserId: 0,
             UserName: "",
             SecondaryUserId: 0,
             SecUserName: "",
           });
         });
-      } else if(
-        (values.DeptId && values.DeptId != null)||
-        (values.PrimaryUserId && values.PrimaryUserId != null) || 
-       values.SecondaryUserId && values.SecondaryUserId!= null) {
+      } else if (
+        (values.DeptId && values.DeptId != null) ||
+        (values.PrimaryUserId && values.PrimaryUserId != null) ||
+        (values.SecondaryUserId && values.SecondaryUserId != null)
+      ) {
         const dept = DepartmentList.find(
           (d) => d.DepartmentId === values.DeptId
         );
-        const user = tempUserList.find(
+        const user = tempUserList && tempUserList.length > 0 ? tempUserList : PrimaryUserList && PrimaryUserList.find(
           (u) => u.UserId === values.PrimaryUserId
         );
         const secUser = tempUserListSecondary.find(
@@ -921,7 +1002,7 @@ useEffect(() => {
           UserName: user?.UserName ?? "",
           SecondaryUserId: values.SecondaryUserId,
           SecUserName: secUser?.UserName ?? "",
-          availableUsers: tempUserList,
+          availableUsers: tempUserList && tempUserList.length > 0 ? tempUserList : PrimaryUserList && PrimaryUserList,
         });
       }
 
@@ -977,8 +1058,9 @@ useEffect(() => {
       setIsHostChecked(false);
       approvalDetailFormik.setFieldValue("IsHost", false);
       setIsDepartmentSpecificChecked(false);
-      if(approvalDetailList && approvalDetailList.length > 0) {
-        let lastLvlId = approvalDetailList[approvalDetailList.length - 1].LevelId
+      if (approvalDetailList && approvalDetailList.length > 0) {
+        let lastLvlId =
+          approvalDetailList[approvalDetailList.length - 1].LevelId;
         handleDSelect("LevelId", {}, lastLvlId != 69 ? lastLvlId + 1 : 119);
       }
       setRowSelect(false);
@@ -989,26 +1071,23 @@ useEffect(() => {
   });
 
   const OnClear = () => {
-    setIsHostEnabled(true)
+    setIsHostEnabled(true);
     const currDeptIds = approvalDetailFormik.values.DeptId;
-    if(approvalFormik.values.IsDepartmentSpecific) {
-
+    if (approvalFormik.values.IsDepartmentSpecific) {
       approvalDetailFormik.resetForm({
         values: {
           ...approvalDetailFormik.initialValues,
           DeptId: currDeptIds,
         },
       });
-    }
-    else {
-      approvalDetailFormik.resetForm()
+    } else {
+      approvalDetailFormik.resetForm();
     }
 
-    if(approvalDetailList && approvalDetailList.length > 0) {
-      let lastLvlId = approvalDetailList[approvalDetailList.length - 1].LevelId
+    if (approvalDetailList && approvalDetailList.length > 0) {
+      let lastLvlId = approvalDetailList[approvalDetailList.length - 1].LevelId;
       handleDSelect("LevelId", {}, lastLvlId != 69 ? lastLvlId + 1 : 119);
-    }
-    else {
+    } else {
       handleDSelect("LevelId", {}, 67);
     }
     // // setApprovalDetailList([]);
@@ -1020,11 +1099,10 @@ useEffect(() => {
     approvalFormik.setFieldValue(name, value);
     if (name == "DocumentId") {
       if (value == 34) {
-        setIsDepartmentSpecificEnabled(false)
-        if(isDepartmentSpecificChecked){
+        setIsDepartmentSpecificEnabled(false);
+        if (isDepartmentSpecificChecked) {
           setDeptType("multi_select");
-        }
-        else {
+        } else {
           setDeptType("select");
         }
         if (
@@ -1046,8 +1124,8 @@ useEffect(() => {
         // setIsDepartmentSpecificChecked(false)
         setDeptType("select");
         onDepartmentSpecificChange({
-          checked: false
-        })
+          checked: false,
+        });
       }
     }
   };
@@ -1182,7 +1260,7 @@ useEffect(() => {
       });
     }
     // }
-    setTempUserList([])
+    setTempUserList([]);
     setTempUserList((prev) => {
       const merged = [...prev];
 
@@ -1209,28 +1287,29 @@ useEffect(() => {
   const onDepartmentSpecificChange = (e) => {
     const isChecked = e.checked;
     setIsDepartmentSpecificChecked(isChecked);
-    setIsHostEnabled(true)
+    setIsHostEnabled(true);
     approvalFormik.setFieldValue("IsDepartmentSpecific", isChecked);
-    if(isChecked){
-      setDeptType("multi_select")
-      setIsPrimaryEnabled(false)
+    if (isChecked) {
+      setDeptType("multi_select");
+      setIsPrimaryEnabled(false);
       // allDeptSelect(DepartmentList.map(item => item.DepartmentId));
+    } else {
+      setIsPrimaryEnabled(true);
+      setDeptType("select");
     }
-    else {
-      setIsPrimaryEnabled(true)
-      setDeptType("select")
+    if (isChecked && approvalDetailList && approvalDetailList.length > 0) {
+      setApprovalDetailList([]);
+      OnClear();
     }
-    if(isChecked && approvalDetailList && approvalDetailList.length > 0) {
-      setApprovalDetailList([])
-      OnClear()
-    }
-    if(isChecked) {
-      approvalDetailFormik.setFieldValue("DeptId", DepartmentList.map(item => item.DepartmentId));
-      setIsDeptEnabled(false)
-    }
-    else {
-      setIsDeptEnabled(true)
-      setApprovalDetailList([])
+    if (isChecked) {
+      approvalDetailFormik.setFieldValue(
+        "DeptId",
+        DepartmentList.map((item) => item.DepartmentId)
+      );
+      setIsDeptEnabled(false);
+    } else {
+      setIsDeptEnabled(true);
+      setApprovalDetailList([]);
     }
     approvalDetailFormik.resetForm();
     handleDSelect("LevelId", {}, 67);

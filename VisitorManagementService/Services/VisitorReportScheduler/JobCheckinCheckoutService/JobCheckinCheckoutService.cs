@@ -112,7 +112,7 @@ namespace VisitorManagementService.Services.VisitorReportScheduler.JobCheckinChe
         {
             var message = new MimeMessage();
             message.From.Add(MailboxAddress.Parse(_mailSettings.Mail));
-            message.To.Add(MailboxAddress.Parse("sivasiva86951@gmail.com"));
+            message.To.Add(MailboxAddress.Parse("vmssupport@gmail.com"));
             // message.Bcc.Add(MailboxAddress.Parse("cvenumadhav10@gmail.com"));
             // message.Cc.Add(MailboxAddress.Parse("jaganeditz@gmail.com"));
             message.Subject = "Daily Visitor Report";

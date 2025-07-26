@@ -73,13 +73,14 @@ namespace VisitorManagementMySQL.Models
         public bool IsExternal { get; set; }
         public bool? IsInternalAppointment { get; set; }
         public string RefNo { get; set; }
-        public bool? IsAndroidVisitor { get; set; }
         public bool? IsMeetingClose { get; set; }
         public long? AadharNo { get; set; }
         public DateTime? RescheduledDateTime { get; set; }
         public DateTime? PreviousValidFrom { get; set; }
         public DateTime? PreviousValidTo { get; set; }
         public DateTime? VisitEndTime { get; set; }
+        public bool? IsAndroidVisitor { get; set; }
+        public bool? IsVisitEnded { get; set; }
 
         public virtual ICollection<VisitorEntryAtvDetail> VisitorEntryAtvDetails { get; set; }
         public virtual ICollection<VisitorEntryBelongingDetail> VisitorEntryBelongingDetails { get; set; }

@@ -27,6 +27,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.6.3" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="5.0.17" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="9.0.7" />
     <PackageReference Include="Wkhtmltopdf.NetCore" Version="3.0.2" />
      <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
   </ItemGroup>

@@ -60,7 +60,7 @@ BEGIN
 				ad.Primary_User_Id = UserId 
 				OR ad.Secondary_User_Id = UserId
 				OR (
-					(ad.Primary_User_Id = 0 OR ad.Secondary_User_Id = 0)
+					(ad.Primary_User_Id = 0)
 					AND u2.User_id = UserId
 				)
 			)

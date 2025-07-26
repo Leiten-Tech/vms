@@ -13,7 +13,6 @@ namespace VisitorManagementMySQL.Models
         public long? RoleId { get; set; }
         public long PrimaryUserId { get; set; }
         public long? SecondaryUserId { get; set; }
-        public byte? IsNotifyApprove { get; set; }
         public long? DepartmentId { get; set; }
 
         public virtual ApprovalConfiguration ApprovalConfiguration { get; set; }

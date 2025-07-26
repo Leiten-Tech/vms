@@ -281,11 +281,35 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                         if (workflowheader.IsNotifyApprove == true && (workflowheader.IsDepartmentSpecific == false || workflowheader.IsDepartmentSpecific == null))
                         {
+
+                            VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+
+                            
+                            User user1 = new User();
+
+                           if(request.requesterid == 0 || request.approverid == 0 || request.userid == 0){
+                             user1  = dbContext.Users.Where(x => x.UserId == VisEntry.VisitedEmployeeId).SingleOrDefault();
+                           } else {
+                            user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                           }
+
+                            Department department = new Department();
+                            department = dbContext.Departments
+                                .Where(x => x.DepartmentId == user1.DeptId)
+                                .SingleOrDefault();
+
                             var nextLevelUsers = dbContext.ApprovalConfigurationDetails
-                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
+                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId
+                                    )
                                 .OrderBy(x => x.LevelId)
-                                .Skip(1)
                                 .ToList();
+
+
+                            // var nextLevelUsers = dbContext.ApprovalConfigurationDetails
+                            //     .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
+                            //     .OrderBy(x => x.LevelId)
+                            //     .ToList();
 
                             foreach (var user in nextLevelUsers)
                             {
@@ -303,7 +327,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                         string PassMailText = await File.ReadAllTextAsync(PassFilePath);
 
 
-                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                        // VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
                                         Approval approvalHeader = new Approval();
                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
@@ -384,7 +408,11 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             var visitor = dbContext.AndroidUsers
                                                 .Where(u => u.UserId == notifyUser.UserId)
                                                 .FirstOrDefault();
-                                            string imageUrl = dbContext.VisitorEntries
+
+                                           if( visitor != null){
+
+                                           
+                                              string imageUrl = dbContext.VisitorEntries
                                                  .Where(u => u.VisitorEntryCode == VisEntry.VisitorEntryCode)
                                                  .Select(u => u.VisitorImageUrl)
                                                  .FirstOrDefault();
@@ -443,6 +471,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                                 await FirebaseService.SendPushNotificationAsync(notification);
                                             }
+                                           }
 
                                             bool isFailed = whatsResponse?["status"]?.Value<bool>() == false;
 
@@ -467,7 +496,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 (int)VisEntry.PlantId,
                                                 (int)VisEntry.VisitedEmployeeId,
                                                 "917358112529",
-                                                "91" + notifyUser.UserTelNo,
+                                                "91" + user1.UserTelNo,
                                                 DateTime.Now,
                                                 "notify_text_vms",
                                                 VisEntry.VisitorEntryCode);
@@ -541,8 +570,18 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                         if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == true)
                         {
 
+                            VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+
+                            
                             User user1 = new User();
+
+                           if(request.requesterid == 0 || request.approverid == 0 || request.userid == 0){
+                             user1  = dbContext.Users.Where(x => x.UserId == VisEntry.VisitedEmployeeId).SingleOrDefault();
+                           } else {
                             user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                           }
+
 
                             Department department = new Department();
                             department = dbContext.Departments
@@ -553,7 +592,6 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId
                                     && x.DepartmentId == user1.DeptId)
                                 .OrderBy(x => x.LevelId)
-                                .Skip(1)
                                 .ToList();
 
                             foreach (var user in nextLevelUsers)
@@ -572,7 +610,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                         string PassMailText = await File.ReadAllTextAsync(PassFilePath);
 
 
-                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                        // VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
                                         Approval approvalHeader = new Approval();
                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
@@ -628,7 +666,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
 
                                             // Send WhatsApp Notification
-                                            string notifyMessage = $"Dear {notifyUser.UserName},\n" +
+                                            string notifyMessage = $"Dear {user1.UserName},\n" +
                                                 $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
                                                 $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
                                                 $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
@@ -639,7 +677,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var whatsJson = new JObject
                                             {
-                                                ["to_contact"] = "91" + notifyUser.UserTelNo,
+                                                ["to_contact"] = "91" + user1.UserTelNo,
                                                 ["type"] = "text",
                                                 ["text"] = new JObject { ["body"] = notifyMessage }
                                             };
@@ -670,71 +708,80 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 (int)VisEntry.PlantId,
                                                 (int)VisEntry.VisitedEmployeeId,
                                                 "917358112529",
-                                                "91" + notifyUser.UserTelNo,
+                                                "91" + user1.UserTelNo,
                                                 DateTime.Now,
                                                 "notify_text_vms",
                                                 VisEntry.VisitorEntryCode);
-                                            var visitor = dbContext.AndroidUsers
-                              .Where(u => u.UserId == notifyUser.UserId)
-                              .FirstOrDefault();
-                                            string imageUrl = dbContext.VisitorEntries
-                                                 .Where(u => u.VisitorEntryCode == VisEntry.VisitorEntryCode)
-                                                 .Select(u => u.VisitorImageUrl)
-                                                 .FirstOrDefault();
 
-                                            var host = dbContext.Users
-                                         .Where(u => u.UserId == VisEntry.VisitedEmployeeId)
-                                         .FirstOrDefault();
 
-                                            string companyName = dbContext.Companies
-                                            .Where(c => c.CompanyId == VisEntry.CompanyId && c.Status == 1)
-                                            .Select(c => c.CompanyName)
-                                            .FirstOrDefault();
-                                            string dateTime = VisEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
-                                            string notificationContent = $"Dear {notifyUser.UserName},\n" +
-                                            $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
-                                            $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
-                                            $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
-                                            $"🏢 Visitor Company: {visitorCompany}\n" +
-                                            $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
-                                            $"👤 To Meet: {user1?.UserName} ({department?.DepartmentName})\n\n" +
-                                            $"Please stay alert for further notifications.";
 
-                                            var notificationDetail = new AndroidNotificationDetail
-                                            {
-                                                NotificationId = 0,
-                                                NotificationType = "2",
-                                                MobileNo = visitor.Mobileno,
-                                                VisitorOrHostId = visitor.UserId.ToString(),
-                                                NotificationMessage = notificationContent,
-                                                NotificationStatus = 1,
-                                                Imageurl = imageUrl,
-                                                VisitorAddress = "",
-                                                VisitorEntryDate = dateTime,
-                                                VisitorEntryCode = VisEntry.VisitorEntryCode
-                                            };
-
-                                            dbContext.AndroidNotificationDetails.Add(notificationDetail);
-                                            dbContext.SaveChanges();
-
-                                            // Fetch device token
-                                            var deviceToken = dbContext.Userdevicetokens
-                                                .Where(d => d.MobileNumber == visitor.Mobileno)
-                                                .Select(d => d.DeviceToken)
+                                           var visitor = dbContext.AndroidUsers
+                                                .Where(u => u.UserId == user1.UserId)
                                                 .FirstOrDefault();
 
 
-                                            if (!string.IsNullOrEmpty(deviceToken))
-                                            {
-                                                var notification = new FirebaseNotificationDto
+                                            if( visitor != null){
+
+                                            
+                                                string imageUrl = dbContext.VisitorEntries
+                                                    .Where(u => u.VisitorEntryCode == VisEntry.VisitorEntryCode)
+                                                    .Select(u => u.VisitorImageUrl)
+                                                    .FirstOrDefault();
+
+                                                var host = dbContext.Users
+                                                    .Where(u => u.UserId == VisEntry.VisitedEmployeeId)
+                                                    .FirstOrDefault();
+
+                                                string companyName = dbContext.Companies
+                                                .Where(c => c.CompanyId == VisEntry.CompanyId && c.Status == 1)
+                                                .Select(c => c.CompanyName)
+                                                .FirstOrDefault();
+                                                string dateTime = VisEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
+                                                string notificationContent = $"Dear {notifyUser.UserName},\n" +
+                                                $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
+                                                $"🏢 Visitor Company: {visitorCompany}\n" +
+                                                $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
+                                                $"👤 To Meet: {user1?.UserName} ({department?.DepartmentName})\n\n" +
+                                                $"Please stay alert for further notifications.";
+
+                                                var notificationDetail = new AndroidNotificationDetail
                                                 {
-                                                    Token = deviceToken,
-                                                    Title = $"visitor pass request({VisEntry.VisitorEntryCode})",
-                                                    Body = notificationContent,
-                                                    Image = imageUrl
+                                                    NotificationId = 0,
+                                                    NotificationType = "2",
+                                                    MobileNo = visitor.Mobileno,
+                                                    VisitorOrHostId = visitor.UserId.ToString(),
+                                                    NotificationMessage = notificationContent,
+                                                    NotificationStatus = 1,
+                                                    Imageurl = imageUrl,
+                                                    VisitorAddress = "",
+                                                    VisitorEntryDate = dateTime,
+                                                    VisitorEntryCode = VisEntry.VisitorEntryCode
                                                 };
 
-                                                await FirebaseService.SendPushNotificationAsync(notification);
+                                                dbContext.AndroidNotificationDetails.Add(notificationDetail);
+                                                dbContext.SaveChanges();
+
+                                                // Fetch device token
+                                                var deviceToken = dbContext.Userdevicetokens
+                                                    .Where(d => d.MobileNumber == visitor.Mobileno)
+                                                    .Select(d => d.DeviceToken)
+                                                    .FirstOrDefault();
+
+
+                                                if (!string.IsNullOrEmpty(deviceToken))
+                                                {
+                                                    var notification = new FirebaseNotificationDto
+                                                    {
+                                                        Token = deviceToken,
+                                                        Title = $"visitor pass request({VisEntry.VisitorEntryCode})",
+                                                        Body = notificationContent,
+                                                        Image = imageUrl
+                                                    };
+
+                                                    await FirebaseService.SendPushNotificationAsync(notification);
+                                                }
                                             }
 
                                             VisEntry.Status = (int)request.status;
@@ -745,7 +792,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             dbContext.Approvals.Update(approvalHeader);
 
                                             await dbContext.SaveChangesAsync();
-                                            if (!string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                            if (!string.IsNullOrWhiteSpace(user1.UserEmail))
                                             {
                                                 var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
                                             }
@@ -1670,7 +1717,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                     var workflowheader = dbContext.ApprovalConfigurations
                         .Where(x => x.DocumentId == request.documentid
                             && x.PlantId == request.plantid
-                            && (request.documentactivityid == null || x.ApprovalActivityId == request.documentactivityid)
+                           && (request.documentactivityid == null || x.ApprovalActivityId == request.documentactivityid)
                             && x.Status == 1)
                         .SingleOrDefault();
 
@@ -1695,11 +1742,35 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                         if (workflowheader.IsNotifyApprove == true && (workflowheader.IsDepartmentSpecific == false || workflowheader.IsDepartmentSpecific == null))
                         {
+
+                            VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+
+                            
+                            User user1 = new User();
+
+                           if(request.requesterid == 0 || request.approverid == 0 || request.userid == 0){
+                             user1  = dbContext.Users.Where(x => x.UserId == VisEntry.VisitedEmployeeId).SingleOrDefault();
+                           } else {
+                            user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                           }
+
+                            Department department = new Department();
+                            department = dbContext.Departments
+                                .Where(x => x.DepartmentId == user1.DeptId)
+                                .SingleOrDefault();
+
                             var nextLevelUsers = dbContext.ApprovalConfigurationDetails
-                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
+                                .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId
+                                    )
                                 .OrderBy(x => x.LevelId)
-                                .Skip(1)
                                 .ToList();
+
+
+                            // var nextLevelUsers = dbContext.ApprovalConfigurationDetails
+                            //     .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId)
+                            //     .OrderBy(x => x.LevelId)
+                            //     .ToList();
 
                             foreach (var user in nextLevelUsers)
                             {
@@ -1707,7 +1778,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 if (notifyUserId > 0)
                                 {
                                     var notifyUser = dbContext.Users.FirstOrDefault(x => x.UserId == notifyUserId);
-                                    if (notifyUser != null && !string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                    if (notifyUser != null)
                                     {
                                         string BrandLogo = Path.Combine(Directory.GetCurrentDirectory(), "upload", "Logo", "app-logo.png");
                                         string BrandLogoBig = "/upload/Logo/app-logo-big.png";
@@ -1717,7 +1788,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                         string PassMailText = await File.ReadAllTextAsync(PassFilePath);
 
 
-                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                        // VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
                                         Approval approvalHeader = new Approval();
                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
@@ -1769,7 +1840,10 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             };
 
                                             JObject convertObj = (JObject)JToken.FromObject(emailObj);
-                                            await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+                                            if (!string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                            {
+                                                await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
+                                            }
 
                                             // Send WhatsApp Notification
                                             string notifyMessage = $"Dear {notifyUser.UserName},\n" +
@@ -1791,6 +1865,75 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             var whatsRes = await whatsAppService.SendApprovalReqWhatsApp(JsonConvert.SerializeObject(whatsJson));
 
                                             JObject whatsResponse = JObject.Parse(whatsRes?.ToString() ?? "{}");
+
+                                            var visitor = dbContext.AndroidUsers
+                                                .Where(u => u.UserId == notifyUser.UserId)
+                                                .FirstOrDefault();
+
+                                           if( visitor != null){
+
+                                           
+                                              string imageUrl = dbContext.VisitorEntries
+                                                 .Where(u => u.VisitorEntryCode == VisEntry.VisitorEntryCode)
+                                                 .Select(u => u.VisitorImageUrl)
+                                                 .FirstOrDefault();
+
+                                            var host = dbContext.Users
+                                         .Where(u => u.UserId == VisEntry.VisitedEmployeeId)
+                                         .FirstOrDefault();
+
+                                            string companyName = dbContext.Companies
+                                            .Where(c => c.CompanyId == VisEntry.CompanyId && c.Status == 1)
+                                            .Select(c => c.CompanyName)
+                                            .FirstOrDefault();
+                                            string dateTime = VisEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
+                                            string notificationContent = $"Dear {notifyUser.UserName},\n" +
+                                                $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
+                                                $"🏢 Visitor Company: {visitorCompany}\n" +
+                                                $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
+                                                $"👤 To Meet: {VisitEmp?.UserName} ({VisitedEmpDept?.DepartmentName})\n\n" +
+                                                $"Please stay alert for further notifications.";
+
+                                            var notificationDetail = new AndroidNotificationDetail
+                                            {
+                                                NotificationId = 0,
+                                                NotificationType = "2",
+                                                MobileNo = visitor.Mobileno,
+                                                VisitorOrHostId = visitor.UserId.ToString(),
+                                                NotificationMessage = notificationContent,
+                                                NotificationStatus = 1,
+                                                Imageurl = imageUrl,
+                                                VisitorAddress = "",
+                                                VisitorEntryDate = dateTime,
+                                                VisitorEntryCode = VisEntry.VisitorEntryCode
+                                            };
+
+                                            dbContext.AndroidNotificationDetails.Add(notificationDetail);
+                                            dbContext.SaveChanges();
+
+                                            // Fetch device token
+                                            var deviceToken = dbContext.Userdevicetokens
+                                                .Where(d => d.MobileNumber == visitor.Mobileno)
+                                                .Select(d => d.DeviceToken)
+                                                .FirstOrDefault();
+
+
+                                            if (!string.IsNullOrEmpty(deviceToken))
+                                            {
+                                                var notification = new FirebaseNotificationDto
+                                                {
+                                                    Token = deviceToken,
+                                                    Title = $"visitor pass request({VisEntry.VisitorEntryCode})",
+                                                    Body = notificationContent,
+                                                    Image = imageUrl
+                                                };
+
+                                                await FirebaseService.SendPushNotificationAsync(notification);
+                                            }
+                                           }
+
                                             bool isFailed = whatsResponse?["status"]?.Value<bool>() == false;
 
                                             if (isFailed)
@@ -1814,7 +1957,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 (int)VisEntry.PlantId,
                                                 (int)VisEntry.VisitedEmployeeId,
                                                 "917358112529",
-                                                "91" + notifyUser.UserTelNo,
+                                                "91" + user1.UserTelNo,
                                                 DateTime.Now,
                                                 "notify_text_vms",
                                                 VisEntry.VisitorEntryCode);
@@ -1830,7 +1973,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Approved");
                                             dto.tranStatus.result = true;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -1850,7 +1993,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company, VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Rejected");
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -1872,7 +2015,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, VisitEmp?.UserName, VisitedEmpDept?.DepartmentName);
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Rescheduled");
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -1888,8 +2031,18 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                         if (workflowheader.IsNotifyApprove == true && workflowheader.IsDepartmentSpecific == true)
                         {
 
+                            VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+
+                            
                             User user1 = new User();
+
+                           if(request.requesterid == 0 || request.approverid == 0 || request.userid == 0){
+                             user1  = dbContext.Users.Where(x => x.UserId == VisEntry.VisitedEmployeeId).SingleOrDefault();
+                           } else {
                             user1 = dbContext.Users.Where(x => x.UserId == request.requesterid).SingleOrDefault();
+
+                           }
+
 
                             Department department = new Department();
                             department = dbContext.Departments
@@ -1900,7 +2053,6 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 .Where(x => x.ApprovalConfigurationId == workflowheader.ApprovalConfigurationId
                                     && x.DepartmentId == user1.DeptId)
                                 .OrderBy(x => x.LevelId)
-                                .Skip(1)
                                 .ToList();
 
                             foreach (var user in nextLevelUsers)
@@ -1909,7 +2061,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                 if (notifyUserId > 0)
                                 {
                                     var notifyUser = dbContext.Users.FirstOrDefault(x => x.UserId == notifyUserId);
-                                    if (notifyUser != null && !string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                    if (notifyUser != null)
                                     {
                                         string BrandLogo = Path.Combine(Directory.GetCurrentDirectory(), "upload", "Logo", "app-logo.png");
                                         string BrandLogoBig = "/upload/Logo/app-logo-big.png";
@@ -1919,7 +2071,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                         string PassMailText = await File.ReadAllTextAsync(PassFilePath);
 
 
-                                        VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
+                                        // VisEntry = dbContext.VisitorEntries.FirstOrDefault(x => x.VisitorEntryCode == request.documentno);
                                         Approval approvalHeader = new Approval();
                                         ApprovalDetail approvalDetail = new ApprovalDetail();
                                         approvalHeader = dbContext.Approvals.FirstOrDefault(x => x.DocumentNo == request.documentno);
@@ -1975,7 +2127,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             await mailService.SendApprovalReqEmail(convertObj, (long)VisEntry.CompanyId, company);
 
                                             // Send WhatsApp Notification
-                                            string notifyMessage = $"Dear {notifyUser.UserName},\n" +
+                                            string notifyMessage = $"Dear {user1.UserName},\n" +
                                                 $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
                                                 $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
                                                 $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
@@ -1986,7 +2138,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var whatsJson = new JObject
                                             {
-                                                ["to_contact"] = "91" + notifyUser.UserTelNo,
+                                                ["to_contact"] = "91" + user1.UserTelNo,
                                                 ["type"] = "text",
                                                 ["text"] = new JObject { ["body"] = notifyMessage }
                                             };
@@ -2017,10 +2169,81 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 (int)VisEntry.PlantId,
                                                 (int)VisEntry.VisitedEmployeeId,
                                                 "917358112529",
-                                                "91" + notifyUser.UserTelNo,
+                                                "91" + user1.UserTelNo,
                                                 DateTime.Now,
                                                 "notify_text_vms",
                                                 VisEntry.VisitorEntryCode);
+
+
+
+                                           var visitor = dbContext.AndroidUsers
+                                                .Where(u => u.UserId == user1.UserId)
+                                                .FirstOrDefault();
+
+
+                                            if( visitor != null){
+
+                                            
+                                                string imageUrl = dbContext.VisitorEntries
+                                                    .Where(u => u.VisitorEntryCode == VisEntry.VisitorEntryCode)
+                                                    .Select(u => u.VisitorImageUrl)
+                                                    .FirstOrDefault();
+
+                                                var host = dbContext.Users
+                                                    .Where(u => u.UserId == VisEntry.VisitedEmployeeId)
+                                                    .FirstOrDefault();
+
+                                                string companyName = dbContext.Companies
+                                                .Where(c => c.CompanyId == VisEntry.CompanyId && c.Status == 1)
+                                                .Select(c => c.CompanyName)
+                                                .FirstOrDefault();
+                                                string dateTime = VisEntry.VisitorEntryDate.ToString("yyyy-MM-dd HH:mm:ss");
+                                                string notificationContent = $"Dear {notifyUser.UserName},\n" +
+                                                $"A visitor pass request for *{VisEntry.PersonName}* has been ✅ *approved at Level 1*.\n" +
+                                                $"📅 Visit Date: {visitDate?.ToString("dd-MM-yyyy")}\n" +
+                                                $"🕒 Visit Time: {visitDate?.ToString("hh:mm tt")}\n" +
+                                                $"🏢 Visitor Company: {visitorCompany}\n" +
+                                                $"🎯 Purpose: {purpose?.MetaSubDescription}\n\n" +
+                                                $"👤 To Meet: {user1?.UserName} ({department?.DepartmentName})\n\n" +
+                                                $"Please stay alert for further notifications.";
+
+                                                var notificationDetail = new AndroidNotificationDetail
+                                                {
+                                                    NotificationId = 0,
+                                                    NotificationType = "2",
+                                                    MobileNo = visitor.Mobileno,
+                                                    VisitorOrHostId = visitor.UserId.ToString(),
+                                                    NotificationMessage = notificationContent,
+                                                    NotificationStatus = 1,
+                                                    Imageurl = imageUrl,
+                                                    VisitorAddress = "",
+                                                    VisitorEntryDate = dateTime,
+                                                    VisitorEntryCode = VisEntry.VisitorEntryCode
+                                                };
+
+                                                dbContext.AndroidNotificationDetails.Add(notificationDetail);
+                                                dbContext.SaveChanges();
+
+                                                // Fetch device token
+                                                var deviceToken = dbContext.Userdevicetokens
+                                                    .Where(d => d.MobileNumber == visitor.Mobileno)
+                                                    .Select(d => d.DeviceToken)
+                                                    .FirstOrDefault();
+
+
+                                                if (!string.IsNullOrEmpty(deviceToken))
+                                                {
+                                                    var notification = new FirebaseNotificationDto
+                                                    {
+                                                        Token = deviceToken,
+                                                        Title = $"visitor pass request({VisEntry.VisitorEntryCode})",
+                                                        Body = notificationContent,
+                                                        Image = imageUrl
+                                                    };
+
+                                                    await FirebaseService.SendPushNotificationAsync(notification);
+                                                }
+                                            }
 
                                             VisEntry.Status = (int)request.status;
                                             dbContext.VisitorEntries.Update(VisEntry);
@@ -2030,10 +2253,12 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             dbContext.Approvals.Update(approvalHeader);
 
                                             await dbContext.SaveChangesAsync();
-
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            if (!string.IsNullOrWhiteSpace(user1.UserEmail))
+                                            {
+                                                var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            }
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Approved");
                                             dto.tranStatus.result = true;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -2050,10 +2275,12 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             dbContext.ApprovalDetails.Update(approvalDetail);
                                             approvalHeader.Status = (int)request.status;
                                             dbContext.Approvals.Update(approvalHeader);
-
-                                            var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            if (!string.IsNullOrWhiteSpace(notifyUser.UserEmail))
+                                            {
+                                                var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false", PassFilePath, company, user1?.UserName, department?.DepartmentName);
+                                            }
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "false");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Rejected");
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -2075,7 +2302,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                             var sendpassnail = SendPassEmail(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true", PassFilePath, company, user1?.UserName, department?.DepartmentName);
                                             var sendpasswh = SendPassWhatsApp(VisEntry.VisitorEntryDetails.ToList(), VisEntry, PassMailText, "true");
-
+                                            await SendApprovalOrRejectionNotification(VisEntry, "Rescheduled");
                                             dto.tranStatus.result = false;
                                             dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                             {
@@ -2568,7 +2795,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
 
                                                     approvedLink = approveLink.Result;
                                                     dto.tranStatus.result = true;
-
+                                                    await SendApprovalOrRejectionNotification(VisEntry, "Approved");
                                                     dto.tranStatus.lstErrorItem.Add(
                                                         new ErrorItem
                                                         {
@@ -2612,7 +2839,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                         await CheckIn(jObject);
                                                     }
                                                     dto.tranStatus.result = true;
-
+                                                    await SendApprovalOrRejectionNotification(VisEntry, "Approved");
                                                     dto.tranStatus.lstErrorItem.Add(
                                                         new ErrorItem
                                                         {
@@ -2627,6 +2854,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                                 )
                                                 {
                                                     dto.tranStatus.result = true;
+                                                    await SendApprovalOrRejectionNotification(VisEntry, "Rejected");
                                                     dto.tranStatus.lstErrorItem.Add(
                                                         new ErrorItem
                                                         {
@@ -2741,7 +2969,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                             );
                                         }
 
-
+                                        await SendApprovalOrRejectionNotification(VisEntry, "Rejected");
                                         dto.tranStatus.result = true;
                                         dto.tranStatus.lstErrorItem.Add(new ErrorItem
                                         {
@@ -2756,6 +2984,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                     dto.tranStatus.result = true;
                                     if (request.status == 75)
                                     {
+                                        await SendApprovalOrRejectionNotification(VisEntry, "Approved");
                                         dto.tranStatus.lstErrorItem.Add(
                                             new ErrorItem
                                             {
@@ -2766,6 +2995,7 @@ namespace VisitorManagementMySQL.Services.ApprovalWorkflow
                                     }
                                     if (request.status == 76)
                                     {
+                                        await SendApprovalOrRejectionNotification(VisEntry, "Rejected");
                                         dto.tranStatus.result = true;
                                         dto.tranStatus.lstErrorItem.Add(
                                             new ErrorItem

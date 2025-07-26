@@ -175,6 +175,10 @@ namespace VisitorManagementMySQL
                         };
                 });
             services.AddSingleton<ITokenAuthService, TokenAuthService>();
+            //Android Notification
+            services.AddSingleton<IFirebaseService, FirebaseService>();
+            //Android Notification
+
             services.AddHttpContextAccessor();
             services.AddScoped<IDapperContext, DapperContext>();
             services.AddScoped<DbContextHelper>();
@@ -229,11 +233,10 @@ namespace VisitorManagementMySQL
             services.AddScoped<IFeedbackService, FeedbackService>();
             services.AddScoped<ICalendarService, CalendarService>();
 
-               //Android Notification
-            services.AddSingleton<IFirebaseService, FirebaseService>();
+               
+            services.AddHostedService<VisitorReportHostedJob>();
             services.AddScoped<IJobCheckinCheckoutService,JobCheckinCheckoutService>();
 
-            services.AddHostedService<VisitorReportHostedJob>();
 
             services.AddWkhtmltopdf();
 

@@ -1456,6 +1456,22 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 190
+      },
+      {
+        "date": "2025-07-26T14:15:23.213Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 16
+      },
+      {
+        "date": "2025-07-26T14:16:18.600Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 55
       }
     ],
     "src\\pages\\VisitorManagement\\ExternalVisitorManage\\BookExternalVisitor.tsx": [
@@ -11534,6 +11550,38 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 12
+      },
+      {
+        "date": "2025-07-26T09:37:07.997Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T12:52:39.084Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T12:52:39.120Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T12:53:25.924Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 24
       }
     ],
     "src\\layouts\\Header.tsx": [
@@ -13910,6 +13958,14 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 29
+      },
+      {
+        "date": "2025-07-26T11:33:27.409Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 44
       }
     ],
     "src\\pages\\master\\userScreenMapping\\vUserScreenMapping.tsx": [
@@ -14730,6 +14786,14 @@
           "email": "arjayabalan09@gmail.com"
         },
         "timeSpent": 56
+      },
+      {
+        "date": "2025-07-26T12:46:08.199Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
       }
     ],
     "src\\pages\\VisitorManagement\\CheckInCheckOut\\vCheckInCheckOut.tsx": [
@@ -31442,6 +31506,110 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 48
+      },
+      {
+        "date": "2025-07-26T09:08:36.067Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T09:37:33.649Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 25
+      },
+      {
+        "date": "2025-07-26T09:38:26.463Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 53
+      },
+      {
+        "date": "2025-07-26T10:43:17.382Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T10:43:19.186Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T10:44:22.997Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 64
+      },
+      {
+        "date": "2025-07-26T10:55:47.944Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 685
+      },
+      {
+        "date": "2025-07-26T10:56:46.564Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T10:56:56.500Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 10
+      },
+      {
+        "date": "2025-07-26T10:57:11.012Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 15
+      },
+      {
+        "date": "2025-07-26T10:57:59.486Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 48
+      },
+      {
+        "date": "2025-07-26T11:17:02.064Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1143
+      },
+      {
+        "date": "2025-07-26T11:18:11.418Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 69
       }
     ],
     "package.json.git": [
@@ -31452,6 +31620,22 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 97
+      },
+      {
+        "date": "2025-07-26T12:01:19.765Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 26
+      },
+      {
+        "date": "2025-07-26T12:02:02.492Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 43
       }
     ],
     "src\\pages\\master\\Approval\\cApprovalConfiguration.tsx.git": [
@@ -31590,6 +31774,278 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 32
+      },
+      {
+        "date": "2025-07-26T10:25:51.451Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 57
+      },
+      {
+        "date": "2025-07-26T10:26:01.447Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 10
+      },
+      {
+        "date": "2025-07-26T10:26:13.623Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 12
+      },
+      {
+        "date": "2025-07-26T10:26:20.159Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T10:26:29.167Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 9
+      },
+      {
+        "date": "2025-07-26T10:27:39.616Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 70
+      },
+      {
+        "date": "2025-07-26T10:28:07.326Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 28
+      },
+      {
+        "date": "2025-07-26T10:28:10.529Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T10:28:19.105Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 9
+      },
+      {
+        "date": "2025-07-26T10:28:40.732Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 22
+      },
+      {
+        "date": "2025-07-26T10:29:04.308Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 24
+      },
+      {
+        "date": "2025-07-26T10:30:02.558Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 58
+      },
+      {
+        "date": "2025-07-26T10:33:06.769Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 183
+      },
+      {
+        "date": "2025-07-26T10:33:18.032Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 12
+      },
+      {
+        "date": "2025-07-26T10:33:47.106Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 30
+      },
+      {
+        "date": "2025-07-26T10:34:22.868Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 36
+      },
+      {
+        "date": "2025-07-26T10:34:40.403Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 17
+      },
+      {
+        "date": "2025-07-26T10:34:45.835Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 6
+      },
+      {
+        "date": "2025-07-26T10:34:47.961Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T10:35:13.665Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 25
+      },
+      {
+        "date": "2025-07-26T10:35:39.883Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 26
+      },
+      {
+        "date": "2025-07-26T10:36:24.216Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 45
+      },
+      {
+        "date": "2025-07-26T10:36:45.378Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 21
+      },
+      {
+        "date": "2025-07-26T10:37:52.229Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 67
+      },
+      {
+        "date": "2025-07-26T10:39:00.268Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 68
+      },
+      {
+        "date": "2025-07-26T10:39:01.285Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T10:39:35.090Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 34
+      },
+      {
+        "date": "2025-07-26T10:40:18.197Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 43
+      },
+      {
+        "date": "2025-07-26T10:41:08.210Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 51
+      },
+      {
+        "date": "2025-07-26T10:42:15.731Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 68
+      },
+      {
+        "date": "2025-07-26T10:55:52.750Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T10:56:00.757Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 8
+      },
+      {
+        "date": "2025-07-26T10:56:32.838Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 32
+      },
+      {
+        "date": "2025-07-26T10:56:34.344Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
       }
     ],
     "src\\redux\\slices\\master\\ApprovalSlice.ts": [
@@ -33906,6 +34362,638 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 45
+      },
+      {
+        "date": "2025-07-26T09:07:18.670Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T09:07:19.016Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:07:24.097Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T09:07:25.472Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:07:25.893Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:07:26.841Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:07:27.008Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:07:34.882Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 8
+      },
+      {
+        "date": "2025-07-26T09:07:36.942Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:07:37.345Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:07:39.617Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:07:42.959Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T09:08:04.710Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:09:00.230Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T09:09:02.053Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:09:02.560Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:09:48.282Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 46
+      },
+      {
+        "date": "2025-07-26T09:10:02.338Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 14
+      },
+      {
+        "date": "2025-07-26T09:13:06.938Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 185
+      },
+      {
+        "date": "2025-07-26T09:14:16.518Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 70
+      },
+      {
+        "date": "2025-07-26T09:14:21.133Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T09:14:22.802Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:14:33.842Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 11
+      },
+      {
+        "date": "2025-07-26T09:14:34.791Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:14:52.148Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 18
+      },
+      {
+        "date": "2025-07-26T09:14:55.872Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-26T09:14:56.255Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:15:13.106Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 17
+      },
+      {
+        "date": "2025-07-26T09:15:35.739Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 23
+      },
+      {
+        "date": "2025-07-26T09:15:36.784Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:16:31.810Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:16:32.487Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:17:17.252Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 45
+      },
+      {
+        "date": "2025-07-26T09:17:18.084Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:18:44.322Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 76
+      },
+      {
+        "date": "2025-07-26T09:18:52.583Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-26T09:18:53.170Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:19:00.226Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T09:19:20.116Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T09:19:37.716Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:19:39.531Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:19:40.165Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:20:39.766Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 60
+      },
+      {
+        "date": "2025-07-26T09:21:03.857Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 24
+      },
+      {
+        "date": "2025-07-26T09:21:08.675Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T09:21:10.778Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:21:23.339Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 13
+      },
+      {
+        "date": "2025-07-26T09:21:29.019Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 6
+      },
+      {
+        "date": "2025-07-26T09:21:29.457Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:22:34.144Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 65
+      },
+      {
+        "date": "2025-07-26T09:22:38.264Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-26T09:22:39.404Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:23:13.702Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 34
+      },
+      {
+        "date": "2025-07-26T09:25:31.593Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 138
+      },
+      {
+        "date": "2025-07-26T09:25:53.697Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 22
+      },
+      {
+        "date": "2025-07-26T09:26:08.198Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 15
+      },
+      {
+        "date": "2025-07-26T09:26:08.578Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:26:10.165Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 2
+      },
+      {
+        "date": "2025-07-26T09:27:02.853Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 53
+      },
+      {
+        "date": "2025-07-26T09:27:40.393Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 37
+      },
+      {
+        "date": "2025-07-26T09:27:41.849Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:28:11.736Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 30
+      },
+      {
+        "date": "2025-07-26T09:29:18.401Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 67
+      },
+      {
+        "date": "2025-07-26T09:29:22.860Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-26T09:29:29.377Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 7
+      },
+      {
+        "date": "2025-07-26T09:30:08.910Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 40
+      },
+      {
+        "date": "2025-07-26T09:31:12.525Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 64
+      },
+      {
+        "date": "2025-07-26T09:31:15.589Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T09:31:16.085Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:31:22.379Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 6
+      },
+      {
+        "date": "2025-07-26T09:31:25.197Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 3
+      },
+      {
+        "date": "2025-07-26T09:31:26.705Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:32:16.143Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 50
+      },
+      {
+        "date": "2025-07-26T09:34:49.697Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 154
+      },
+      {
+        "date": "2025-07-26T09:35:06.821Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 17
+      },
+      {
+        "date": "2025-07-26T09:35:07.194Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:35:08.381Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      },
+      {
+        "date": "2025-07-26T09:35:08.708Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:35:14.935Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 6
       }
     ],
     "node_modules\\@types\\react\\index.d.ts": [
@@ -34127,6 +35215,22 @@
       },
       {
         "date": "2025-07-22T16:37:06.823Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:35:16.471Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T12:46:07.937Z",
         "user": {
           "name": "Leiten-Tech",
           "email": "Developer@leitenindia.com"
@@ -34414,6 +35518,38 @@
           "email": "Developer@leitenindia.com"
         },
         "timeSpent": 69
+      },
+      {
+        "date": "2025-07-26T09:35:18.087Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T09:35:48.503Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 31
+      },
+      {
+        "date": "2025-07-26T09:36:42.226Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 54
+      },
+      {
+        "date": "2025-07-26T11:45:08.234Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
       }
     ],
     "node_modules\\primereact\\button\\button.d.ts": [
@@ -34455,6 +35591,390 @@
     "node_modules\\vite\\client.d.ts": [
       {
         "date": "2025-07-22T18:29:38.339Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\pages\\master\\Company\\vCompany.tsx": [
+      {
+        "date": "2025-07-26T11:37:34.908Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\redux\\slices\\master\\companySlice.ts": [
+      {
+        "date": "2025-07-26T11:37:50.125Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T11:37:50.334Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\pages\\master\\Country\\vCountry.tsx.git": [
+      {
+        "date": "2025-07-26T11:38:46.326Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 11
+      },
+      {
+        "date": "2025-07-26T11:39:25.893Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 40
+      },
+      {
+        "date": "2025-07-26T11:40:22.229Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 56
+      },
+      {
+        "date": "2025-07-26T11:40:56.289Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 34
+      },
+      {
+        "date": "2025-07-26T11:42:12.563Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 76
+      },
+      {
+        "date": "2025-07-26T11:42:50.096Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 22
+      },
+      {
+        "date": "2025-07-26T11:43:56.340Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 66
+      },
+      {
+        "date": "2025-07-26T11:44:24.880Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 29
+      },
+      {
+        "date": "2025-07-26T12:22:49.889Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 123
+      },
+      {
+        "date": "2025-07-26T12:47:24.333Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 30
+      }
+    ],
+    "src\\redux\\slices\\master\\countrySlice.ts.git": [
+      {
+        "date": "2025-07-26T11:52:13.463Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 417
+      },
+      {
+        "date": "2025-07-26T11:53:20.094Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 67
+      },
+      {
+        "date": "2025-07-26T11:55:53.498Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 153
+      },
+      {
+        "date": "2025-07-26T12:03:41.088Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 30
+      },
+      {
+        "date": "2025-07-26T12:04:20.596Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 40
+      },
+      {
+        "date": "2025-07-26T12:04:37.106Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 16
+      }
+    ],
+    "src\\pages\\master\\Country\\cCountry.tsx.git": [
+      {
+        "date": "2025-07-26T11:56:58.538Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 21
+      },
+      {
+        "date": "2025-07-26T11:57:13.977Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 16
+      },
+      {
+        "date": "2025-07-26T11:57:55.330Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 41
+      }
+    ],
+    "node_modules\\@reduxjs\\toolkit\\dist\\createAction.d.ts": [
+      {
+        "date": "2025-07-26T12:05:30.012Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\utils\\api.ts": [
+      {
+        "date": "2025-07-26T12:08:24.488Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "node_modules\\vite\\types\\importMeta.d.ts": [
+      {
+        "date": "2025-07-26T12:08:26.115Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      },
+      {
+        "date": "2025-07-26T12:08:26.134Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\pages\\master\\Country\\vCountry.tsx": [
+      {
+        "date": "2025-07-26T12:23:51.711Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 52
+      },
+      {
+        "date": "2025-07-26T12:28:14.903Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 263
+      },
+      {
+        "date": "2025-07-26T12:45:30.378Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 18
+      },
+      {
+        "date": "2025-07-26T12:46:02.470Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 32
+      }
+    ],
+    "src\\routes\\PrivateRoute.tsx": [
+      {
+        "date": "2025-07-26T12:29:33.736Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "src\\routes\\RouteCombiner.tsx": [
+      {
+        "date": "2025-07-26T12:29:50.506Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 9
+      },
+      {
+        "date": "2025-07-26T12:29:51.874Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      }
+    ],
+    "src\\layouts\\Layout.tsx.git": [
+      {
+        "date": "2025-07-26T12:30:36.130Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 27
+      }
+    ],
+    "node_modules\\redux\\index.d.ts": [
+      {
+        "date": "2025-07-26T12:33:41.261Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 0
+      }
+    ],
+    "public\\manifest.json.git": [
+      {
+        "date": "2025-07-26T12:39:22.017Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 4
+      },
+      {
+        "date": "2025-07-26T12:40:52.845Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 91
+      }
+    ],
+    "src\\pages\\master\\Country\\cCountry.tsx": [
+      {
+        "date": "2025-07-26T12:51:26.520Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 57
+      },
+      {
+        "date": "2025-07-26T12:51:54.790Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 28
+      },
+      {
+        "date": "2025-07-26T12:53:51.605Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 5
+      },
+      {
+        "date": "2025-07-26T12:54:24.823Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 33
+      },
+      {
+        "date": "2025-07-26T12:54:56.530Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 32
+      },
+      {
+        "date": "2025-07-26T14:14:25.446Z",
+        "user": {
+          "name": "Leiten-Tech",
+          "email": "Developer@leitenindia.com"
+        },
+        "timeSpent": 1
+      }
+    ],
+    "node_modules\\formik\\dist\\Formik.d.ts": [
+      {
+        "date": "2025-07-26T14:14:08.179Z",
         "user": {
           "name": "Leiten-Tech",
           "email": "Developer@leitenindia.com"

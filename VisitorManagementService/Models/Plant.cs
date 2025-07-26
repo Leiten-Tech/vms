@@ -31,10 +31,11 @@ namespace VisitorManagementMySQL.Models
         public string CheckToken { get; set; }
         public bool? IsAutomaticApprove { get; set; }
         public decimal? AlertAfterMins { get; set; }
-        public byte? IsNotification { get; set; }
+        public bool? IsNotification { get; set; }
         public decimal? ReportTimer { get; set; }
         public string ToMail { get; set; }
         public string CcMail { get; set; }
+        public decimal? AlterAfterMins { get; set; }
         public bool? IsDocMandatory { get; set; }
         public bool? IsFileMandatory { get; set; }
 
